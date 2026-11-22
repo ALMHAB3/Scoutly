@@ -46,7 +46,8 @@ class PartnerControllerTest {
             duffelFlightService,
             liteApiHotelService,
             hotelDestinationCatalogService,
-            mock(ExchangeRateService.class));
+            mock(ExchangeRateService.class),
+            new AppSettingsService(jdbc));
 
     @Test
     void airportSearchDelegatesTheUniversalSearchQuery() {

@@ -27,7 +27,6 @@ import java.util.function.Supplier;
 public class UnifiedInventoryService {
     private static final Set<String> DISPLAY_CURRENCIES =
             Set.of("USD", "EUR", "GBP", "LYD");
-    private static final BigDecimal LYD_UNITS_PER_USD = new BigDecimal("6.4");
     private static final Executor PROVIDER_EXECUTOR = new ThreadPoolExecutor(
             2,
             4,
@@ -42,9 +41,18 @@ public class UnifiedInventoryService {
             new ThreadPoolExecutor.CallerRunsPolicy());
 
     private final ExchangeRateService exchangeRateService;
+    private final AppSettingsService appSettings;
 
-    public UnifiedInventoryService(ExchangeRateService exchangeRateService) {
+    public UnifiedInventoryService(
+            ExchangeRateService exchangeRateService,
+            AppSettingsService appSettings) {
+        this.appSettings = appSettings;
         this.exchangeRateService = exchangeRateService;
+    }
+
+    /** For callers without settings storage (tests): default LYD rate. */
+    public UnifiedInventoryService(ExchangeRateService exchangeRateService) {
+        this(exchangeRateService, null);
     }
 
     public record SourceOutcome(
@@ -254,7 +262,11 @@ public class UnifiedInventoryService {
                         !filters.currency().equals(currencyOf(hotel)));
         if (needsConversion) {
             try {
-                usdRates = readUsdRates(exchangeRateService.latest());
+                usdRates = readUsdRates(
+                        exchangeRateService.latest(),
+                        appSettings == null
+                                ? AppSettingsService.DEFAULT_LYD_PER_USD
+                                : appSettings.lydPerUsd());
             } catch (RuntimeException exception) {
                 warnings.add(
                         "Some hotel prices could not be converted for the selected currency filter.");
@@ -421,7 +433,9 @@ public class UnifiedInventoryService {
                 .toList();
     }
 
-    private static Map<String, BigDecimal> readUsdRates(Map<String, Object> response) {
+    private static Map<String, BigDecimal> readUsdRates(
+            Map<String, Object> response,
+            BigDecimal lydPerUsd) {
         Map<String, BigDecimal> rates = new LinkedHashMap<>();
         rates.put("USD", BigDecimal.ONE);
         Object rows = response.get("rates");
@@ -435,7 +449,7 @@ public class UnifiedInventoryService {
                 }
             }
         }
-        rates.put("LYD", LYD_UNITS_PER_USD);
+        rates.put("LYD", lydPerUsd);
         return rates;
     }
 

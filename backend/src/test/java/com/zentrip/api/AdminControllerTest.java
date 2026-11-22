@@ -25,7 +25,8 @@ import static org.mockito.Mockito.when;
 
 class AdminControllerTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
-    private final AdminController controller = new AdminController(jdbc);
+    private final AdminController controller =
+            new AdminController(jdbc, new AppSettingsService(jdbc));
 
     @Test
     void dashboardRequiresAnAuthenticatedUser() {

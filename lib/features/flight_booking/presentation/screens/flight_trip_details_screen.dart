@@ -826,6 +826,7 @@ class _FlightTripDetailsScreenState extends State<FlightTripDetailsScreen>
           : await ApiService.instance.createFlightTrip(
               trip,
               paymentAttemptId: paymentAttemptId,
+              passengers: [for (final t in travelers) t.toJson()],
             );
       if (!mounted) return;
       if (saved.isFailure || saved.data == null) {

@@ -58,6 +58,8 @@ dependencies:
   intl: ^0.20.2
   flutter_rating_bar: ^4.0.1
   geocoding: ^5.0.0
+  pdf: ^3.13.1
+  printing: ^5.15.1
 
 dev_dependencies:
   flutter_test:

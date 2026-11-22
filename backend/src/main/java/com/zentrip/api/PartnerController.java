@@ -78,7 +78,8 @@ public class PartnerController {
             DuffelFlightService duffelFlightService,
             LiteApiHotelService liteApiHotelService,
             HotelDestinationCatalogService hotelDestinationCatalogService,
-            ExchangeRateService exchangeRateService) {
+            ExchangeRateService exchangeRateService,
+            AppSettingsService appSettingsService) {
         this.jdbc = jdbc;
         this.imageStorage = imageStorage;
         this.googlePlacesRatingSync = googlePlacesRatingSync;
@@ -86,7 +87,8 @@ public class PartnerController {
         this.duffelFlightService = duffelFlightService;
         this.liteApiHotelService = liteApiHotelService;
         this.hotelDestinationCatalogService = hotelDestinationCatalogService;
-        this.unifiedInventoryService = new UnifiedInventoryService(exchangeRateService);
+        this.unifiedInventoryService =
+                new UnifiedInventoryService(exchangeRateService, appSettingsService);
     }
 
     @PostMapping("/partner/hotel-images")

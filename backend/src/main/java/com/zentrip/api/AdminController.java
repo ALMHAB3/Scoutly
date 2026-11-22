@@ -41,9 +41,11 @@ public class AdminController {
     private static final Set<String> PARTNER_SERVICE_TYPES =
             Set.of("airline", "hotel", "car", "transfer", "travel");
     private final JdbcTemplate jdbc;
+    private final AppSettingsService appSettings;
 
-    public AdminController(JdbcTemplate jdbc) {
+    public AdminController(JdbcTemplate jdbc, AppSettingsService appSettings) {
         this.jdbc = jdbc;
+        this.appSettings = appSettings;
     }
 
     @GetMapping("/dashboard")
@@ -1407,6 +1409,22 @@ public class AdminController {
         }
         Object highlights = offer.get("highlights_ar");
         return highlights instanceof List<?> values && !values.isEmpty();
+    }
+
+    // ── Admin-managed USD -> LYD reference rate ─────────────────────────────
+
+    @GetMapping("/settings/lyd-rate")
+    public Map<String, Object> lydRate(HttpServletRequest request) {
+        requireAdminId(request);
+        return appSettings.lydRate();
+    }
+
+    @PutMapping("/settings/lyd-rate")
+    public Map<String, Object> updateLydRate(
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request) {
+        long adminId = requireAdminId(request);
+        return appSettings.updateLydPerUsd(body.get("rate"), adminId);
     }
 
     private long requireAdminId(HttpServletRequest request) {

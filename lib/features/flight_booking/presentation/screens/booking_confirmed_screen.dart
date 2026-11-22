@@ -11,6 +11,8 @@ import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_booking_model.dart';
 import '../../logic/flight_checkout_passenger.dart';
+import '../../logic/tickets_pdf.dart';
+import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../models/flight_model.dart';
 import 'flight_primary_button.dart';
 import 'flight_checkout_shared_components.dart';
@@ -33,6 +35,72 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
   FlightBookingConfirmation? _confirmation;
   String? _error;
   bool _loading = true;
+  bool _savingPdf = false;
+
+  /// Saves every ticket of this booking in ONE PDF (a page per traveler).
+  Future<void> _saveTicketsPdf({
+    required FlightBookingConfirmation confirmation,
+    required List<String> seats,
+    required String totalText,
+    required String? passengerName,
+  }) async {
+    if (_savingPdf) return;
+    final l10n = AppLocalizations.of(context)!;
+    final labels = CheckoutLabels(l10n);
+    final ar = l10n.localeName.startsWith('ar');
+    final locale = Localizations.localeOf(context).languageCode;
+    setState(() => _savingPdf = true);
+    try {
+      final tickets = ticketEntries(
+        reference: confirmation.reference,
+        travelers: widget.draft.travelers,
+        fallbackSeats: seats,
+        typeLabel: (t) => switch (t) {
+          FlightTravelerType.adult => labels.adult,
+          FlightTravelerType.child => labels.child,
+          FlightTravelerType.infant => labels.infant,
+        },
+        onLap: labels.onLap,
+        fallbackName: passengerName,
+      );
+      final bytes = await buildTicketsPdf(
+        flight: widget.draft.flight,
+        reference: confirmation.reference,
+        seatClassLabel: widget.draft.seatClass.isEmpty
+            ? ''
+            : widget.draft.seatClass[0].toUpperCase() +
+                widget.draft.seatClass.substring(1),
+        totalText: totalText,
+        tickets: tickets,
+        rtl: ar,
+        locale: locale,
+        labels: TicketPdfLabels(
+          title: ar ? 'تذاكر' : 'Tickets',
+          passenger: ar ? 'المسافر' : 'Passenger',
+          seat: ar ? 'المقعد' : 'Seat',
+          seatClass: ar ? 'الدرجة' : 'Class',
+          flight: ar ? 'الرحلة' : 'Flight',
+          date: ar ? 'التاريخ' : 'Date',
+          departure: ar ? 'الإقلاع' : 'Departure',
+          arrival: ar ? 'الوصول' : 'Arrival',
+          duration: ar ? 'المدة' : 'Duration',
+          reference: l10n.flightBookingReferenceLabel,
+          total: labels.travellerPrice(widget.draft.travelers.length),
+          ticketOf: (i, n) => ar ? 'التذكرة $i من $n' : 'Ticket $i of $n',
+        ),
+      );
+      await shareTicketsPdf(bytes, confirmation.reference);
+    } catch (_) {
+      if (mounted) {
+        AppSnackbar.error(
+          context,
+          ar ? 'تعذّر إنشاء ملف PDF' : 'Could not create the PDF',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingPdf = false);
+    }
+  }
 
   String get _flightId {
     final flight = widget.draft.flight;
@@ -69,6 +137,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
         packageOfferId: widget.draft.packageOffer?.id,
         bookingCurrencyCode: widget.draft.currencyCode,
         bookingDisplayAmount: widget.draft.totalPrice,
+        passengers: [for (final t in widget.draft.travelers) t.toJson()],
       );
       if (!mounted) return;
       if (result.isFailure || result.data == null) {
@@ -395,7 +464,49 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
               ],
             ),
           ],
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
+          Center(
+            child: OutlinedButton.icon(
+              key: const ValueKey('save-tickets-pdf'),
+              onPressed: _savingPdf
+                  ? null
+                  : () => _saveTicketsPdf(
+                        confirmation: confirmation,
+                        seats: seats,
+                        totalText: checkoutMoney(
+                          paidCurrency,
+                          paidAmount,
+                          locale: Localizations.localeOf(context).languageCode,
+                        ),
+                        passengerName: passengerName,
+                      ),
+              icon: _savingPdf
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.picture_as_pdf_rounded, size: 20),
+              label: Text(
+                l10n.localeName.startsWith('ar')
+                    ? (travelers.length > 1
+                        ? 'حفظ كل التذاكر (PDF)'
+                        : 'حفظ التذكرة (PDF)')
+                    : (travelers.length > 1
+                        ? 'Save all tickets (PDF)'
+                        : 'Save ticket (PDF)'),
+                style: const TextStyle(fontWeight: FontWeight.w700),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white54),
+                minimumSize: const Size(260, 50),
+                shape: const StadiumBorder(),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
           _BackHomeButton(label: l10n.flightBackToHome, onPressed: _backToHome),
         ],
       ),

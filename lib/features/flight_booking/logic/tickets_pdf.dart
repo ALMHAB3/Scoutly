@@ -1,0 +1,316 @@
+import 'dart:typed_data';
+
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+
+import '../../../models/flight_model.dart';
+import 'flight_checkout_passenger.dart';
+
+/// One ticket inside the PDF.
+class TicketPdfEntry {
+  final String passengerName;
+  final String typeLabel;
+  final String seat;
+  final String code;
+
+  const TicketPdfEntry({
+    required this.passengerName,
+    required this.typeLabel,
+    required this.seat,
+    required this.code,
+  });
+}
+
+/// Labels for the PDF (English/Arabic come from the calling screen).
+class TicketPdfLabels {
+  final String title;
+  final String passenger;
+  final String seat;
+  final String seatClass;
+  final String flight;
+  final String date;
+  final String departure;
+  final String arrival;
+  final String duration;
+  final String reference;
+  final String total;
+  final String Function(int index, int count) ticketOf;
+
+  const TicketPdfLabels({
+    required this.title,
+    required this.passenger,
+    required this.seat,
+    required this.seatClass,
+    required this.flight,
+    required this.date,
+    required this.departure,
+    required this.arrival,
+    required this.duration,
+    required this.reference,
+    required this.total,
+    required this.ticketOf,
+  });
+}
+
+const _navy = PdfColor.fromInt(0xFF202F96);
+const _ink = PdfColor.fromInt(0xFF0F1E36);
+const _muted = PdfColor.fromInt(0xFF6B7A99);
+const _line = PdfColor.fromInt(0xFFE4EAF2);
+
+/// Builds one PDF with a page per traveler and the booking total on every
+/// page footer (so each printed page is complete on its own).
+Future<Uint8List> buildTicketsPdf({
+  required FlightModel flight,
+  required String reference,
+  required String seatClassLabel,
+  required String totalText,
+  required List<TicketPdfEntry> tickets,
+  required TicketPdfLabels labels,
+  required bool rtl,
+  String locale = 'en',
+}) async {
+  await initializeDateFormatting(locale);
+  pw.ThemeData theme;
+  try {
+    // Noto covers Latin and Arabic names; fall back to the built-in font
+    // if the fonts cannot be fetched (offline).
+    final base = await PdfGoogleFonts.notoSansRegular();
+    final bold = await PdfGoogleFonts.notoSansBold();
+    final arabic = await PdfGoogleFonts.notoSansArabicRegular();
+    final arabicBold = await PdfGoogleFonts.notoSansArabicBold();
+    theme = pw.ThemeData.withFont(
+      base: base,
+      bold: bold,
+      fontFallback: [arabic, arabicBold],
+    );
+  } catch (_) {
+    theme = pw.ThemeData.base();
+  }
+
+  final doc = pw.Document(
+    title: '${labels.title} $reference',
+    author: 'Zentrip',
+    theme: theme,
+  );
+  final dateText = DateFormat.yMMMEd(locale).format(flight.departureTime);
+  String clock(DateTime t) => DateFormat.Hm(locale).format(t);
+  final duration =
+      '${flight.durationMinutes ~/ 60}h ${flight.durationMinutes % 60}m';
+
+  for (var i = 0; i < tickets.length; i++) {
+    final ticket = tickets[i];
+    doc.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a5,
+        margin: const pw.EdgeInsets.all(28),
+        textDirection: rtl ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+          children: [
+            pw.Container(
+              padding:
+                  const pw.EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const pw.BoxDecoration(
+                color: _navy,
+                borderRadius: pw.BorderRadius.all(pw.Radius.circular(12)),
+              ),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(
+                      flight.airline,
+                      style: pw.TextStyle(
+                        color: PdfColors.white,
+                        fontSize: 14,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  pw.Text(
+                    labels.ticketOf(i + 1, tickets.length),
+                    style: const pw.TextStyle(
+                        color: PdfColors.white, fontSize: 10),
+                  ),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 18),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                _airport(flight.originCode, flight.originCity,
+                    clock(flight.departureTime)),
+                pw.Column(children: [
+                  pw.Text(duration,
+                      style: const pw.TextStyle(color: _muted, fontSize: 9)),
+                  pw.Text('->',
+                      style: pw.TextStyle(
+                          color: _navy,
+                          fontSize: 16,
+                          fontWeight: pw.FontWeight.bold)),
+                ]),
+                _airport(flight.destinationCode, flight.destinationCity,
+                    clock(flight.arrivalTime),
+                    end: true),
+              ],
+            ),
+            pw.SizedBox(height: 14),
+            pw.Divider(color: _line),
+            pw.SizedBox(height: 8),
+            _row(labels.passenger, ticket.passengerName, labels.seat,
+                ticket.seat),
+            _row('', ticket.typeLabel, labels.seatClass, seatClassLabel),
+            _row(labels.flight, flight.flightNumber, labels.date, dateText),
+            _row(labels.departure, clock(flight.departureTime), labels.arrival,
+                clock(flight.arrivalTime)),
+            pw.SizedBox(height: 10),
+            pw.Divider(color: _line, borderStyle: pw.BorderStyle.dashed),
+            pw.SizedBox(height: 10),
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(labels.reference,
+                          style:
+                              const pw.TextStyle(color: _muted, fontSize: 9)),
+                      pw.Text(reference,
+                          style: pw.TextStyle(
+                              color: _ink,
+                              fontSize: 16,
+                              fontWeight: pw.FontWeight.bold)),
+                      pw.SizedBox(height: 4),
+                      pw.Text(ticket.code,
+                          style:
+                              const pw.TextStyle(color: _muted, fontSize: 9)),
+                    ],
+                  ),
+                ),
+                pw.BarcodeWidget(
+                  barcode: pw.Barcode.qrCode(),
+                  data: ticket.code,
+                  width: 78,
+                  height: 78,
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 12),
+            pw.BarcodeWidget(
+              barcode: pw.Barcode.code128(),
+              data: ticket.code,
+              height: 42,
+              drawText: false,
+            ),
+            pw.Spacer(),
+            pw.Container(
+              padding: const pw.EdgeInsets.all(10),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: _line),
+                borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+              ),
+              child: pw.Row(
+                children: [
+                  pw.Expanded(
+                    child: pw.Text(labels.total,
+                        style: const pw.TextStyle(color: _muted, fontSize: 9)),
+                  ),
+                  pw.Text(totalText,
+                      style: pw.TextStyle(
+                          color: _navy,
+                          fontSize: 12,
+                          fontWeight: pw.FontWeight.bold)),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  return doc.save();
+}
+
+pw.Widget _airport(String code, String city, String time, {bool end = false}) =>
+    pw.Column(
+      crossAxisAlignment:
+          end ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(code,
+            style: pw.TextStyle(
+                color: _ink, fontSize: 26, fontWeight: pw.FontWeight.bold)),
+        pw.Text(city, style: const pw.TextStyle(color: _muted, fontSize: 9)),
+        pw.Text(time,
+            style: pw.TextStyle(
+                color: _ink, fontSize: 12, fontWeight: pw.FontWeight.bold)),
+      ],
+    );
+
+pw.Widget _row(String l1, String v1, String l2, String v2) => pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 5),
+      child: pw.Row(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Expanded(child: _cell(l1, v1)),
+          pw.SizedBox(width: 10),
+          pw.Expanded(child: _cell(l2, v2, end: true)),
+        ],
+      ),
+    );
+
+pw.Widget _cell(String label, String value, {bool end = false}) => pw.Column(
+      crossAxisAlignment:
+          end ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
+      children: [
+        if (label.isNotEmpty)
+          pw.Text(label.toUpperCase(),
+              style: const pw.TextStyle(color: _muted, fontSize: 8)),
+        pw.Text(value.isEmpty ? '-' : value,
+            style: pw.TextStyle(
+                color: _ink, fontSize: 11, fontWeight: pw.FontWeight.bold)),
+      ],
+    );
+
+/// Saves/shares the PDF: download on web, share sheet (Files, WhatsApp…)
+/// on phones.
+Future<void> shareTicketsPdf(Uint8List bytes, String reference) =>
+    Printing.sharePdf(bytes: bytes, filename: 'zentrip-tickets-$reference.pdf');
+
+/// Ticket entries from the travelers (one per person, own code).
+List<TicketPdfEntry> ticketEntries({
+  required String reference,
+  required List<FlightCheckoutPassenger> travelers,
+  required List<String> fallbackSeats,
+  required String Function(FlightTravelerType) typeLabel,
+  required String onLap,
+  String? fallbackName,
+}) {
+  if (travelers.length <= 1) {
+    final traveler = travelers.isEmpty ? null : travelers.first;
+    return [
+      TicketPdfEntry(
+        passengerName: traveler?.name.isNotEmpty == true
+            ? traveler!.name
+            : (fallbackName ?? ''),
+        typeLabel: typeLabel(traveler?.type ?? FlightTravelerType.adult),
+        seat: traveler?.seat ??
+            (fallbackSeats.isEmpty ? '-' : fallbackSeats.join(', ')),
+        code: reference,
+      ),
+    ];
+  }
+  return [
+    for (var i = 0; i < travelers.length; i++)
+      TicketPdfEntry(
+        passengerName: travelers[i].name,
+        typeLabel: typeLabel(travelers[i].type),
+        seat: travelers[i].seat ??
+            (travelers[i].type == FlightTravelerType.infant ? onLap : '-'),
+        code: '$reference-${i + 1}',
+      ),
+  ];
+}

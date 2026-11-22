@@ -50,7 +50,7 @@ class ExchangeRates {
   ExchangeRate? _usable(String code, DateTime now) {
     code = code.trim().toUpperCase();
     if (code == 'USD') return ExchangeRate(1, now);
-    if (code == 'LYD') return ExchangeRate(usdToLydRate, now);
+    if (code == 'LYD') return ExchangeRate(LydRate.unitsPerUsd, now);
     final rate = rates[code];
     if (rate == null ||
         rate.date.isAfter(now) ||

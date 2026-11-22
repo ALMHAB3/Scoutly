@@ -6,12 +6,12 @@ import 'currency_service.dart';
 /// Shared by result controllers; no booking or settlement code depends on this.
 class PriceComparison extends ChangeNotifier {
   static const List<String> supportedCurrencies = ['USD', 'EUR', 'GBP', 'LYD'];
-  static const Map<String, double> fallbackUnitsPerUsd = {
-    'USD': 1,
-    'EUR': 0.92,
-    'GBP': 0.79,
-    'LYD': usdToLydRate,
-  };
+  static Map<String, double> get fallbackUnitsPerUsd => {
+        'USD': 1,
+        'EUR': 0.92,
+        'GBP': 0.79,
+        'LYD': LydRate.unitsPerUsd,
+      };
 
   final Future<ExchangeRates> Function() loadRates;
   final DateTime Function() clock;

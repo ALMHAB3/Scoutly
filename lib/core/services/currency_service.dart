@@ -30,12 +30,12 @@ class CurrencyService extends ChangeNotifier {
 
   /// Fallback quotes are used only when the cached Frankfurter service cannot
   /// provide a current rate. They are indicative, not settlement rates.
-  static const _fallbackRates = {
-    'USD': 1.0,
-    'EUR': 0.92,
-    'GBP': 0.79,
-    'LYD': usdToLydRate,
-  };
+  static Map<String, double> get _fallbackRates => {
+        'USD': 1.0,
+        'EUR': 0.92,
+        'GBP': 0.79,
+        'LYD': LydRate.unitsPerUsd,
+      };
   static const _prefsKey = 'selected_currency';
 
   Currency _selected = supported.first;
@@ -53,7 +53,21 @@ class CurrencyService extends ChangeNotifier {
     await _loadRates();
   }
 
+  /// Loads the admin-managed USD -> LYD rate. Kept separate from the
+  /// provider rates so it is available even when those are not.
+  Future<void> refreshLydRate() async {
+    try {
+      final rate = await ApiService.instance.lydRate();
+      LydRate.set(rate);
+      _rates = {..._rates, 'LYD': LydRate.unitsPerUsd};
+      notifyListeners();
+    } catch (_) {
+      // Keep the current/default rate.
+    }
+  }
+
   Future<void> _loadRates() async {
+    await refreshLydRate();
     try {
       final latest = await ApiService.instance.exchangeRates();
       final liveRates = Map<String, double>.of(_fallbackRates);
@@ -62,7 +76,7 @@ class CurrencyService extends ChangeNotifier {
           liveRates[entry.key] = entry.value.unitsPerUsd;
         }
       }
-      liveRates['LYD'] = usdToLydRate;
+      liveRates['LYD'] = LydRate.unitsPerUsd;
       _rates = liveRates;
     } catch (_) {
       _rates = Map.of(_fallbackRates);

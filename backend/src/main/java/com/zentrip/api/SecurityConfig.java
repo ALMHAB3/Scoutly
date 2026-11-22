@@ -104,7 +104,8 @@ public class SecurityConfig {
                     "/api/attractions/map",
                     "/api/attractions/suggestions",
                     "/api/attractions/recent-destination",
-                    "/api/exchange-rates"
+                    "/api/exchange-rates",
+                    "/api/exchange-rates/lyd"
                 ).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/reviews", "/api/reviews/**")
                     .hasRole("CUSTOMER")

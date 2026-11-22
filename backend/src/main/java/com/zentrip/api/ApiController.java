@@ -1392,6 +1392,9 @@ public class ApiController {
             providerDetails.put("selected_seats", stringList(body.get("selected_seats")));
             providerDetails.put("extras", stringList(body.get("extras")));
         }
+        List<Map<String, Object>> tripPassengers =
+                validatedPassengers(body.get("passengers"), -1);
+        if (!tripPassengers.isEmpty()) providerDetails.put("passengers", tripPassengers);
         String providerDetailsJson = JSON.valueToTree(providerDetails).toString();
         jdbc.queryForList("SELECT id FROM users WHERE id = ? FOR UPDATE", userId);
         if (hasFlightScheduleConflict(userId, departure, arrival, returnDate)) {
@@ -1619,6 +1622,9 @@ public class ApiController {
         details.put("passenger_count", seats.size());
         details.put("seat_numbers", seats);
         details.put("extras", extras);
+        List<Map<String, Object>> passengers =
+                validatedPassengers(body.get("passengers"), seats.size());
+        if (!passengers.isEmpty()) details.put("passengers", passengers);
         details.put("booking_currency", bookingCurrency);
         details.put("booking_display_amount", bookingDisplayAmount);
         if (packageOffer != null) {
@@ -3134,6 +3140,80 @@ public class ApiController {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT, "Payment attempt could not be linked");
         }
+    }
+
+    private static final java.util.regex.Pattern ISO_DATE =
+            java.util.regex.Pattern.compile("^\\d{4}-\\d{2}-\\d{2}$");
+    private static final java.util.regex.Pattern PASSPORT =
+            java.util.regex.Pattern.compile("^[A-Z0-9]{5,20}$");
+
+    /**
+     * Traveler details entered at checkout (optional for older clients).
+     * When [seatedCount] >= 0 the number of non-infant travelers must match
+     * the booked seats. Only known fields are kept.
+     */
+    private static List<Map<String, Object>> validatedPassengers(
+            Object raw,
+            int seatedCount) {
+        if (raw == null) return List.of();
+        if (!(raw instanceof List<?> values) || values.size() > 18) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "passengers must be a list of up to 18 travelers");
+        }
+        List<Map<String, Object>> passengers = new ArrayList<>();
+        int seated = 0;
+        int adults = 0;
+        int infants = 0;
+        for (Object value : values) {
+            if (!(value instanceof Map<?, ?> row)) {
+                throw new ResponseStatusException(
+                        HttpStatus.UNPROCESSABLE_ENTITY, "Invalid passenger");
+            }
+            String type = text(row.get("type")).trim().toLowerCase(Locale.ROOT);
+            if (!Set.of("adult", "child", "infant").contains(type)) {
+                throw new ResponseStatusException(
+                        HttpStatus.UNPROCESSABLE_ENTITY, "Invalid passenger type");
+            }
+            String name = text(row.get("name")).trim();
+            String nationality = text(row.get("nationality")).trim();
+            String passport = text(row.get("passport_number")).trim().toUpperCase(Locale.ROOT);
+            String dob = text(row.get("date_of_birth")).trim();
+            String expiry = text(row.get("passport_expiry")).trim();
+            String email = text(row.get("email")).trim();
+            String phone = text(row.get("phone")).trim();
+            if (name.isEmpty() || name.length() > 120
+                    || nationality.isEmpty() || nationality.length() > 60
+                    || !PASSPORT.matcher(passport).matches()
+                    || !ISO_DATE.matcher(dob).matches()
+                    || !ISO_DATE.matcher(expiry).matches()
+                    || email.length() > 254 || phone.length() > 20) {
+                throw new ResponseStatusException(
+                        HttpStatus.UNPROCESSABLE_ENTITY, "Invalid passenger details");
+            }
+            Map<String, Object> passenger = new LinkedHashMap<>();
+            passenger.put("type", type);
+            passenger.put("name", name);
+            passenger.put("date_of_birth", dob);
+            passenger.put("nationality", nationality);
+            passenger.put("passport_number", passport);
+            passenger.put("passport_expiry", expiry);
+            if (!email.isEmpty()) passenger.put("email", email);
+            if (!phone.isEmpty()) passenger.put("phone", phone);
+            String seat = text(row.get("seat")).trim().toUpperCase(Locale.ROOT);
+            if (!seat.isEmpty() && !"infant".equals(type)) passenger.put("seat", seat);
+            passengers.add(passenger);
+            if ("infant".equals(type)) infants++; else seated++;
+            if ("adult".equals(type)) adults++;
+        }
+        if (infants > adults) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "Each infant must travel with an adult");
+        }
+        if (seatedCount >= 0 && !passengers.isEmpty() && seated != seatedCount) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "Passengers must match the booked seats");
+        }
+        return passengers;
     }
 
     private static List<String> stringList(Object value) {

@@ -34,6 +34,19 @@ class FlightCheckoutPassenger {
 
   bool get needsSeat => type != FlightTravelerType.infant;
 
+  /// Payload stored with the booking (POST /bookings/confirm, POST /trips).
+  Map<String, Object?> toJson() => {
+        'type': type.name,
+        'name': name,
+        'date_of_birth': dateOfBirth,
+        'nationality': nationality,
+        'passport_number': passportNumber,
+        'passport_expiry': passportExpiry,
+        if (email.isNotEmpty) 'email': email,
+        if (phone.isNotEmpty) 'phone': phone,
+        if (seat != null) 'seat': seat,
+      };
+
   FlightCheckoutPassenger copyWith({
     FlightTravelerType? type,
     String? name,

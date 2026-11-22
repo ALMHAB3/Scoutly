@@ -60,6 +60,31 @@ class ApiService {
     return ExchangeRates.fromJson(Map<String, dynamic>.from(response.data));
   }
 
+  /// Admin-managed USD -> LYD reference rate (public).
+  Future<double> lydRate() async {
+    final response = await _dio.get('/exchange-rates/lyd');
+    final rate = double.tryParse('${response.data['rate']}');
+    if (rate == null || !rate.isFinite || rate <= 0) {
+      throw const FormatException('Invalid LYD rate');
+    }
+    return rate;
+  }
+
+  /// Admin only: saves a new USD -> LYD rate and returns the stored value.
+  Future<ApiResult<double>> updateLydRate(double rate) {
+    return _request(() async {
+      final response = await _dio.put(
+        '/admin/settings/lyd-rate',
+        data: {'rate': rate},
+      );
+      final saved = double.tryParse('${response.data['rate']}');
+      if (saved == null || saved <= 0) {
+        throw const FormatException('Invalid LYD rate');
+      }
+      return saved;
+    });
+  }
+
   static final ApiService instance = ApiService._();
   ApiService._();
 
@@ -1435,11 +1460,13 @@ class ApiService {
     String? packageOfferId,
     String bookingCurrencyCode = 'USD',
     double? bookingDisplayAmount,
+    List<Map<String, Object?>> passengers = const [],
   }) async {
     final result = await _request(() async {
       final response = await _dio.post(
         '/bookings/confirm',
         data: {
+          if (passengers.isNotEmpty) 'passengers': passengers,
           'flight_id': flightId,
           'seats': seats,
           'seat_class': seatClass,
@@ -2184,6 +2211,7 @@ class ApiService {
   Future<ApiResult<TripModel>> createFlightTrip(
     TripModel trip, {
     int? paymentAttemptId,
+    List<Map<String, Object?>> passengers = const [],
   }) async {
     if (useMockMode) {
       final result = await _request(() async {
@@ -2199,6 +2227,7 @@ class ApiService {
     final result = await _request(() async {
       final res = await _dio.post('/trips', data: {
         ...trip.toJson(),
+        if (passengers.isNotEmpty) 'passengers': passengers,
         if (paymentAttemptId != null) 'payment_attempt_id': paymentAttemptId,
       });
       return TripModel.fromJson(res.data['trip'] as Map<String, dynamic>);
