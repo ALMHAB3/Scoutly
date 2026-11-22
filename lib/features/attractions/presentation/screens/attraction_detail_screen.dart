@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -7,10 +9,13 @@ import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_shell.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/booking_load_error.dart';
+import '../../../../core/services/currency_service.dart';
 import '../../../../global_widgets/payment_checkout_screen.dart';
 import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/attraction_model.dart';
+import '../../../../models/map_search_result.dart';
+import '../../../nearby/presentation/screens/places_map_screen.dart';
 import '../../../../models/booking_model.dart';
 import '../../../../routes/app_routes.dart';
 import '../attraction_category.dart';
@@ -25,12 +30,28 @@ class AttractionDetailScreen extends StatefulWidget {
 class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
   AttractionModel? _attraction;
   bool _isBooking = false;
+  bool _visitRecorded = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _attraction ??=
         ModalRoute.of(context)?.settings.arguments as AttractionModel?;
+    final attraction = _attraction;
+    if (attraction != null && !_visitRecorded) {
+      _visitRecorded = true;
+      if (!attraction.isExternal) {
+        unawaited(_recordVisit(attraction.id));
+      }
+    }
+  }
+
+  Future<void> _recordVisit(String attractionId) async {
+    try {
+      await ApiService.instance.recordAttractionVisit(attractionId);
+    } catch (error) {
+      debugPrint('Could not record place visit: $error');
+    }
   }
 
   Future<void> _bookTicket() async {
@@ -42,13 +63,14 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
     final ref =
         'ZT-A-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
     final l10n = AppLocalizations.of(context);
+    final languageCode = Localizations.localeOf(context).languageCode;
     final today = DateTime.now();
     final visitDate = DateTime(today.year, today.month, today.day + 1);
     final visitEnd = visitDate.add(const Duration(days: 1));
 
     final availability = await ApiService.instance.checkBookingAvailability(
       type: BookingType.attraction,
-      title: a.name,
+      title: a.displayName(languageCode),
       startDate: visitDate,
       endDate: visitEnd,
     );
@@ -64,14 +86,18 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
     }
 
     // لو النشاط مجاني (entryFee = null أو صفر) نتخطى الدفع تمامًا.
+    int? paymentAttemptId;
     if (a.entryFee != null && a.entryFee! > 0) {
-      final paid = await PaymentCheckoutScreen.start(context,
-          amountUsd: a.entryFee!, description: a.name, referenceId: ref);
+      final payment = await PaymentCheckoutScreen.start(context,
+          amountUsd: a.entryFee!,
+          description: a.displayName(languageCode),
+          referenceId: ref);
       if (!mounted) return;
-      if (!paid) {
+      if (payment?.paid != true) {
         AppSnackbar.error(context, l10n.paymentFailedMessage);
         return;
       }
+      paymentAttemptId = payment?.attemptId;
     }
 
     setState(() => _isBooking = true);
@@ -79,8 +105,8 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
     final booking = BookingModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       type: BookingType.attraction,
-      title: a.name,
-      subtitle: a.city,
+      title: a.displayName(languageCode),
+      subtitle: a.displayCity(languageCode),
       date: visitDate,
       endDate: visitEnd,
       price: a.entryFee,
@@ -89,7 +115,10 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
       imageUrl: a.imageUrl,
       partnerListingId: a.partnerListingId,
     );
-    final createResult = await ApiService.instance.createBooking(booking);
+    final createResult = await ApiService.instance.createBooking(
+      booking,
+      paymentAttemptId: paymentAttemptId,
+    );
     if (createResult.isFailure) {
       if (!mounted) return;
       setState(() => _isBooking = false);
@@ -104,13 +133,39 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
     setState(() => _isBooking = false);
     if (!mounted) return;
     AppSnackbar.success(context, l10n.attractionTicketBookedSuccess);
-    await NotificationsStore.instance.add(
-        kind: NotifKind.booking,
-        title: l10n.notifBookingConfirmedTitle,
-        subtitle: a.name);
+    unawaited(NotificationsStore.instance.refreshAfterBooking(
+      title: l10n.notifBookingConfirmedTitle,
+      subtitle: a.displayName(Localizations.localeOf(context).languageCode),
+      bookingRef: ref,
+    ));
     if (!mounted) return;
     AppShellTabController.goToTab(3); // تاب "رحلاتي" — عشان يشوف حجزه فورًا
     Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
+  }
+
+  void _openOnMap(AttractionModel a, AppLocalizations l10n) {
+    final hasCoordinates = a.latitude.isFinite &&
+        a.longitude.isFinite &&
+        !(a.latitude == 0 && a.longitude == 0);
+    if (!hasCoordinates) {
+      AppSnackbar.info(context, l10n.attractionLocationUnavailable);
+      return;
+    }
+    final place = MapSearchResult(
+      title: a.displayName(Localizations.localeOf(context).languageCode),
+      address: a.displayLocation(Localizations.localeOf(context).languageCode),
+      category: 'attraction',
+      rating: a.rating > 0 ? a.rating : null,
+      latitude: a.latitude,
+      longitude: a.longitude,
+      thumbnail: a.imageUrl,
+    );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PlacesMapScreen(places: [place], selectedPlace: place),
+      ),
+    );
   }
 
   @override
@@ -130,7 +185,8 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
             pinned: true,
             stretch: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(a.name,
+              title: Text(
+                  a.displayName(Localizations.localeOf(context).languageCode),
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -170,8 +226,10 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                     onPressed: () =>
                         FavoritesController.instance.toggle(FavoritePlace(
                       id: a.id,
-                      title: a.name,
-                      subtitle: a.city,
+                      title: a.displayName(
+                          Localizations.localeOf(context).languageCode),
+                      subtitle: a.displayCity(
+                          Localizations.localeOf(context).languageCode),
                       type: a.category == 'restaurant' || a.category == 'cafe'
                           ? a.category
                           : 'attraction',
@@ -195,17 +253,21 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                         const Icon(Icons.place_rounded,
                             color: AppColors.accentPurple, size: 16),
                         const SizedBox(width: 4),
-                        Text('${a.city}, ${a.country}',
+                        Text(
+                            a.displayLocation(
+                                Localizations.localeOf(context).languageCode),
                             style: const TextStyle(
                                 color: AppColors.textSecondary, fontSize: 13))
                       ]),
-                      Row(children: [
-                        const Icon(Icons.star_rounded,
-                            color: Colors.amber, size: 16),
-                        Text(' ${a.rating} (${a.reviewCount})',
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 13))
-                      ]),
+                      if (a.rating > 0 && a.reviewCount > 0)
+                        Row(children: [
+                          const Icon(Icons.star_rounded,
+                              color: Colors.amber, size: 16),
+                          Text('${a.rating} (${a.reviewCount})',
+                              textDirection: TextDirection.ltr,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 13))
+                        ]),
                     ]).animate().fade(duration: 300.ms),
                 const SizedBox(height: 16),
 
@@ -225,20 +287,32 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                 const SizedBox(height: 20),
 
                 // Description
-                Text(l10n.attractionAbout,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Text(a.description,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(height: 1.7))
-                    .animate()
-                    .fade(delay: 150.ms),
-                const SizedBox(height: 20),
+                if (a.description.trim().isNotEmpty) ...[
+                  Text(l10n.attractionAbout,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 8),
+                  Text(a.description,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(height: 1.7))
+                      .animate()
+                      .fade(delay: 150.ms),
+                  const SizedBox(height: 20),
+                ],
+                if (a.sourceAttribution != null) ...[
+                  Text(
+                    a.sourceAttribution!,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Visiting hours
                 if (a.openingHours != null) ...[
@@ -254,7 +328,13 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                             l10n.attractionEntryFee,
                             a.isFree
                                 ? l10n.free
-                                : '\$${a.entryFee?.toStringAsFixed(0) ?? '?'}'),
+                                : a.entryFee == null
+                                    ? '—'
+                                    : CurrencyService.instance.format(
+                                        a.entryFee!,
+                                        locale: Localizations.localeOf(context)
+                                            .languageCode,
+                                      )),
                       ]).animate().fade(delay: 200.ms),
                   const SizedBox(height: 28),
                 ],
@@ -272,15 +352,19 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                         : const Icon(Icons.confirmation_num_rounded),
                     label: Text(_isBooking
                         ? l10n.attractionBooking
-                        : l10n.attractionBookTicket(
-                            '\$${a.entryFee?.toStringAsFixed(0) ?? '?'}')),
+                        : l10n.attractionBookTicket(a.entryFee == null
+                            ? '—'
+                            : CurrencyService.instance.format(
+                                a.entryFee!,
+                                locale: Localizations.localeOf(context)
+                                    .languageCode,
+                              ))),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentPurple),
                   ).animate().fade(delay: 250.ms)
                 else
                   ElevatedButton.icon(
-                    onPressed: () =>
-                        AppSnackbar.info(context, l10n.attractionMapComingSoon),
+                    onPressed: () => _openOnMap(a, l10n),
                     icon: const Icon(Icons.map_rounded),
                     label: Text(l10n.attractionOpenOnMap),
                     style: ElevatedButton.styleFrom(

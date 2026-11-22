@@ -81,7 +81,7 @@ class TermsScreen extends StatelessWidget {
             'تخضع سياسات الإلغاء والاسترداد لشروط مزوّد الخدمة لكل حجز. راجع تفاصيل سياسة الإلغاء الظاهرة قبل تأكيد أي حجز.'
           ),
           (
-            'مساعد Zen AI',
+            'Zen AI',
             'اقتراحات المساعد الذكي إرشادية فقط ولا تُعد التزاماً تعاقدياً. تحقق دائماً من التفاصيل النهائية قبل الحجز.'
           ),
           (
@@ -119,7 +119,7 @@ class TermsScreen extends StatelessWidget {
             'Cancellation and refund policies follow the service provider\'s terms for each booking. Review the cancellation policy shown before confirming any booking.'
           ),
           (
-            'Zen AI Assistant',
+            'Zen AI',
             'Suggestions from the AI assistant are for guidance only and are not contractually binding. Always verify the final details before booking.'
           ),
           (
@@ -148,7 +148,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'كيف نستخدم بياناتك',
-            'نستخدم بياناتك لإتمام الحجوزات، وتخصيص الاقتراحات، وتحسين تجربة مساعد Zen AI، وإرسال إشعارات تخص رحلاتك.'
+            'نستخدم بياناتك لإتمام الحجوزات، وتخصيص الاقتراحات، وتحسين تجربة Zen AI، وإرسال إشعارات تخص رحلاتك.'
           ),
           (
             'مشاركة البيانات',
@@ -174,7 +174,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'How We Use Your Data',
-            'We use your data to complete bookings, personalize suggestions, improve the Zen AI assistant experience, and send notifications about your trips.'
+            'We use your data to complete bookings, personalize suggestions, improve the Zen AI experience, and send notifications about your trips.'
           ),
           (
             'Data Sharing',

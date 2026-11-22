@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import '../core/services/api_service.dart';
 import '../features/splash/presentation/screen/splash_screen.dart';
 import '../features/onboarding/presentation/screens/onboarding_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
 import '../features/auth/presentation/screens/register_screen.dart';
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
-import '../features/auth/presentation/screens/verfiy_screen.dart.dart';
-import '../features/auth/presentation/screens/login_success_screen.dart';
+import '../features/auth/presentation/screens/reset_password_screen.dart';
+import '../features/auth/presentation/screens/verify_screen.dart';
 import '../features/trips/presentation/screens/trip_details_screen.dart';
 import '../features/trips/presentation/screens/search_flights_screen.dart';
 import '../features/trips/presentation/screens/search_hotels_screen.dart';
@@ -13,7 +14,7 @@ import '../features/trips/presentation/screens/package_detail_screen.dart';
 import '../features/flight_booking/presentation/screens/flight_search_screen.dart';
 import '../features/flight_booking/logic/flight_controller.dart';
 import '../features/flight_booking/presentation/screens/search_flight_screen.dart';
-import '../features/flight_booking/presentation/screens/flight_booking_screen.dart';
+import '../features/flight_booking/presentation/screens/flight_booking_flow_screen.dart';
 import '../features/hotel_booking/presentation/screens/hotel_search_screen.dart';
 import '../features/hotel_booking/presentation/screens/hotel_results_screen.dart';
 import '../features/hotel_booking/presentation/screens/hotel_detail_screen.dart';
@@ -37,7 +38,7 @@ abstract class AppRoutes {
   static const String register = '/register';
   static const String forgotPassword = '/forgot-password';
   static const String verifyCode = '/verify-code';
-  static const String loginSuccess = '/login-success';
+  static const String resetPassword = '/reset-password';
   static const String home = '/home';
   static const String tripDetails = '/trip-details';
   static const String searchFlights = '/search-flights';
@@ -61,6 +62,27 @@ abstract class AppRoutes {
   static const String partnerDashboard = '/partner-dashboard';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    final user = ApiService.instance.currentUser;
+    final isDashboardRoute =
+        settings.name == adminDashboard || settings.name == partnerDashboard;
+    if (isDashboardRoute) {
+      if (user == null) {
+        return _fade(const LoginScreen(), const RouteSettings(name: auth));
+      }
+      if (!user.isAdmin && user.role.toLowerCase() != 'partner') {
+        return _fade(const AppShell(), const RouteSettings(name: home));
+      }
+    }
+    if (user?.isAdmin == true || user?.role.toLowerCase() == 'partner') {
+      final dashboardRoute = user!.isAdmin ? adminDashboard : partnerDashboard;
+      if (settings.name != dashboardRoute) {
+        final dashboard = user.isAdmin
+            ? const AdminDashboardScreen()
+            : const PartnerDashboardScreen();
+        return _fade(dashboard, RouteSettings(name: dashboardRoute));
+      }
+    }
+
     switch (settings.name) {
       case splash:
         return _fade(const SplashScreen(), settings);
@@ -78,19 +100,31 @@ abstract class AppRoutes {
           return _slide(VerifyScreen(email: email), settings);
         }
         return _slide(const ForgotPasswordScreen(), settings);
-      case loginSuccess:
-        return _fade(const LoginSuccessScreen(), settings);
+      case resetPassword:
+        final email = settings.arguments;
+        if (email is String && email.isNotEmpty) {
+          return _slide(ResetPasswordScreen(email: email), settings);
+        }
+        return _slide(const ForgotPasswordScreen(), settings);
       case home:
         return _fade(const AppShell(), settings);
       case tripDetails:
-        final trip = settings.arguments as TripModel;
+        final argument = settings.arguments;
+        if (argument is! TripModel) {
+          return _fade(const AppShell(), const RouteSettings(name: home));
+        }
+        final trip = argument;
         return _slide(TripDetailsScreen(trip: trip), settings);
       case searchFlights:
         return _slide(const SearchFlightsScreen(), settings);
       case searchHotels:
         return _slide(const SearchHotelsScreen(), settings);
       case packageDetail:
-        final pkg = settings.arguments as TravelPackage;
+        final argument = settings.arguments;
+        if (argument is! TravelPackage) {
+          return _fade(const AppShell(), const RouteSettings(name: home));
+        }
+        final pkg = argument;
         return _slide(PackageDetailScreen(package: pkg), settings);
       case flightSearch:
         final args = settings.arguments;
@@ -121,7 +155,7 @@ abstract class AppRoutes {
         }
         return _slide(const SearchFlightScreen(), settings);
       case flightBooking:
-        return _slide(const FlightBookingScreen(), settings);
+        return _slide(const FlightBookingFlowScreen(), settings);
       case hotelSearch:
         return _slide(
           HotelSearchScreen(

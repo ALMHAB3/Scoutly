@@ -16,8 +16,7 @@ void main() {
     expect(egypt.accepts('101234567'), isFalse);
   });
 
-  test('locale resolution matches device language and falls back to English',
-      () {
+  test('locale resolution matches device language and defaults to Arabic', () {
     const supported = [Locale('ar'), Locale('en')];
 
     expect(
@@ -28,11 +27,11 @@ void main() {
     expect(
       LocaleController.resolveSupportedLocale(
           const Locale('fr', 'FR'), supported),
-      const Locale('en'),
+      const Locale('ar'),
     );
     expect(
       LocaleController.resolveSupportedLocale(null, supported),
-      const Locale('en'),
+      const Locale('ar'),
     );
   });
 }

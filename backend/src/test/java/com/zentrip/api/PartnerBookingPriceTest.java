@@ -30,7 +30,8 @@ class PartnerBookingPriceTest {
             jdbc,
             "",
             mock(ProfilePhotoStorage.class),
-            mock(PasswordResetService.class));
+                mock(PasswordResetService.class),
+                mock(OpenTripMapAttractionService.class));
 
     @Test
     void hotelBookingUsesCurrentPartnerRateAndStayLength() throws Exception {
@@ -57,9 +58,10 @@ class PartnerBookingPriceTest {
                 eq(7L),
                 eq("hotel")))
                 .thenReturn(List.of());
-        when(jdbc.update(
-                contains("available_rooms"), anyInt(), anyInt(), anyLong(), anyInt()))
-                .thenReturn(1);
+        when(jdbc.queryForObject(
+                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                eq(Boolean.class), eq(44L), eq("hotel_rooms"), eq(1), eq(false)))
+                .thenReturn(true);
         when(jdbc.update(any(PreparedStatementCreator.class), any(KeyHolder.class)))
                 .thenAnswer(invocation -> {
                     KeyHolder holder = invocation.getArgument(1);
@@ -93,7 +95,7 @@ class PartnerBookingPriceTest {
         verify(jdbc).update(creator.capture(), any(KeyHolder.class));
         Connection connection = mock(Connection.class);
         PreparedStatement statement = mock(PreparedStatement.class);
-        when(connection.prepareStatement(any(String.class), eq(Statement.RETURN_GENERATED_KEYS)))
+        when(connection.prepareStatement(any(String.class), org.mockito.AdditionalMatchers.aryEq(new String[]{"id"})))
                 .thenReturn(statement);
         creator.getValue().createPreparedStatement(connection);
         verify(statement).setObject(5, new BigDecimal("336.00"));

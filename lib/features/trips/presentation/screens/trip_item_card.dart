@@ -5,7 +5,9 @@ import '../../../../core/utils/date_time_utils.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/confirm_dialog.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../global_widgets/review_form_sheet.dart';
+import '../../../../core/utils/money_format.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../logic/trips_controller.dart';
 
@@ -15,6 +17,7 @@ extension TripKindStyle on TripKind {
         TripKind.hotel => Icons.hotel_rounded,
         TripKind.car => Icons.directions_car_rounded,
         TripKind.tour => Icons.local_activity_rounded,
+        TripKind.transfer => Icons.local_taxi_rounded,
       };
 
   Color get color => switch (this) {
@@ -22,6 +25,7 @@ extension TripKindStyle on TripKind {
         TripKind.hotel => AppColors.accentTeal,
         TripKind.car => AppColors.accentOrange,
         TripKind.tour => AppColors.accentPurple,
+        TripKind.transfer => AppColors.accentTeal,
       };
 
   String label(AppLocalizations l10n) => switch (this) {
@@ -29,6 +33,7 @@ extension TripKindStyle on TripKind {
         TripKind.hotel => l10n.tripsKindHotel,
         TripKind.car => l10n.tripsKindCar,
         TripKind.tour => l10n.tripsKindTour,
+        TripKind.transfer => l10n.tripsKindTransfer,
       };
 }
 
@@ -111,7 +116,10 @@ class TripItemCard extends StatelessWidget {
                         url: item.imageUrl,
                         fallbackIcon: kind.icon,
                         fallbackGradient: LinearGradient(
-                          colors: [kind.color, kind.color.withValues(alpha: 0.6)],
+                          colors: [
+                            kind.color,
+                            kind.color.withValues(alpha: 0.6)
+                          ],
                         ),
                       ),
                     ),
@@ -154,12 +162,39 @@ class TripItemCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             fontWeight: FontWeight.w800, fontSize: 16)),
+                    if (item.isSimulated) ...[
+                      const SizedBox(height: 7),
+                      _Pill(
+                        text: l10n.flightSimulationBadge,
+                        color: AppColors.primary,
+                      ),
+                    ],
                     const SizedBox(height: 3),
                     Text(item.subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                             color: AppColors.textSecondary, fontSize: 12)),
+                    if (item.flight?.selectedSeats.isNotEmpty == true) ...[
+                      const SizedBox(height: 5),
+                      Text(
+                        '${l10n.tripSeatsLabel}: ${item.flight!.selectedSeats.join(', ')}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12),
+                      ),
+                    ],
+                    if (item.flight?.extras.isNotEmpty == true) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        '${l10n.tripExtrasLabel}: ${item.flight!.extras.join(', ')}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 12),
+                      ),
+                    ],
                     const SizedBox(height: 10),
                     Row(children: [
                       const Icon(Icons.calendar_today_outlined,
@@ -176,12 +211,14 @@ class TripItemCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     Divider(
                         height: 1,
-                        color: isDark ? AppColors.darkBorder : AppColors.divider),
+                        color:
+                            isDark ? AppColors.darkBorder : AppColors.divider),
                     const SizedBox(height: 10),
                     Row(children: [
                       if (item.reference != null && item.reference!.isNotEmpty)
                         Expanded(
-                          child: Text('${l10n.tripsRefLabel}: ${item.reference}',
+                          child: Text(
+                              '${l10n.tripsRefLabel}: ${item.reference}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -192,7 +229,17 @@ class TripItemCard extends StatelessWidget {
                       else
                         const Spacer(),
                       if (item.price != null)
-                        Text('\$${item.price!.toStringAsFixed(0)}',
+                        Text(
+                            item.priceCurrencyCode.toUpperCase() == 'LYD'
+                                ? formatProviderMoney(
+                                    item.price!,
+                                    item.priceCurrencyCode,
+                                    locale: Localizations.localeOf(context)
+                                        .languageCode,
+                                  )
+                                : item.isSimulated
+                                    ? '${item.priceCurrencyCode} ${item.price!.toStringAsFixed(2)}'
+                                    : '\$${item.price!.toStringAsFixed(0)}',
                             style: const TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 16,
@@ -237,7 +284,8 @@ class _Pill extends StatelessWidget {
 /// Details sheet for hotel/car/tour bookings (flights open their own screen).
 Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
   final booking = item.booking;
-  if (booking == null) return Future.value(false);
+  final transfer = item.transfer;
+  if (booking == null && transfer == null) return Future.value(false);
   final locale = Localizations.localeOf(context).languageCode;
   final canCancel =
       item.status == TripTab.upcoming || item.status == TripTab.active;
@@ -255,23 +303,43 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(booking.title,
+                  Text(item.title,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.w800)),
                   const SizedBox(height: 6),
-                  Text(booking.subtitle,
+                  Text(item.subtitle,
                       style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 16),
-                  _DetailLine(Icons.calendar_today_outlined,
-                      DateTimeUtils.formatDate(booking.date, locale: locale)),
-                  if (booking.refCode != null)
+                  _DetailLine(
+                      Icons.calendar_today_outlined,
+                      DateTimeUtils.formatDate(
+                          transfer?.pickupTime ?? booking!.date,
+                          locale: locale)),
+                  if (transfer != null) ...[
+                    _DetailLine(Icons.trip_origin_rounded,
+                        '${l10n.transferPickupLabel}: ${transfer.pickupLocation}'),
+                    _DetailLine(Icons.location_on_outlined,
+                        '${l10n.transferDropoffLabel}: ${transfer.dropoffLocation}'),
+                    _DetailLine(Icons.directions_car_rounded,
+                        '${l10n.transferVehicleLabel}: ${transfer.vehicleType}'),
+                    _DetailLine(Icons.schedule_rounded,
+                        l10n.transferMinutes(transfer.durationMinutes)),
+                  ],
+                  if (booking?.refCode != null)
                     _DetailLine(
-                        Icons.confirmation_num_rounded, booking.refCode!),
-                  if (booking.price != null)
-                    _DetailLine(Icons.attach_money_rounded,
-                        '\$${booking.price!.toStringAsFixed(0)}'),
+                        Icons.confirmation_num_rounded, booking!.refCode!),
+                  if ((booking?.price ?? transfer?.price) != null)
+                    _DetailLine(
+                      Icons.attach_money_rounded,
+                      '',
+                      trailing: CurrencyAmountText(
+                        amount: (booking?.price ?? transfer?.price)!,
+                        decimalDigits: 0,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
                   const SizedBox(height: 16),
-                  if (item.canReview) ...[
+                  if (booking != null && item.canReview) ...[
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
@@ -285,7 +353,7 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                       ),
                     ),
                   ],
-                  if (canCancel) ...[
+                  if (booking != null && canCancel) ...[
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
@@ -343,7 +411,8 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
 class _DetailLine extends StatelessWidget {
   final IconData icon;
   final String text;
-  const _DetailLine(this.icon, this.text);
+  final Widget? trailing;
+  const _DetailLine(this.icon, this.text, {this.trailing});
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -351,7 +420,10 @@ class _DetailLine extends StatelessWidget {
         child: Row(children: [
           Icon(icon, size: 16, color: AppColors.primary),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Expanded(
+            child: trailing ??
+                Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ),
         ]),
       );
 }

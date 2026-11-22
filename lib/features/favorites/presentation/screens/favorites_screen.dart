@@ -62,7 +62,7 @@ class FavoritesScreen extends StatelessWidget {
                 direction: DismissDirection.endToStart,
                 background: Container(
                   alignment: AlignmentDirectional.centerEnd,
-                  padding: const EdgeInsets.only(right: 20),
+                  padding: const EdgeInsetsDirectional.only(end: 20),
                   decoration: BoxDecoration(
                       color: AppColors.accentRed.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16)),

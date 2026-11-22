@@ -1,33 +1,44 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/payment_session.dart';
+import '../../models/payment_attempt_receipt.dart';
 import '../../models/review_model.dart';
 import '../../models/destination_info_model.dart';
 import '../../models/booking_model.dart';
 import '../../models/travel_package_model.dart';
 import '../../models/mock_data_service.dart';
 import '../../models/flight_model.dart';
+import '../../models/flight_seat_map.dart';
 import '../../models/flight_booking_model.dart';
 import '../../models/hotel_model.dart';
+import '../../models/hotel_destination_suggestion.dart';
 import '../../models/car_model.dart';
 import '../../models/attraction_model.dart';
+import '../../models/attraction_place_suggestion.dart';
+import '../../models/attraction_search_page.dart';
+import '../../models/attraction_map_viewport.dart';
+import '../../models/attraction_recent_destination.dart';
 import '../../models/transfer_model.dart';
 import '../../models/trip_model.dart';
 import '../../models/user_model.dart';
 import '../../models/travel_preferences.dart';
+import '../../global_widgets/locale_controller.dart';
 import '../utils/hotel_geo.dart';
 import '../utils/car_geo.dart';
 import 'api_result.dart';
+import '../../models/exchange_rates.dart';
 import '../../models/map_search_result.dart';
 import '../../models/admin_dashboard_model.dart';
 import '../../models/partner_dashboard_model.dart';
+import '../../models/legacy_attraction_review_model.dart';
 
-/// طبقة الشبكة المركزية — كل التواصل مع الـ PHP Laravel API يمر من هنا.
+/// طبقة الشبكة المركزية — كل التواصل مع Spring Boot API يمر من هنا.
 /// الـ Controllers لا تُنشئ Dio مباشرةً أبداً، بل تستدعي ApiService.instance.
 ///
 /// ── وضع المحاكاة (Mock Mode) ──────────────────────────────────────────────
@@ -42,13 +53,19 @@ import '../../models/partner_dashboard_model.dart';
 /// عند جاهزية الـ Backend:
 ///  1. خلي [useMockMode] = false.
 ///  2. غيّر قيمة [baseUrl] للعنوان الحقيقي.
-///  3. تأكد من أن مسارات الـ endpoints مطابقة لما في Laravel routes/api.php.
+///  3. Use only endpoints implemented and authorized by the Spring API.
 class ApiService {
+  Future<ExchangeRates> exchangeRates() async {
+    final response = await _dio.get('/exchange-rates');
+    return ExchangeRates.fromJson(Map<String, dynamic>.from(response.data));
+  }
+
   static final ApiService instance = ApiService._();
   ApiService._();
 
   static final ValueNotifier<int> flightTripsRevision = ValueNotifier(0);
   static final ValueNotifier<int> bookingsRevision = ValueNotifier(0);
+  static final ValueNotifier<int> transfersRevision = ValueNotifier(0);
 
   static const String _configuredBaseUrl =
       String.fromEnvironment('ZENTRIP_API_URL');
@@ -58,8 +75,10 @@ class ApiService {
     // Android emulators need 10.0.2.2 to reach the host machine. Physical
     // devices should provide a LAN IP via --dart-define=ZENTRIP_API_URL or by
     // setting the environment before running the app.
-    if (!kIsWeb && Platform.isAndroid) return 'http://10.0.2.2:8080/api';
-    if (kIsWeb) return 'http://localhost:8080/api';
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8080/api';
+    }
+    if (kIsWeb) return '/api';
     return 'http://127.0.0.1:8080/api';
   }
 
@@ -67,8 +86,24 @@ class ApiService {
 
   // ── Mock Mode ───────────────────────────────────────────────────────────
   static const bool useMockMode = false;
+  static const String demoPasswordResetCode = '123456';
+
+  static bool isDemoPasswordResetHost(String host) {
+    final normalized = host.trim().toLowerCase();
+    return normalized == 'localhost' ||
+        normalized == '127.0.0.1' ||
+        normalized.endsWith('.replit.dev');
+  }
+
+  /// The preview-only reset flow never calls the account API or changes a
+  /// real account. Published domains do not enable this demonstration path.
+  bool get isDemoPasswordResetEnabled =>
+      kIsWeb && isDemoPasswordResetHost(Uri.base.host);
   static const String mockVerificationCode = '123456';
   static const Duration _mockDelay = Duration(milliseconds: 700);
+  static const bool socialAuthConfigured = false;
+  static final Map<String, WeatherInfo> _sampleWeatherCache = {};
+  static final Map<String, VisaInfo> _sampleVisaCache = {};
 
   late final Dio _dio;
   UserModel? currentUser;
@@ -77,12 +112,31 @@ class ApiService {
   SessionExpiredCallback? onSessionExpired;
 
   bool _initialized = false;
+  CancelToken? _attractionSearchCancelToken;
+  CancelToken? _attractionSuggestionCancelToken;
+  CancelToken? _attractionMapCancelToken;
+  final Map<String, _TimedSuggestionCache> _attractionSuggestionCache = {};
+
+  void cancelAttractionRequests() {
+    _attractionSearchCancelToken?.cancel('Landmark search superseded');
+    _attractionSuggestionCancelToken?.cancel('Landmark suggestions superseded');
+    _attractionMapCancelToken?.cancel('Landmark map request superseded');
+    _attractionSearchCancelToken = null;
+    _attractionSuggestionCancelToken = null;
+    _attractionMapCancelToken = null;
+  }
+
+  void cancelAttractionMapRequest() {
+    _attractionMapCancelToken?.cancel('Landmark map viewport superseded');
+    _attractionMapCancelToken = null;
+  }
 
   Future<ApiResult<List<MapSearchResult>>> searchGoogleMaps({
     required String query,
     required double latitude,
     required double longitude,
     required String category,
+    String language = 'ar',
     int limit = 10,
   }) async {
     return _request(() async {
@@ -93,6 +147,7 @@ class ApiService {
           'lat': latitude,
           'lng': longitude,
           'category': category,
+          'language': language.toLowerCase().startsWith('ar') ? 'ar' : 'en',
           'limit': limit,
         },
       );
@@ -103,6 +158,13 @@ class ApiService {
           .map((item) => MapSearchResult.fromJson(item as Map<String, dynamic>))
           .toList();
     });
+  }
+
+  /// Lets tests answer HTTP calls without a server.
+  @visibleForTesting
+  set httpClientAdapterForTesting(HttpClientAdapter adapter) {
+    init();
+    _dio.httpClientAdapter = adapter;
   }
 
   void init() {
@@ -129,7 +191,9 @@ class ApiService {
           handler.next(options);
         },
         onError: (e, handler) {
-          if (e.response?.statusCode == 401) {
+          final hadAuthenticatedSession =
+              e.requestOptions.headers['Authorization'] != null;
+          if (e.response?.statusCode == 401 && hadAuthenticatedSession) {
             _clearToken();
             onSessionExpired?.call();
           }
@@ -174,6 +238,9 @@ class ApiService {
     required String provider,
     required String idToken,
   }) async {
+    if (!socialAuthConfigured) {
+      return ApiResult<UserModel>.failure('Social sign-in is not configured.');
+    }
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
@@ -197,12 +264,52 @@ class ApiService {
     });
   }
 
+  Future<MultipartFile> _profilePhotoPart(XFile photo) async {
+    const maxBytes = 5 * 1024 * 1024;
+    final extension = photo.name.contains('.')
+        ? photo.name.split('.').last.toLowerCase()
+        : '';
+    var mimeType = photo.mimeType?.split(';').first.trim().toLowerCase();
+
+    if (mimeType == null ||
+        mimeType.isEmpty ||
+        mimeType == 'application/octet-stream') {
+      mimeType = switch (extension) {
+        'jpg' || 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        _ => '',
+      };
+    }
+    if (mimeType == 'image/jpg') mimeType = 'image/jpeg';
+    if (!const {'image/jpeg', 'image/png', 'image/webp'}.contains(mimeType)) {
+      throw const FormatException('Choose a JPEG, PNG, or WebP profile photo.');
+    }
+
+    final length = await photo.length();
+    if (length == 0 || length > maxBytes) {
+      throw const FormatException('Profile photos must be 5 MB or smaller.');
+    }
+    final bytes = await photo.readAsBytes();
+    if (bytes.isEmpty || bytes.length > maxBytes) {
+      throw const FormatException('Profile photos must be 5 MB or smaller.');
+    }
+
+    final extensionForType =
+        mimeType == 'image/jpeg' ? 'jpg' : mimeType.substring('image/'.length);
+    return MultipartFile.fromBytes(
+      bytes,
+      filename: 'profile.$extensionForType',
+      contentType: DioMediaType.parse(mimeType),
+    );
+  }
+
   Future<ApiResult<UserModel>> register({
     required String name,
     required String email,
     required String phone,
     required String password,
-    File? photo,
+    XFile? photo,
   }) async {
     if (useMockMode) {
       return _request(() async {
@@ -226,11 +333,7 @@ class ApiService {
         'phone': phone,
         'password': password,
         'password_confirmation': password,
-        if (photo != null)
-          'photo': await MultipartFile.fromFile(
-            photo.path,
-            filename: 'profile.jpg',
-          ),
+        if (photo != null) 'photo': await _profilePhotoPart(photo),
       });
       final res = await _dio.post('/auth/register', data: formData);
       final user = UserModel.fromJson(res.data['user'] as Map<String, dynamic>);
@@ -242,6 +345,9 @@ class ApiService {
   }
 
   Future<ApiResult<void>> sendResetCode({required String email}) async {
+    if (isDemoPasswordResetEnabled) {
+      return ApiResult<void>.success();
+    }
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
@@ -256,6 +362,11 @@ class ApiService {
     required String email,
     required String code,
   }) async {
+    if (isDemoPasswordResetEnabled) {
+      return code == demoPasswordResetCode
+          ? ApiResult<void>.success()
+          : ApiResult<void>.failure('The reset code is invalid or expired.');
+    }
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
@@ -277,6 +388,11 @@ class ApiService {
     required String code,
     required String newPassword,
   }) async {
+    if (isDemoPasswordResetEnabled) {
+      return code == demoPasswordResetCode
+          ? ApiResult<void>.success()
+          : ApiResult<void>.failure('The reset code is invalid or expired.');
+    }
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
@@ -305,10 +421,19 @@ class ApiService {
       });
     }
     return _request(() async {
-      await _dio.post('/auth/logout');
-      await _clearToken();
-      await _clearLocalUser();
-      currentUser = null;
+      try {
+        await _dio.post('/auth/logout');
+      } finally {
+        try {
+          await _clearToken();
+        } finally {
+          try {
+            await _clearLocalUser();
+          } finally {
+            currentUser = null;
+          }
+        }
+      }
     });
   }
 
@@ -338,7 +463,7 @@ class ApiService {
   Future<ApiResult<UserModel>> updateProfile({
     required String name,
     required String phone,
-    File? photo,
+    XFile? photo,
   }) async {
     if (useMockMode) {
       return _request(() async {
@@ -361,11 +486,7 @@ class ApiService {
         'name': name,
         'phone': phone,
         '_method': 'PUT',
-        if (photo != null)
-          'photo': await MultipartFile.fromFile(
-            photo.path,
-            filename: 'profile.jpg',
-          ),
+        if (photo != null) 'photo': await _profilePhotoPart(photo),
       });
       final res = await _dio.post('/profile', data: formData);
       final user = UserModel.fromJson(res.data['user'] as Map<String, dynamic>);
@@ -427,40 +548,38 @@ class ApiService {
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
-        return WeatherInfo(
-          tempCelsius: 24 + (city.hashCode % 10),
-          condition: 'sunny',
-          cityName: city,
+        final key = city.trim().toLowerCase();
+        return _sampleWeatherCache.putIfAbsent(
+          key,
+          () => WeatherInfo(
+            tempCelsius: 24 + (city.hashCode % 10),
+            condition: 'sunny',
+            cityName: city,
+            isSample: true,
+          ),
         );
       });
     }
-    return _request(() async {
-      final res = await _dio.get(
-        '/destinations/weather',
-        queryParameters: {'city': city},
-      );
-      return WeatherInfo.fromJson(res.data as Map<String, dynamic>);
-    });
+    return ApiResult<WeatherInfo>.failure(
+        'Live weather data is not configured.');
   }
 
   Future<ApiResult<VisaInfo>> getVisaInfo(String country) async {
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
-        return const VisaInfo(
-          requirement: 'e_visa',
-          notes:
-              'Visa information will be verified with the destination\'s embassy before booking.',
+        final key = country.trim().toLowerCase();
+        return _sampleVisaCache.putIfAbsent(
+          key,
+          () => const VisaInfo(
+            requirement: 'e_visa',
+            notes: 'Sample only; verify with the destination embassy.',
+            isSample: true,
+          ),
         );
       });
     }
-    return _request(() async {
-      final res = await _dio.get(
-        '/destinations/visa-info',
-        queryParameters: {'country': country},
-      );
-      return VisaInfo.fromJson(res.data as Map<String, dynamic>);
-    });
+    return ApiResult<VisaInfo>.failure('Live visa data is not configured.');
   }
 
   // ── التقييمات (Reviews) ───────────────────────────────────────────────
@@ -545,6 +664,7 @@ class ApiService {
 
   Future<ApiResult<PaymentSession>> createPaymentCheckout({
     required double amountUsd,
+    String currencyCode = 'USD',
     required String description,
     required String referenceId,
   }) async {
@@ -562,7 +682,7 @@ class ApiService {
         '/payments/checkout',
         data: {
           'amount': amountUsd,
-          'currency': 'USD',
+          'currency': currencyCode.toUpperCase(),
           'description': description,
           'reference_id': referenceId,
         },
@@ -573,22 +693,33 @@ class ApiService {
 
   /// بيتأكد من نجاح الدفع فعليًا من عند السيرفر (مش بس من إعادة توجيه
   /// الـ WebView، اللي ممكن يتلاعب بيها) قبل ما نأكد الحجز.
-  Future<ApiResult<bool>> verifyPayment(String sessionId) async {
+  Future<ApiResult<PaymentAttemptReceipt>> verifyPayment(
+    String sessionId, {
+    required bool paid,
+    required double amount,
+    required String currencyCode,
+  }) async {
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
-        return true;
+        return PaymentAttemptReceipt(
+          attemptId: null,
+          paid: paid,
+          status: paid ? 'success' : 'failed',
+        );
       });
     }
     return _request(() async {
-      final res = await _dio.get('/payments/verify/$sessionId');
-      final rawPaid = res.data['paid'];
-      if (rawPaid is bool) return rawPaid;
-      if (rawPaid is String) {
-        final normalized = rawPaid.trim().toLowerCase();
-        return normalized == 'true' || normalized == '1' || normalized == 'yes';
-      }
-      return false;
+      final res = await _dio.post(
+        '/payments/verify/${Uri.encodeComponent(sessionId)}',
+        data: {
+          'paid': paid,
+          'amount': amount,
+          'currency': currencyCode.toUpperCase(),
+        },
+      );
+      return PaymentAttemptReceipt.fromJson(
+          Map<String, dynamic>.from(res.data as Map));
     });
   }
 
@@ -603,10 +734,140 @@ class ApiService {
     return _request(() async {
       await _dio.post(
         '/users/fcm-token',
-        data: {'token': token, 'platform': Platform.isIOS ? 'ios' : 'android'},
+        data: {
+          'token': token,
+          'platform': kIsWeb
+              ? 'web'
+              : defaultTargetPlatform == TargetPlatform.iOS
+                  ? 'ios'
+                  : 'android',
+        },
       );
     });
   }
+
+  Future<ApiResult<void>> unregisterFcmToken(String token) {
+    if (useMockMode) return Future.value(ApiResult<void>.success());
+    return _request(() async {
+      await _dio.delete('/users/fcm-token', data: {'token': token});
+    });
+  }
+
+  Future<ApiResult<List<Map<String, dynamic>>>> getNotifications({
+    int limit = 50,
+  }) {
+    if (useMockMode) {
+      return Future.value(ApiResult.success(const <Map<String, dynamic>>[]));
+    }
+    return _request(() async {
+      final response = await _dio.get(
+        '/notifications',
+        queryParameters: {'limit': limit.clamp(1, 100)},
+      );
+      final rows = response.data is Map ? response.data['notifications'] : null;
+      if (rows is! List) {
+        throw const FormatException(
+            'Notification response must contain a list');
+      }
+      return rows
+          .whereType<Map>()
+          .map((row) => Map<String, dynamic>.from(row))
+          .toList(growable: false);
+    });
+  }
+
+  Future<ApiResult<void>> markNotificationRead(int notificationId) {
+    if (useMockMode) return Future.value(ApiResult<void>.success());
+    return _request(() async {
+      await _dio.put('/notifications/$notificationId/read');
+    });
+  }
+
+  Future<ApiResult<void>> markAllNotificationsRead() {
+    if (useMockMode) return Future.value(ApiResult<void>.success());
+    return _request(() async {
+      await _dio.put('/notifications/read-all');
+    });
+  }
+
+  // ── Saved user data (favorites, price alerts, settings) ─────────────────
+  //
+  // These were device-only before. They are stored per account on the server
+  // so they follow the user to other devices; the local copy stays as an
+  // offline cache.
+
+  /// Saved data lives on the server only for signed-in customers.
+  bool get canSyncSavedData =>
+      !useMockMode && currentUser != null && currentUser!.role == 'customer';
+
+  List<Map<String, dynamic>> _rows(dynamic data, String key) {
+    final rows = data is Map ? data[key] : null;
+    if (rows is! List) throw FormatException('Response must contain $key');
+    return rows
+        .whereType<Map>()
+        .map((row) => Map<String, dynamic>.from(row))
+        .toList(growable: false);
+  }
+
+  Future<ApiResult<List<Map<String, dynamic>>>> getFavorites() => _request(
+      () async => _rows((await _dio.get('/favorites')).data, 'favorites'));
+
+  Future<ApiResult<void>> saveFavorite(Map<String, dynamic> favorite) =>
+      _request(() async {
+        await _dio.post('/favorites', data: favorite);
+      });
+
+  Future<ApiResult<void>> removeFavorite(String id) => _request(() async {
+        await _dio.delete('/favorites', queryParameters: {'id': id});
+      });
+
+  Future<ApiResult<List<Map<String, dynamic>>>> getPriceAlerts() =>
+      _request(() async =>
+          _rows((await _dio.get('/price-alerts')).data, 'price_alerts'));
+
+  Future<ApiResult<Map<String, dynamic>>> savePriceAlert({
+    required String originCode,
+    required String destinationCode,
+    required DateTime departureDate,
+    required double referencePriceUsd,
+  }) =>
+      _request(() async {
+        final response = await _dio.post('/price-alerts', data: {
+          'origin_code': originCode,
+          'destination_code': destinationCode,
+          'departure_date': '${departureDate.year.toString().padLeft(4, '0')}-'
+              '${departureDate.month.toString().padLeft(2, '0')}-'
+              '${departureDate.day.toString().padLeft(2, '0')}',
+          'reference_price_usd': referencePriceUsd,
+        });
+        return Map<String, dynamic>.from(
+            (response.data as Map)['price_alert'] as Map);
+      });
+
+  Future<ApiResult<void>> updatePriceAlertPrice(
+          String id, double referencePriceUsd) =>
+      _request(() async {
+        await _dio.patch('/price-alerts/${Uri.encodeComponent(id)}',
+            data: {'reference_price_usd': referencePriceUsd});
+      });
+
+  Future<ApiResult<void>> removePriceAlert(String id) => _request(() async {
+        await _dio.delete('/price-alerts/${Uri.encodeComponent(id)}');
+      });
+
+  Future<ApiResult<Map<String, dynamic>>> getUserSettings() =>
+      _request(() async {
+        final data = (await _dio.get('/settings')).data;
+        final settings = data is Map ? data['settings'] : null;
+        return settings is Map
+            ? Map<String, dynamic>.from(settings)
+            : <String, dynamic>{};
+      });
+
+  Future<ApiResult<void>> saveUserSettings(Map<String, Object> changes) =>
+      _request(() async {
+        await _dio.put('/settings', data: changes);
+      });
 
   // ── AI Chatbot (Python Service) ──────────────────────────────────────────
 
@@ -738,6 +999,14 @@ class ApiService {
     });
   }
 
+  Future<ApiResult<AdminAttractionPopularity>> getAdminAttractionPopularity() {
+    return _request(() async {
+      final response = await _dio.get('/admin/attractions/popularity');
+      return AdminAttractionPopularity.fromJson(
+          response.data as Map<String, dynamic>);
+    });
+  }
+
   Future<ApiResult<List<AdminReservation>>> getAdminReservations() {
     return _request(() async {
       final response = await _dio.get('/admin/reservations');
@@ -757,11 +1026,82 @@ class ApiService {
     });
   }
 
+  Future<ApiResult<List<AdminPartner>>> getAdminPartners() {
+    return _request(() async {
+      final response = await _dio.get('/admin/partners');
+      return (response.data['partners'] as List)
+          .map((item) => AdminPartner.fromJson(item as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<ApiResult<List<LegacyAttractionPartner>>>
+      getAdminLegacyAttractionPartners() {
+    return _request(() async {
+      final response = await _dio.get('/admin/partners/legacy-attractions');
+      return (response.data['partners'] as List)
+          .map((item) => LegacyAttractionPartner.fromJson(
+              Map<String, dynamic>.from(item as Map)))
+          .toList();
+    });
+  }
+
+  Future<ApiResult<void>> reviewAndRetireLegacyAttractionPartner({
+    required int id,
+    required List<Map<String, dynamic>> listingDecisions,
+  }) {
+    return _request(() async {
+      await _dio.post(
+        '/admin/partners/$id/attraction-review',
+        data: {
+          'approved': true,
+          'listings': listingDecisions,
+        },
+      );
+    });
+  }
+
+  Future<ApiResult<void>> addAdminPartner({
+    required String name,
+    required String email,
+    required String serviceType,
+  }) {
+    return _request(() async {
+      await _dio.post('/admin/partners', data: {
+        'name': name,
+        'email': email,
+        'service_type': serviceType,
+      });
+    });
+  }
+
+  Future<ApiResult<void>> disableAdminPartner(int id) {
+    return _request(() async {
+      await _dio.delete('/admin/partners/$id');
+    });
+  }
+
+  Future<ApiResult<void>> activateAdminPartner(int id) {
+    return _request(() async {
+      await _dio.post('/admin/partners/$id/activate');
+    });
+  }
+
   Future<ApiResult<List<TravelPackage>>> getAdminOffers() {
     return _request(() async {
       final response = await _dio.get('/admin/offers');
       return (response.data['offers'] as List)
           .map((item) => TravelPackage.fromJson(item as Map<String, dynamic>))
+          .toList();
+    });
+  }
+
+  Future<ApiResult<List<FlightModel>>> getAdminFlightListings() {
+    return _request(() async {
+      final response = await _dio.get('/admin/flight-listings');
+      return (response.data['flights'] as List)
+          .whereType<Map>()
+          .map((item) => FlightModel.fromJson(Map<String, dynamic>.from(item)))
           .toList();
     });
   }
@@ -889,6 +1229,7 @@ class ApiService {
   Future<List<Map<String, dynamic>>> _loadPartnerInventory(
     String type, {
     String? city,
+    bool rethrowOnFailure = false,
   }) async {
     try {
       final response = await _dio.get(
@@ -902,26 +1243,27 @@ class ApiService {
           .toList();
     } on DioException catch (error) {
       debugPrint('Partner $type inventory unavailable: ${error.message}');
+      if (rethrowOnFailure) rethrow;
       return [];
     }
   }
 
-  // ── Search: Flights / Hotels / Cars / Attractions / Transfers ───────────
-  // كل الطلبات دي بتروح لباك اند Zentrip نفسه (نفس baseUrl فوق) — الباك
-  // اند هو اللي بيكلم Amadeus/Booking.com بمفاتيحه الخاصة (مخزّنة في
-  // .env عنده)، ويرجّعلنا بيانات بنفس شكل الموديلات هنا بالظبط. يعني
-  // مفتاح API حقيقي **مايتحطش في التطبيق خالص** — ده مبدأ أمان أساسي.
+  // Search requests go through Zentrip's backend so provider credentials stay
+  // server-side and provider responses use the app's existing model contracts.
 
-  Future<List<AirportOption>> searchAirports(String query) async {
+  Future<AirportSearchResult> searchAirportDirectory(String query) async {
     final response = await _dio.get(
       '/airports/search',
       queryParameters: {'query': query.trim()},
     );
-    final airports = response.data['airports'] as List;
-    return airports
-        .map((airport) =>
-            AirportOption.fromJson(Map<String, dynamic>.from(airport as Map)))
-        .toList();
+    return AirportSearchResult.fromJson(
+      Map<String, dynamic>.from(response.data as Map),
+    );
+  }
+
+  Future<List<AirportOption>> searchAirports(String query) async {
+    final result = await searchAirportDirectory(query);
+    return result.airports;
   }
 
   Future<List<FlightModel>> searchFlights({
@@ -934,9 +1276,37 @@ class ApiService {
     bool isRoundTrip = false,
     int adults = 1,
     String seatClass = 'economy',
+    List<DateTime> flexibleDepartureMonths = const [],
+    int flexibleTripDurationDays = 7,
+    bool flexibleWeekendsOnly = false,
+    void Function(List<String> warnings)? onWarnings,
   }) async {
     if (useMockMode) {
+      onWarnings?.call(const []);
       await Future.delayed(_mockDelay);
+      if (flexibleDepartureMonths.isNotEmpty) {
+        final now = DateTime.now();
+        final months = flexibleDepartureMonths.toSet().toList()
+          ..sort((a, b) => a.compareTo(b));
+        return months
+            .map((month) {
+              final firstDay = DateTime(month.year, month.month, 1);
+              final sampleDate = firstDay.isBefore(
+                DateTime(now.year, now.month, now.day),
+              )
+                  ? DateTime(now.year, now.month, now.day)
+                  : firstDay;
+              return MockDataService.flights(
+                origin: originCode,
+                destination: destinationCode,
+                originCity: originCity,
+                destinationCity: destinationCity,
+                departureDate: sampleDate,
+              );
+            })
+            .expand((flights) => flights)
+            .toList();
+      }
       return MockDataService.flights(
         origin: originCode,
         destination: destinationCode,
@@ -945,22 +1315,78 @@ class ApiService {
         departureDate: departureDate,
       );
     }
+    final flexibleMonths = flexibleDepartureMonths
+        .map((month) =>
+            '${month.year.toString().padLeft(4, '0')}-${month.month.toString().padLeft(2, '0')}')
+        .toSet()
+        .toList()
+      ..sort();
+    final isFlexible = flexibleMonths.isNotEmpty;
     final res = await _dio.get(
-      '/flights/search',
+      isFlexible ? '/flights/search/flexible' : '/flights/search',
       queryParameters: {
         'origin': originCode,
         'destination': destinationCode,
-        'departure_date': _formatDate(departureDate),
-        if (returnDate != null) 'return_date': _formatDate(returnDate),
         'trip_type': isRoundTrip ? 'round_trip' : 'one_way',
         'adults': adults,
         'seat_class': seatClass,
+        if (isFlexible) 'months': flexibleMonths.join(','),
+        if (isFlexible) 'trip_duration_days': flexibleTripDurationDays,
+        if (isFlexible) 'weekends_only': flexibleWeekendsOnly,
+        if (!isFlexible) 'departure_date': _formatDate(departureDate),
+        if (!isFlexible && returnDate != null)
+          'return_date': _formatDate(returnDate),
       },
+      options: isFlexible
+          ? Options(receiveTimeout: const Duration(seconds: 150))
+          : null,
     );
-    return (res.data['flights'] as List)
-        .map((flight) =>
-            FlightModel.fromJson(Map<String, dynamic>.from(flight as Map)))
-        .toList();
+    final payload = res.data;
+    if (payload is! Map || payload['flights'] is! List) {
+      throw const FormatException('Invalid flight search response');
+    }
+    final rawWarnings = payload['warnings'];
+    onWarnings?.call(rawWarnings is List
+        ? rawWarnings
+            .map((warning) => warning.toString().trim())
+            .where((warning) => warning.isNotEmpty)
+            .toList(growable: false)
+        : const []);
+    final flights = <FlightModel>[];
+    for (final value in payload['flights'] as List) {
+      if (value is! Map) continue;
+      final json = Map<String, dynamic>.from(value);
+      if (!_isUsableFlight(json)) continue;
+      flights.add(FlightModel.fromJson(json));
+    }
+    return flights;
+  }
+
+  static bool _isUsableFlight(Map<String, dynamic> json) {
+    final origin = (json['origin_code'] ?? '').toString().trim();
+    final destination = (json['destination_code'] ?? '').toString().trim();
+    final departure =
+        DateTime.tryParse((json['departure_time'] ?? '').toString());
+    final arrival = DateTime.tryParse((json['arrival_time'] ?? '').toString());
+    final rawPrice = json['economy_price'];
+    final price = rawPrice is num
+        ? rawPrice.toDouble()
+        : double.tryParse((rawPrice ?? '').toString());
+    return origin.isNotEmpty &&
+        destination.isNotEmpty &&
+        departure != null &&
+        arrival != null &&
+        price != null &&
+        price.isFinite &&
+        price >= 0;
+  }
+
+  Future<ApiResult<FlightSeatMap>> getFlightSeatMap(String flightId) {
+    return _request(() async {
+      final response = await _dio.get('/flights/$flightId/seats');
+      return FlightSeatMap.fromJson(
+          Map<String, dynamic>.from(response.data as Map));
+    });
   }
 
   Future<ApiResult<Set<String>>> getOccupiedFlightSeats(
@@ -1005,6 +1431,10 @@ class ApiService {
     required String seatClass,
     DateTime? returnDate,
     List<String> extras = const [],
+    int? paymentAttemptId,
+    String? packageOfferId,
+    String bookingCurrencyCode = 'USD',
+    double? bookingDisplayAmount,
   }) async {
     final result = await _request(() async {
       final response = await _dio.post(
@@ -1014,6 +1444,12 @@ class ApiService {
           'seats': seats,
           'seat_class': seatClass,
           'extras': extras,
+          'booking_currency': bookingCurrencyCode.toUpperCase(),
+          if (bookingDisplayAmount != null)
+            'booking_display_amount': bookingDisplayAmount,
+          if (packageOfferId != null && packageOfferId.isNotEmpty)
+            'offer_id': packageOfferId,
+          if (paymentAttemptId != null) 'payment_attempt_id': paymentAttemptId,
           if (returnDate != null)
             'return_date': returnDate.toUtc().toIso8601String(),
         },
@@ -1030,8 +1466,9 @@ class ApiService {
     TransferModel transfer, {
     required int passengers,
     required String referenceId,
+    int? paymentAttemptId,
   }) async {
-    return _request(() async {
+    final result = await _request(() async {
       final res = await _dio.post(
         '/transfers',
         data: {
@@ -1046,12 +1483,35 @@ class ApiService {
           'reference_id': referenceId,
           'status': 'confirmed',
           'partner_listing_id': transfer.partnerListingId,
+          if (paymentAttemptId != null) 'payment_attempt_id': paymentAttemptId,
         },
       );
 
       return TransferModel.fromJson(
         res.data['transfer'] as Map<String, dynamic>,
       );
+    });
+    if (result.isSuccess) transfersRevision.value++;
+    return result;
+  }
+
+  Future<ApiResult<List<TransferModel>>> getMyTransfers() async {
+    if (await _getToken() == null) {
+      return ApiResult.success(const []);
+    }
+    if (useMockMode) {
+      return ApiResult.success(const []);
+    }
+    return _request(() async {
+      final res = await _dio.get('/transfers');
+      final rows = res.data['transfers'];
+      if (rows is! List) {
+        throw const FormatException('Transfer response must contain a list');
+      }
+      return rows
+          .whereType<Map>()
+          .map((row) => TransferModel.fromJson(Map<String, dynamic>.from(row)))
+          .toList(growable: false);
     });
   }
 
@@ -1073,71 +1533,129 @@ class ApiService {
 
   Future<List<HotelModel>> searchHotels({
     required String city,
+    String? destinationCode,
+    String? countryCode,
+    String? placeId,
+    double? latitude,
+    double? longitude,
     DateTime? checkIn,
     DateTime? checkOut,
     int rooms = 1,
     int guests = 2,
+    String currency = 'USD',
+    double? priceMin,
+    double? priceMax,
+    double? ratingMin,
+    List<String> amenities = const [],
+    String? roomType,
+    List<String> preferences = const [],
+    void Function(List<String> warnings)? onWarnings,
+    void Function(String status, String reason)? onStatus,
   }) async {
+    final normalizedCurrency = currency.trim().toUpperCase();
+    if (!const {'USD', 'EUR', 'GBP', 'LYD'}.contains(normalizedCurrency)) {
+      throw ArgumentError.value(
+          currency, 'currency', 'Only USD, EUR, GBP, and LYD are supported');
+    }
     if (useMockMode) {
       await Future.delayed(_mockDelay);
       return MockDataService.hotels(city: city);
     }
-    try {
-      final res = await _dio.get(
-        '/hotels/search',
-        queryParameters: {
-          'city': city,
-          if (checkIn != null) 'check_in': _formatDate(checkIn),
-          if (checkOut != null) 'check_out': _formatDate(checkOut),
-          'rooms': rooms,
-          'guests': guests,
-        },
-      );
-      final hotels = (res.data['hotels'] as List)
-          .map((h) => HotelModel.fromJson(h as Map<String, dynamic>))
-          .toList();
-      return [...hotels, ...MockDataService.hotels(city: city)];
-    } catch (_) {
-      final partnerHotels = (await _loadPartnerInventory('hotel', city: city))
-          .map(HotelModel.fromJson)
-          .toList();
-      return [...partnerHotels, ...MockDataService.hotels(city: city)];
+    final res = await _dio.get(
+      '/hotels/search',
+      queryParameters: {
+        'city': city,
+        if (destinationCode != null && destinationCode.trim().isNotEmpty)
+          'destination_code': destinationCode.trim(),
+        if (countryCode != null && countryCode.trim().isNotEmpty)
+          'country_code': countryCode.trim().toUpperCase(),
+        if (placeId != null && placeId.trim().isNotEmpty)
+          'place_id': placeId.trim(),
+        if (latitude != null && longitude != null) 'lat': latitude,
+        if (latitude != null && longitude != null) 'lon': longitude,
+        if (checkIn != null) 'check_in': _formatDate(checkIn),
+        if (checkOut != null) 'check_out': _formatDate(checkOut),
+        'rooms': rooms,
+        'guests': guests,
+        'currency': normalizedCurrency,
+        if (priceMin != null) 'price_min': priceMin,
+        if (priceMax != null) 'price_max': priceMax,
+        if (ratingMin != null) 'rating_min': ratingMin,
+        if (amenities.isNotEmpty) 'amenities': amenities.join(','),
+        if (roomType != null && roomType.trim().isNotEmpty)
+          'room_type': roomType.trim(),
+        if (preferences.isNotEmpty) 'preferences': preferences.join(','),
+      },
+    );
+    final payload = res.data;
+    if (payload is! Map || payload['hotels'] is! List) {
+      throw const FormatException('Invalid hotel search response');
     }
+    final rawWarnings = payload['warnings'];
+    onWarnings?.call(rawWarnings is List
+        ? rawWarnings
+            .map((warning) => warning.toString().trim())
+            .where((warning) => warning.isNotEmpty)
+            .toList(growable: false)
+        : const []);
+    final rawStatus = payload['status']?.toString().trim();
+    final rawReason = payload['reason']?.toString().trim();
+    onStatus?.call(
+      rawStatus == null || rawStatus.isEmpty ? 'unknown' : rawStatus,
+      rawReason ?? '',
+    );
+    final byId = <String, HotelModel>{};
+    for (final value in payload['hotels'] as List) {
+      if (value is! Map) continue;
+      final hotel = HotelModel.fromJson(Map<String, dynamic>.from(value));
+      if (hotel.id.isNotEmpty) byId.putIfAbsent(hotel.id, () => hotel);
+    }
+    return byId.values.toList(growable: false);
   }
 
-  Future<List<String>> searchHotelLocations(String query) async {
+  Future<List<HotelDestinationSuggestion>> suggestHotelDestinations(
+    String query, {
+    String languageCode = 'en',
+    CancelToken? cancelToken,
+  }) async {
     final normalized = query.trim();
     if (normalized.length < 2) return const [];
-    List<String> matchingSuggestions(Iterable<HotelModel> hotels) => hotels
-        .expand((hotel) => [hotel.city, hotel.address, hotel.name])
-        .where(
-            (value) => value.toLowerCase().contains(normalized.toLowerCase()))
-        .toSet()
-        .take(12)
-        .toList();
 
     if (useMockMode) {
-      return matchingSuggestions(MockDataService.hotels());
+      return HotelDestinationSuggestion.popularMatches(normalized);
     }
+
     try {
       final response = await _dio.get(
-        '/hotels/locations',
-        queryParameters: {'query': normalized},
+        '/hotels/destinations/suggest',
+        queryParameters: {
+          'q': normalized,
+          'language': languageCode.toLowerCase().startsWith('ar') ? 'ar' : 'en',
+        },
+        cancelToken: cancelToken,
       );
-      final remote = (response.data['suggestions'] as List? ?? const [])
-          .map((value) => value.toString())
-          .toList();
-      return {...remote, ...matchingSuggestions(MockDataService.hotels())}
-          .take(12)
-          .toList();
+      final payload = response.data;
+      final rawSuggestions = payload is Map ? payload['suggestions'] : null;
+      if (rawSuggestions is! List) {
+        throw const FormatException('Invalid destination suggestions response');
+      }
+      final suggestions = <HotelDestinationSuggestion>[];
+      for (final raw in rawSuggestions) {
+        if (raw is! Map) continue;
+        try {
+          suggestions.add(
+            HotelDestinationSuggestion.fromJson(
+              Map<String, dynamic>.from(raw),
+            ),
+          );
+        } on FormatException {
+          continue;
+        }
+      }
+      if (suggestions.isNotEmpty) return suggestions;
+      return const [];
     } catch (_) {
-      final partnerHotels = (await _loadPartnerInventory('hotel'))
-          .map(HotelModel.fromJson)
-          .toList();
-      return {
-        ...matchingSuggestions(partnerHotels),
-        ...matchingSuggestions(MockDataService.hotels()),
-      }.take(12).toList();
+      rethrow;
     }
   }
 
@@ -1204,47 +1722,31 @@ class ApiService {
 
       return results;
     }
-    final partnerCars = (await _loadPartnerInventory('car', city: city))
+    final partnerCars = (await _loadPartnerInventory(
+      'car',
+      city: city,
+      rethrowOnFailure: true,
+    ))
         .map(CarModel.fromJson)
         .where((car) =>
             car.availableVehicles > 0 &&
             (carType == null || carType == 'all' || car.type == carType))
         .toList();
-    try {
-      final res = await _dio.get(
-        '/cars/search',
-        queryParameters: {
-          'city': city,
-          if (pickupDate != null) 'pickup_date': _formatDate(pickupDate),
-          if (returnDate != null) 'return_date': _formatDate(returnDate),
-          if (carType != null) 'car_type': carType,
-        },
-      );
-      final cars = (res.data['cars'] as List)
-          .map((c) => CarModel.fromJson(c as Map<String, dynamic>))
-          .where((car) => car.availableVehicles > 0)
-          .toList();
-      return [...partnerCars, ...cars];
-    } catch (_) {
-      var results = MockDataService.cars(city: city);
-      if (carType != null && carType != 'all') {
-        results = results.where((c) => c.type == carType).toList();
-      }
-      return [...partnerCars, ...results];
-    }
+    return partnerCars;
   }
 
   Future<List<String>> searchCarLocations(String query) async {
     final normalized = query.trim();
     if (normalized.length < 2) return const [];
-    final localMatches = MockDataService.cars()
-        .map((car) => car.pickupLocation)
-        .where(
-          (location) =>
-              location.toLowerCase().contains(normalized.toLowerCase()),
-        )
-        .toSet();
-    if (useMockMode) return localMatches.take(12).toList();
+    if (useMockMode) {
+      return MockDataService.cars()
+          .map((car) => car.pickupLocation)
+          .where((location) =>
+              location.toLowerCase().contains(normalized.toLowerCase()))
+          .toSet()
+          .take(12)
+          .toList();
+    }
     try {
       final response = await _dio.get(
         '/cars/locations',
@@ -1252,11 +1754,16 @@ class ApiService {
       );
       final remote = (response.data['suggestions'] as List? ?? const [])
           .map((value) => value.toString());
-      return {...remote, ...localMatches}.take(12).toList();
+      return remote.take(12).toList();
     } on DioException catch (error) {
       debugPrint('Car location suggestions unavailable: ${error.message}');
-      final hotelLocations = await searchHotelLocations(normalized);
-      return {...hotelLocations, ...localMatches}.take(12).toList();
+      final partnerCars = (await _loadPartnerInventory('car'))
+          .map(CarModel.fromJson)
+          .map((car) => car.pickupLocation)
+          .where((location) =>
+              location.toLowerCase().contains(normalized.toLowerCase()))
+          .toSet();
+      return partnerCars.take(12).toList();
     }
   }
 
@@ -1303,10 +1810,7 @@ class ApiService {
       final partnerCars =
           (await _loadPartnerInventory('car')).map(CarModel.fromJson);
       return carsWithinRadius(
-        cars: filterType([
-          ...partnerCars,
-          ...MockDataService.cars(city: 'Tripoli'),
-        ]),
+        cars: filterType(partnerCars),
         latitude: lat,
         longitude: lng,
         radiusMeters: radiusMeters,
@@ -1340,67 +1844,264 @@ class ApiService {
                         transfer.pickupTime.month == date.month &&
                         transfer.pickupTime.day == date.day)))
             .toList();
-    try {
-      final res = await _dio.get(
-        '/transfers/search',
-        queryParameters: {
-          'from': from,
-          'to': to,
-          if (date != null) 'date': _formatDate(date),
-          'passengers': passengers,
-        },
-      );
-      final results = (res.data['transfers'] as List)
-          .map((t) => TransferModel.fromJson(t as Map<String, dynamic>))
-          .toList();
-      final allResults = [...partnerTransfers, ...results];
-      allResults.sort((a, b) => a.priceUSD.compareTo(b.priceUSD));
-      return allResults;
-    } catch (_) {
-      final results = MockDataService.transfers();
-      final allResults = [...partnerTransfers, ...results];
-      allResults.sort((a, b) => a.priceUSD.compareTo(b.priceUSD));
-      return allResults;
-    }
+    partnerTransfers.sort((a, b) => a.priceUSD.compareTo(b.priceUSD));
+    return partnerTransfers;
   }
 
-  /// أماكن/معالم — بيشمل مطاعم ومقاهي كفئات (category) عن طريق الباك اند.
+  /// Fetches verified landmark categories from the destination provider.
   Future<List<AttractionModel>> searchAttractions({
     required String city,
     String? category,
+    String? country,
+    String? language,
+    double? latitude,
+    double? longitude,
+  }) async =>
+      (await searchAttractionPage(
+        city: city,
+        category: category,
+        country: country,
+        language: language,
+        latitude: latitude,
+        longitude: longitude,
+      ))
+          .attractions;
+
+  Future<AttractionSearchPage> searchAttractionPage({
+    required String city,
+    String? category,
+    String? country,
+    String? language,
+    double? latitude,
+    double? longitude,
+    double? south,
+    double? west,
+    double? north,
+    double? east,
+    String? placeId,
+    int limit = 40,
+    int offset = 0,
   }) async {
     if (useMockMode) {
-      await Future.delayed(_mockDelay);
-      final all = MockDataService.attractions();
-      return category == null
-          ? all
-          : all.where((a) => a.category == category).toList();
+      throw StateError(
+        'OpenTripMap landmark search requires the configured live backend.',
+      );
     }
-    final partnerAttractions = (await _loadPartnerInventory('attraction',
-            city: city))
-        .map(AttractionModel.fromJson)
-        .where(
-            (attraction) => category == null || attraction.category == category)
-        .toList();
+    _attractionSearchCancelToken?.cancel('A newer landmark search started');
+    final cancelToken = CancelToken();
+    _attractionSearchCancelToken = cancelToken;
     try {
       final res = await _dio.get(
         '/attractions/search',
         queryParameters: {
           'city': city,
-          if (category != null) 'category': category,
+          if (category != null && category != 'all') 'category': category,
+          if (country != null && country.isNotEmpty) 'country': country,
+          if (language != null && language.isNotEmpty) 'lang': language,
+          if (latitude != null) 'lat': latitude,
+          if (longitude != null) 'lon': longitude,
+          if (south != null) 'bbox_south': south,
+          if (west != null) 'bbox_west': west,
+          if (north != null) 'bbox_north': north,
+          if (east != null) 'bbox_east': east,
+          if (placeId != null && placeId.isNotEmpty) 'place_id': placeId,
+          'limit': limit,
+          'offset': offset,
         },
+        cancelToken: cancelToken,
       );
-      final attractions = (res.data['attractions'] as List)
-          .map((a) => AttractionModel.fromJson(a as Map<String, dynamic>))
-          .toList();
-      return [...partnerAttractions, ...attractions];
-    } catch (_) {
-      final all = MockDataService.attractions();
-      final fallback = category == null
-          ? all
-          : all.where((a) => a.category == category).toList();
-      return [...partnerAttractions, ...fallback];
+      final data = res.data;
+      if (data is Map && data['city_found'] == false) {
+        throw const AttractionCityNotFoundException();
+      }
+      if (data is! Map || data['attractions'] is! List) {
+        throw const FormatException('Unexpected attractions response');
+      }
+      final page = AttractionSearchPage.fromJson(
+        Map<String, dynamic>.from(data),
+      );
+      return AttractionSearchPage(
+        attractions: page.attractions.where(_isLandmarkCategory).toList(),
+        totalCount: page.totalCount,
+        hasMore: page.hasMore,
+        warnings: page.warnings,
+      );
+    } finally {
+      if (identical(_attractionSearchCancelToken, cancelToken)) {
+        _attractionSearchCancelToken = null;
+      }
     }
+  }
+
+  Future<AttractionMapViewport> searchAttractionMap({
+    required double south,
+    required double west,
+    required double north,
+    required double east,
+    required double zoom,
+    String? category,
+    int minRate = 0,
+    String? language,
+  }) async {
+    if (useMockMode) {
+      throw StateError(
+        'OpenTripMap landmark search requires the configured live backend.',
+      );
+    }
+    _attractionMapCancelToken
+        ?.cancel('A newer landmark viewport was requested');
+    final cancelToken = CancelToken();
+    _attractionMapCancelToken = cancelToken;
+    try {
+      final response = await _dio.get(
+        '/attractions/map',
+        queryParameters: {
+          'south': south,
+          'west': west,
+          'north': north,
+          'east': east,
+          'zoom': zoom.round(),
+          if (category != null && category.isNotEmpty) 'category': category,
+          'min_rate': minRate,
+          if (language != null && language.isNotEmpty) 'lang': language,
+        },
+        cancelToken: cancelToken,
+      );
+      if (response.data is! Map ||
+          (response.data as Map)['attractions'] is! List) {
+        throw const FormatException('Unexpected landmark map response');
+      }
+      return AttractionMapViewport.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } finally {
+      if (identical(_attractionMapCancelToken, cancelToken)) {
+        _attractionMapCancelToken = null;
+      }
+    }
+  }
+
+  Future<AttractionRecentDestination?> recentAttractionDestination() async {
+    if (useMockMode) return null;
+    final response = await _dio.get('/attractions/recent-destination');
+    final data = response.data;
+    if (data is! Map || data['destination'] is! Map) return null;
+    final destination = AttractionRecentDestination.fromJson(
+      Map<String, dynamic>.from(data['destination'] as Map),
+    );
+    return destination.city.isEmpty ? null : destination;
+  }
+
+  bool _isLandmarkCategory(AttractionModel attraction) => const {
+        'historical',
+        'natural',
+        'cultural',
+        'architecture',
+        'landmark',
+        'museum',
+        'park',
+        'beach',
+      }.contains(attraction.category.toLowerCase());
+
+  Future<List<AttractionPlaceSuggestion>> searchAttractionSuggestions(
+    String query, {
+    String? language,
+    double? latitude,
+    double? longitude,
+  }) async {
+    final normalizedQuery = query.trim();
+    if (normalizedQuery.length < 2) return const [];
+    final normalizedKey = _normalizeAttractionQuery(normalizedQuery);
+    final cacheKey = '${language ?? 'en'}:$normalizedKey:'
+        '${latitude?.toStringAsFixed(2) ?? ''}:'
+        '${longitude?.toStringAsFixed(2) ?? ''}';
+    final cached = _attractionSuggestionCache[cacheKey];
+    if (cached != null && DateTime.now().isBefore(cached.expiresAt)) {
+      return cached.suggestions;
+    }
+    _attractionSuggestionCancelToken
+        ?.cancel('A newer landmark query was typed');
+    final cancelToken = CancelToken();
+    _attractionSuggestionCancelToken = cancelToken;
+    try {
+      final response = await _dio.get(
+        '/attractions/suggestions',
+        queryParameters: {
+          'query': normalizedQuery,
+          if (language != null && language.isNotEmpty) 'lang': language,
+          if (latitude != null) 'lat': latitude,
+          if (longitude != null) 'lon': longitude,
+        },
+        cancelToken: cancelToken,
+      );
+      final data = response.data;
+      if (data is! Map || data['suggestions'] is! List) return const [];
+      final suggestions = (data['suggestions'] as List)
+          .whereType<Map>()
+          .map((item) => AttractionPlaceSuggestion.fromJson(
+                Map<String, dynamic>.from(item),
+              ))
+          .where((item) => item.label.isNotEmpty)
+          .toList(growable: false);
+      _attractionSuggestionCache[cacheKey] = _TimedSuggestionCache(
+        DateTime.now().add(const Duration(minutes: 5)),
+        suggestions,
+      );
+      if (_attractionSuggestionCache.length > 200) {
+        _attractionSuggestionCache
+            .remove(_attractionSuggestionCache.keys.first);
+      }
+      return suggestions;
+    } finally {
+      if (identical(_attractionSuggestionCancelToken, cancelToken)) {
+        _attractionSuggestionCancelToken = null;
+      }
+    }
+  }
+
+  String _normalizeAttractionQuery(String value) => value
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[\u064b-\u065f\u0670\u0640]'), '')
+      .replaceAll('أ', 'ا')
+      .replaceAll('إ', 'ا')
+      .replaceAll('آ', 'ا')
+      .replaceAll('ة', 'ه')
+      .replaceAll('ى', 'ي')
+      .replaceAll(RegExp(r'\s+'), ' ');
+
+  /// Records one anonymous place visit per device and UTC day.
+  Future<void> recordAttractionVisit(String attractionId) async {
+    if (useMockMode) return;
+    final visitorId = await _dailyAttractionVisitorId();
+    await _dio.post(
+      '/attractions/${Uri.encodeComponent(attractionId)}/visits',
+      data: {'visitor_id': visitorId},
+    );
+  }
+
+  Future<String> _dailyAttractionVisitorId() async {
+    final preferences = await SharedPreferences.getInstance();
+    final now = DateTime.now().toUtc();
+    final date = '${now.year.toString().padLeft(4, '0')}-'
+        '${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')}';
+    const dateKey = 'attraction_visitor_token_date';
+    const tokenKey = 'attraction_visitor_token';
+    if (preferences.getString(dateKey) == date) {
+      final existing = preferences.getString(tokenKey);
+      if (existing != null && RegExp(r'^[a-f0-9]{32}$').hasMatch(existing)) {
+        return existing;
+      }
+    }
+
+    final random = Random.secure();
+    final token = List<int>.generate(16, (_) => random.nextInt(256))
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join();
+    await preferences.setString(dateKey, date);
+    await preferences.setString(tokenKey, token);
+    return token;
   }
 
   Future<List<AttractionModel>> nearbyAttractions({
@@ -1410,22 +2111,15 @@ class ApiService {
     String? category,
   }) async {
     if (useMockMode) {
-      await Future.delayed(_mockDelay);
-      final all = MockDataService.attractions();
-      if (category != null) {
+      if (category == 'restaurant' || category == 'cafe') {
+        await Future.delayed(_mockDelay);
+        final all = MockDataService.attractions();
         return all.where((a) => a.category == category).toList();
       }
-      return all
-          .where((a) => a.category != 'restaurant' && a.category != 'cafe')
-          .toList();
+      throw StateError(
+        'OpenTripMap nearby landmarks require the configured live backend.',
+      );
     }
-    final partnerAttractions = (await _loadPartnerInventory('attraction'))
-        .map(AttractionModel.fromJson)
-        .where((attraction) =>
-            (category == null || attraction.category == category) &&
-            _isWithinRadius(attraction.latitude, attraction.longitude, lat, lng,
-                radiusMeters))
-        .toList();
     try {
       final res = await _dio.get(
         '/attractions/nearby',
@@ -1439,15 +2133,13 @@ class ApiService {
       final attractions = (res.data['attractions'] as List)
           .map((a) => AttractionModel.fromJson(a as Map<String, dynamic>))
           .toList();
-      return [...partnerAttractions, ...attractions];
+      return attractions;
     } catch (_) {
-      final all = MockDataService.attractions();
-      final fallback = category != null
-          ? all.where((a) => a.category == category).toList()
-          : all
-              .where((a) => a.category != 'restaurant' && a.category != 'cafe')
-              .toList();
-      return [...partnerAttractions, ...fallback];
+      if (category == 'restaurant' || category == 'cafe') {
+        final all = MockDataService.attractions();
+        return all.where((a) => a.category == category).toList();
+      }
+      rethrow;
     }
   }
 
@@ -1475,22 +2167,6 @@ class ApiService {
         category: 'cafe',
       );
 
-  bool _isWithinRadius(
-    double? candidateLat,
-    double? candidateLng,
-    double lat,
-    double lng,
-    double radiusMeters,
-  ) {
-    final distance = hotelDistanceMeters(
-      fromLatitude: lat,
-      fromLongitude: lng,
-      toLatitude: candidateLat,
-      toLongitude: candidateLng,
-    );
-    return distance != null && distance <= radiusMeters;
-  }
-
   String _formatDate(DateTime d) =>
       '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
@@ -1505,7 +2181,10 @@ class ApiService {
       'local_flight_trips_${currentUser?.email ?? 'guest'}';
   String get _bookingsKey => 'local_bookings_${currentUser?.email ?? 'guest'}';
 
-  Future<ApiResult<TripModel>> createFlightTrip(TripModel trip) async {
+  Future<ApiResult<TripModel>> createFlightTrip(
+    TripModel trip, {
+    int? paymentAttemptId,
+  }) async {
     if (useMockMode) {
       final result = await _request(() async {
         await Future.delayed(_mockDelay);
@@ -1518,7 +2197,10 @@ class ApiService {
       return result;
     }
     final result = await _request(() async {
-      final res = await _dio.post('/trips', data: trip.toJson());
+      final res = await _dio.post('/trips', data: {
+        ...trip.toJson(),
+        if (paymentAttemptId != null) 'payment_attempt_id': paymentAttemptId,
+      });
       return TripModel.fromJson(res.data['trip'] as Map<String, dynamic>);
     });
     if (result.isSuccess) flightTripsRevision.value++;
@@ -1545,27 +2227,22 @@ class ApiService {
   }
 
   Future<ApiResult<List<TripModel>>> getMyFlightTrips() async {
+    if (await _getToken() == null) {
+      return ApiResult.success(const []);
+    }
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
         return _loadLocalFlightTrips();
       });
     }
-    try {
+    return _request(() async {
       final res = await _dio.get('/trips');
       final trips = (res.data['trips'] as List)
           .map((t) => TripModel.fromJson(t as Map<String, dynamic>))
           .toList();
-      await _saveLocalFlightTrips(
-        trips,
-      ); // تحديث النسخة المحفوظة محليًا كـ Cache
-      return ApiResult.success(trips);
-    } catch (e) {
-      // مفيش نت أو السيرفر مش متجاوب — نرجّع آخر نسخة محفوظة بدل شاشة فاضية.
-      final cached = await _loadLocalFlightTrips();
-      if (cached.isNotEmpty) return ApiResult.success(cached);
-      return ApiResult.failure(e.toString());
-    }
+      return trips;
+    });
   }
 
   /// إلغاء رحلة. الرحلة بتتحذف نهائيًا من قائمة الحجوزات — مش بس بتتحول
@@ -1602,7 +2279,10 @@ class ApiService {
     return result;
   }
 
-  Future<ApiResult<BookingModel>> createBooking(BookingModel booking) async {
+  Future<ApiResult<BookingModel>> createBooking(
+    BookingModel booking, {
+    int? paymentAttemptId,
+  }) async {
     if (useMockMode) {
       final result = await _request(() async {
         await Future.delayed(_mockDelay);
@@ -1615,7 +2295,10 @@ class ApiService {
       return result;
     }
     final result = await _request(() async {
-      final res = await _dio.post('/bookings', data: booking.toJson());
+      final res = await _dio.post('/bookings', data: {
+        ...booking.toJson(),
+        if (paymentAttemptId != null) 'payment_attempt_id': paymentAttemptId,
+      });
       return BookingModel.fromJson(res.data['booking'] as Map<String, dynamic>);
     });
     if (result.isSuccess) bookingsRevision.value++;
@@ -1680,24 +2363,22 @@ class ApiService {
   }
 
   Future<ApiResult<List<BookingModel>>> getMyBookings() async {
+    if (await _getToken() == null) {
+      return ApiResult.success(const []);
+    }
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
         return _loadLocalBookings();
       });
     }
-    try {
+    return _request(() async {
       final res = await _dio.get('/bookings');
       final bookings = (res.data['bookings'] as List)
           .map((b) => BookingModel.fromJson(b as Map<String, dynamic>))
           .toList();
-      await _saveLocalBookings(bookings);
-      return ApiResult.success(bookings);
-    } catch (e) {
-      final cached = await _loadLocalBookings();
-      if (cached.isNotEmpty) return ApiResult.success(cached);
-      return ApiResult.failure(e.toString());
-    }
+      return bookings;
+    });
   }
 
   Future<List<TripModel>> _loadLocalFlightTrips() async {
@@ -1810,11 +2491,43 @@ class ApiService {
           responseMessage = null;
         }
       }
-      final msg = responseMessage ?? _dioErrorMessage(e);
+      final msg = await _localizedRequestError(e, responseMessage);
       return ApiResult.failure(msg);
     } catch (e) {
-      return ApiResult.failure(e.toString());
+      return ApiResult.failure(await _localizedRequestError(e));
     }
+  }
+
+  Future<String> _localizedRequestError(
+    Object error, [
+    String? serverMessage,
+  ]) async {
+    final language = LocaleController.instance.locale.languageCode;
+    if (!language.toLowerCase().startsWith('ar')) {
+      if (error is DioException) {
+        return serverMessage ?? _dioErrorMessage(error);
+      }
+      return error.toString();
+    }
+
+    if (serverMessage != null &&
+        RegExp(r'[\u0600-\u06FF]').hasMatch(serverMessage)) {
+      return serverMessage;
+    }
+    if (error is DioException) {
+      return switch (error.response?.statusCode) {
+        400 || 422 => 'تحقق من البيانات المدخلة ثم أعد المحاولة.',
+        401 => 'تعذر التحقق من الجلسة. يرجى تسجيل الدخول مجدداً.',
+        403 => 'ليس لديك صلاحية لتنفيذ هذا الإجراء.',
+        404 => 'المحتوى المطلوب غير متاح.',
+        409 => 'حدث تعارض أثناء تنفيذ الطلب. حدّث البيانات وحاول مجدداً.',
+        429 => 'طلبات كثيرة في وقت قصير. يرجى الانتظار ثم المحاولة.',
+        final status when status != null && status >= 500 =>
+          'الخدمة غير متاحة مؤقتاً. حاول مرة أخرى لاحقاً.',
+        _ => 'تعذر الاتصال بالخادم. تحقق من اتصالك وحاول مرة أخرى.',
+      };
+    }
+    return 'تعذر إكمال الطلب. حاول مرة أخرى.';
   }
 
   String? _extractResponseMessage(Object? data) {
@@ -1856,3 +2569,14 @@ class ApiService {
 // Typedef لـ onSessionExpired callback (اسم مختلف عن VoidCallback بتاع Flutter
 // عشان مايحصلش تعارض في الملفات اللي بتعمل import للاتنين مع بعض).
 typedef SessionExpiredCallback = void Function();
+
+class AttractionCityNotFoundException implements Exception {
+  const AttractionCityNotFoundException();
+}
+
+class _TimedSuggestionCache {
+  final DateTime expiresAt;
+  final List<AttractionPlaceSuggestion> suggestions;
+
+  const _TimedSuggestionCache(this.expiresAt, this.suggestions);
+}

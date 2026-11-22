@@ -3,6 +3,7 @@ package com.zentrip.api;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -12,18 +13,23 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Component
+@ConditionalOnProperty(name = "app.bootstrap.enabled", havingValue = "true", matchIfMissing = true)
 public class AdminRoleBootstrap implements ApplicationRunner {
     private final JdbcTemplate jdbc;
     private final String adminEmail;
     private final String partnerAccounts;
+    private final boolean partnerReconciliationEnabled;
 
     public AdminRoleBootstrap(
             JdbcTemplate jdbc,
             @Value("${app.admin.email:}") String adminEmail,
-            @Value("${app.partner.accounts:}") String partnerAccounts) {
+            @Value("${app.partner.accounts:}") String partnerAccounts,
+            @Value("${app.bootstrap.partner-reconciliation.enabled:false}")
+            boolean partnerReconciliationEnabled) {
         this.jdbc = jdbc;
         this.adminEmail = adminEmail.trim();
         this.partnerAccounts = partnerAccounts.trim();
+        this.partnerReconciliationEnabled = partnerReconciliationEnabled;
     }
 
     @Override
@@ -66,6 +72,9 @@ public class AdminRoleBootstrap implements ApplicationRunner {
                         + "INTEGER NOT NULL DEFAULT 0");
         backfillHotelListingFields();
 
+        if (!adminEmail.isBlank()) promoteAdmin();
+        if (!partnerReconciliationEnabled) return;
+
         List<PartnerAccount> accounts = parsePartnerAccounts();
         if (accounts.stream().anyMatch(
                 account -> account.email().equalsIgnoreCase(adminEmail))) {
@@ -73,7 +82,6 @@ public class AdminRoleBootstrap implements ApplicationRunner {
                     "An email cannot be configured as both Zentrip admin and partner.");
         }
         validatePartnerAccounts(accounts);
-        if (!adminEmail.isBlank()) promoteAdmin();
         revokeUnconfiguredPartners(accounts);
         configurePartners(accounts);
     }
@@ -226,7 +234,7 @@ public class AdminRoleBootstrap implements ApplicationRunner {
             String name = fields[2].trim();
             String serviceType = fields[3].trim().toLowerCase(Locale.ROOT);
             if (email.isBlank() || !email.contains("@") || slug.isBlank() || name.isBlank()
-                    || !List.of("airline", "hotel", "car", "attraction", "transfer", "travel")
+                    || !List.of("airline", "hotel", "car", "transfer", "travel")
                             .contains(serviceType)) {
                 throw new IllegalStateException(
                         "APP_PARTNER_ACCOUNTS contains an invalid account, company, or service type.");

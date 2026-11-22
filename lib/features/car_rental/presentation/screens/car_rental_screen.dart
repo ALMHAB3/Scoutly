@@ -7,6 +7,7 @@ import '../../../../core/services/current_location_service.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/booking_loading_overlay.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_model.dart';
 import '../../../../models/car_model.dart';
@@ -116,14 +117,23 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
     }
     final params = CarSearchParams(
         city: city, pickupDate: _pickup, returnDate: _return, carType: _type);
-    await BookingLoadingOverlay.run<void>(
-      context,
-      title: AppLocalizations.of(context).carRentalTitle,
-      subtitle: city,
-      serviceIcon: Icons.directions_car_rounded,
-      action: () => _ctrl.search(params),
-    );
-    if (mounted) setState(() => _searched = true);
+    try {
+      await BookingLoadingOverlay.run<void>(
+        context,
+        title: AppLocalizations.of(context).carRentalTitle,
+        subtitle: city,
+        serviceIcon: Icons.directions_car_rounded,
+        action: () => _ctrl.search(params),
+      );
+      if (mounted) setState(() => _searched = true);
+    } catch (_) {
+      if (mounted) {
+        AppSnackbar.error(
+          context,
+          AppLocalizations.of(context).carSearchFailed,
+        );
+      }
+    }
   }
 
   Future<void> _searchNearby() async {
@@ -194,7 +204,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
       TextSpan(
         text: value.substring(start, end),
         style: const TextStyle(
-          color: AppColors.accentOrange,
+          color: AppColors.primary,
           fontWeight: FontWeight.w800,
         ),
       ),
@@ -276,7 +286,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                     decoration: InputDecoration(
                       hintText: l10n.carPickupCityHint,
                       prefixIcon: const Icon(Icons.place_rounded,
-                          color: AppColors.accentOrange),
+                          color: AppColors.primary),
                       suffixIcon: _isLoadingLocation
                           ? const Padding(
                               padding: EdgeInsets.all(14),
@@ -377,12 +387,12 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                           horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
                           color: _type == t
-                              ? AppColors.accentOrange
+                              ? AppColors.primary
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                               color: _type == t
-                                  ? AppColors.accentOrange
+                                  ? AppColors.primary
                                   : AppColors.border)),
                       child: Text(l,
                           style: TextStyle(
@@ -412,8 +422,8 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                   : const Icon(Icons.search_rounded),
               label: Text(
                   _ctrl.isLoading ? l10n.carSearching : l10n.carSearchButton),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentOrange),
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             ),
           ).animate().fade(delay: 180.ms),
           const SizedBox(height: 8),
@@ -617,13 +627,17 @@ class _CarCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                Text('\$${car.totalPriceForDays(days).toStringAsFixed(0)}',
+                CurrencyAmountText(
+                    amount: car.totalPriceForDays(days),
+                    decimalDigits: 0,
                     style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 18,
-                        color: AppColors.accentOrange)),
-                Text(
-                    '\$${car.pricePerDay.toStringAsFixed(0)} ${l10n.carPerDaySuffix}',
+                        color: AppColors.primary)),
+                CurrencyAmountText(
+                    amount: car.pricePerDay,
+                    decimalDigits: 0,
+                    suffix: ' ${l10n.carPerDaySuffix}',
                     style: const TextStyle(
                         fontSize: 10, color: AppColors.textSecondary)),
                 Text(l10n.carDaysCount(days),
@@ -640,7 +654,7 @@ class _CarCard extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
-                        color: AppColors.accentOrange,
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(8)),
                     child: Text(l10n.book,
                         style: const TextStyle(

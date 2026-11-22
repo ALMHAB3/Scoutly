@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,6 +21,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.dao.DataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,23 +40,48 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping("/api/ai")
 public class AiChatController {
+    private static final Logger LOG = LoggerFactory.getLogger(AiChatController.class);
     private static final int MAX_MESSAGE_LENGTH = 4000;
     private static final int HISTORY_LIMIT = 10;
     private static final int STORED_MESSAGE_LIMIT = 40;
     private static final long CANCELLATION_TTL_MILLIS = 180_000;
+    private static final long STREAM_HEARTBEAT_INTERVAL_SECONDS = 10;
     private static final ObjectMapper JSON = new ObjectMapper();
+    private static final ScheduledExecutorService STREAM_HEARTBEATS =
+            Executors.newScheduledThreadPool(2, runnable -> {
+                Thread thread = new Thread(runnable, "zen-chat-heartbeat");
+                thread.setDaemon(true);
+                return thread;
+            });
 
     private final JdbcTemplate jdbc;
-    private final RequestyChatService requesty;
+    private final GoogleGeminiChatService gemini;
+    private final TransactionTemplate transaction;
     private final Map<String, Long> cancelledRequests = new ConcurrentHashMap<>();
 
-    public AiChatController(JdbcTemplate jdbc, RequestyChatService requesty) {
+    @Autowired
+    public AiChatController(
+            JdbcTemplate jdbc,
+            GoogleGeminiChatService gemini,
+            ObjectProvider<PlatformTransactionManager> transactionManagers) {
         this.jdbc = jdbc;
-        this.requesty = requesty;
+        this.gemini = gemini;
+        PlatformTransactionManager transactionManager = transactionManagers.getIfAvailable();
+        this.transaction = transactionManager == null
+                ? null : new TransactionTemplate(transactionManager);
+    }
+
+    AiChatController(
+            JdbcTemplate jdbc,
+            GoogleGeminiChatService gemini,
+            PlatformTransactionManager transactionManager) {
+        this.jdbc = jdbc;
+        this.gemini = gemini;
+        this.transaction = new TransactionTemplate(transactionManager);
     }
 
     @PostMapping(value = "/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<?> chat(
+    public ResponseEntity<StreamingResponseBody> chat(
             @RequestBody Map<String, Object> body,
             HttpServletRequest request) {
         long userId = requireUserId(request);
@@ -54,38 +91,52 @@ public class AiChatController {
         String language = "ar".equalsIgnoreCase(text(body.get("language"))) ? "ar" : "en";
 
         if (message.isBlank() || message.length() > MAX_MESSAGE_LENGTH) {
-            return ResponseEntity.unprocessableEntity().body(Map.of(
-                    "message", "The message is required and must be 4000 characters or fewer."));
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                    "The message is required and must be 4000 characters or fewer.");
         }
         if (!sessionId.matches("[A-Za-z0-9_-]{1,100}")) {
-            return ResponseEntity.unprocessableEntity().body(Map.of(
-                    "message", "A valid session_id is required."));
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "A valid session_id is required.");
         }
         if (!requestId.matches("[A-Za-z0-9_-]{1,100}")) {
-            return ResponseEntity.unprocessableEntity().body(Map.of(
-                    "message", "A valid request_id is required."));
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "A valid request_id is required.");
         }
 
         String cancellationKey = cancellationKey(userId, sessionId, requestId);
         if (consumeCancellation(cancellationKey)) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().<StreamingResponseBody>build();
         }
 
-        List<Map<String, Object>> rows = new ArrayList<>(jdbc.queryForList("""
-                SELECT role, content FROM ai_chat_messages
-                WHERE user_id = ? AND session_id = ?
-                ORDER BY id DESC LIMIT ?
-            """, userId, sessionId, HISTORY_LIMIT));
+        List<Map<String, Object>> rows;
+        try {
+            rows = new ArrayList<>(jdbc.queryForList("""
+                    SELECT role, content FROM ai_chat_messages
+                    WHERE user_id = ? AND session_id = ?
+                    ORDER BY id DESC LIMIT ?
+                """, userId, sessionId, HISTORY_LIMIT));
+        } catch (DataAccessException exception) {
+            LOG.warn("Zen chat history is unavailable for user {}. Continuing without history.",
+                    userId, exception);
+            rows = new ArrayList<>();
+        }
         Collections.reverse(rows);
 
-        List<RequestyChatService.ChatTurn> turns = new ArrayList<>();
+        List<GoogleGeminiChatService.ChatTurn> turns = new ArrayList<>();
         for (Map<String, Object> row : rows) {
-            turns.add(new RequestyChatService.ChatTurn(
+            turns.add(new GoogleGeminiChatService.ChatTurn(
                     text(row.get("role")), text(row.get("content"))));
         }
-        turns.add(new RequestyChatService.ChatTurn("user", message));
+        turns.add(new GoogleGeminiChatService.ChatTurn("user", message));
 
-        String context = travelPreferenceContext(userId);
+        String context;
+        try {
+            context = travelPreferenceContext(userId);
+        } catch (DataAccessException exception) {
+            LOG.warn("Zen travel preferences are unavailable for user {}.", userId, exception);
+            context = "";
+        }
         String locationContext = currentLocationContext(body);
         if (!locationContext.isBlank()) {
             context = context.isBlank()
@@ -112,7 +163,7 @@ public class AiChatController {
         private final String sessionId;
         private final String message;
         private final String cancellationKey;
-        private final List<RequestyChatService.ChatTurn> turns;
+        private final List<GoogleGeminiChatService.ChatTurn> turns;
         private final String language;
         private final String context;
 
@@ -121,7 +172,7 @@ public class AiChatController {
                 String sessionId,
                 String message,
                 String cancellationKey,
-                List<RequestyChatService.ChatTurn> turns,
+                List<GoogleGeminiChatService.ChatTurn> turns,
                 String language,
                 String context) {
             this.userId = userId;
@@ -153,42 +204,108 @@ public class AiChatController {
             String sessionId,
             String message,
             String cancellationKey,
-            List<RequestyChatService.ChatTurn> turns,
+            List<GoogleGeminiChatService.ChatTurn> turns,
             String language,
             String context) throws IOException {
         StringBuilder reply = new StringBuilder();
+        AtomicBoolean outputFailed = new AtomicBoolean();
+        writeComment(output, "connected");
+        ScheduledFuture<?> heartbeat = STREAM_HEARTBEATS.scheduleAtFixedRate(
+                () -> writeHeartbeat(output, outputFailed),
+                STREAM_HEARTBEAT_INTERVAL_SECONDS,
+                STREAM_HEARTBEAT_INTERVAL_SECONDS,
+                TimeUnit.SECONDS);
         try {
-            requesty.streamReply(turns, language, context, delta -> {
+            gemini.streamReply(turns, language, context, delta -> {
+                if (outputFailed.get()) {
+                    throw new UncheckedIOException(new IOException("Zen chat client disconnected"));
+                }
                 reply.append(delta);
                 try {
                     writeEvent(output, "token", Map.of("text", delta));
                 } catch (IOException exception) {
+                    outputFailed.set(true);
                     throw new UncheckedIOException(exception);
                 }
             });
             if (consumeCancellation(cancellationKey)) return;
-            jdbc.update("""
-                    INSERT INTO ai_chat_messages (user_id, session_id, role, content)
-                    VALUES (?, ?, 'user', ?), (?, ?, 'model', ?)
-                    """, userId, sessionId, message, userId, sessionId, reply.toString());
-            trimHistory(userId, sessionId);
+            try {
+                persistConversation(userId, sessionId, message, reply.toString());
+            } catch (DataAccessException exception) {
+                LOG.warn("Zen chat response could not be persisted for user {}.", userId,
+                        exception);
+            }
             writeEvent(output, "done", Map.of());
         } catch (ResponseStatusException exception) {
-            writeEvent(output, "error", Map.of(
-                    "message", exception.getReason() == null
-                            ? "Zen could not complete the request. Please retry."
-                            : exception.getReason()));
+            if (!outputFailed.get()) {
+                writeEvent(output, "error", Map.of(
+                        "message", exception.getReason() == null
+                                ? "Zen could not complete the request. Please retry."
+                                : exception.getReason()));
+            }
         } catch (UncheckedIOException exception) {
             throw exception.getCause();
+        } catch (RuntimeException exception) {
+            LOG.error("Zen chat stream failed unexpectedly for user {}", userId, exception);
+            if (!outputFailed.get()) {
+                writeEvent(output, "error", Map.of(
+                        "message", "Zen could not complete the request. Please retry."));
+            }
+        } finally {
+            heartbeat.cancel(false);
         }
     }
 
     private static void writeEvent(OutputStream output, String event, Map<String, String> data)
             throws IOException {
         String payload = JSON.writeValueAsString(data);
-        output.write(("event: " + event + "\ndata: " + payload + "\n\n")
-                .getBytes(StandardCharsets.UTF_8));
-        output.flush();
+        synchronized (output) {
+            output.write(("event: " + event + "\ndata: " + payload + "\n\n")
+                    .getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        }
+    }
+
+    private static void writeComment(OutputStream output, String comment) throws IOException {
+        synchronized (output) {
+            output.write((": " + comment + "\n\n").getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        }
+    }
+
+    private static void writeHeartbeat(OutputStream output, AtomicBoolean outputFailed) {
+        if (outputFailed.get()) return;
+        try {
+            writeComment(output, "keep-alive");
+        } catch (IOException exception) {
+            outputFailed.set(true);
+        }
+    }
+
+    private void setLocal(String name, String value) {
+        jdbc.queryForObject("SELECT set_config(?, ?, true)", String.class, name, value);
+    }
+
+    private void persistConversation(
+            long userId, String sessionId, String message, String reply) {
+        Runnable persist = () -> {
+            jdbc.update("""
+                    INSERT INTO ai_chat_messages (user_id, session_id, role, content)
+                    VALUES (?, ?, 'user', ?), (?, ?, 'model', ?)
+                    """, userId, sessionId, message, userId, sessionId, reply);
+            trimHistory(userId, sessionId);
+        };
+        if (transaction == null) {
+            persist.run();
+            return;
+        }
+        transaction.executeWithoutResult(status -> {
+            jdbc.execute("SET LOCAL ROLE zentrip_api_runtime");
+            setLocal("app.auth_role", "customer");
+            setLocal("app.user_id", Long.toString(userId));
+            setLocal("app.partner_id", "");
+            persist.run();
+        });
     }
 
     @PostMapping("/chat/cancel")

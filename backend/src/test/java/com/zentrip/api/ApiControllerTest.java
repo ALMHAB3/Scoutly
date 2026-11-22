@@ -1,6 +1,7 @@
 package com.zentrip.api;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -27,16 +30,24 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.BadSqlGrammarException;
 
 class ApiControllerTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
-        private final ProfilePhotoStorage photoStorage = mock(ProfilePhotoStorage.class);
-        private final PasswordResetService passwordResetService = mock(PasswordResetService.class);
-        private final ApiController controller =
-                new ApiController(jdbc, "", photoStorage, passwordResetService);
+    private final ProfilePhotoStorage photoStorage = mock(ProfilePhotoStorage.class);
+    private final PasswordResetService passwordResetService = mock(PasswordResetService.class);
+    private final OpenTripMapAttractionService openTripMapAttractionService =
+            mock(OpenTripMapAttractionService.class);
+    private final LandmarkCatalogService landmarkCatalogService =
+            mock(LandmarkCatalogService.class);
+    private final ApiController controller = new ApiController(
+            jdbc, "", photoStorage, passwordResetService, openTripMapAttractionService);
 
     @BeforeEach
     void stubExistingBookingForeignKeyTargets() {
+        controller.setLandmarkCatalogService(landmarkCatalogService);
+        when(landmarkCatalogService.persistAndCanonicalize(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
         when(jdbc.queryForObject(
                 eq("SELECT COUNT(*) FROM users WHERE id = ?"), eq(Integer.class), eq(7L)))
                 .thenReturn(1);
@@ -47,6 +58,207 @@ class ApiControllerTest {
                 eq("SELECT COUNT(*) FROM partner_listings WHERE id = ?"),
                 eq(Integer.class), anyLong()))
                 .thenReturn(1);
+    }
+
+    @Test
+    void simulatedPaymentStillSucceedsWhenLedgerMigrationIsMissing() {
+        when(jdbc.queryForObject(
+                eq("SELECT to_regclass('public.payment_attempts') IS NOT NULL"),
+                eq(Boolean.class)))
+                .thenReturn(false);
+
+        ResponseEntity<?> response = controller.recordPaymentAttempt(
+                "mock_session-1",
+                Map.of("paid", true, "amount", 120, "currency", "usd"),
+                authenticatedRequest());
+
+        assertEquals(201, response.getStatusCode().value());
+        Map<?, ?> body = (Map<?, ?>) response.getBody();
+        assertEquals(true, body.get("paid"));
+        assertEquals("success", body.get("status"));
+        assertEquals(false, body.get("recorded"));
+        assertTrue(!body.containsKey("attempt_id"));
+        verify(jdbc, never()).update(contains("INSERT INTO payment_attempts"),
+                any(Object[].class));
+    }
+
+    @Test
+    void fcmTokenRegistrationUsesOnlyTheAuthenticatedUserContext() {
+        when(jdbc.queryForObject(
+                eq("SELECT public.zentrip_register_user_push_token(?, ?)"),
+                eq(Boolean.class), eq("device-token"), eq("android")))
+                .thenReturn(true);
+
+        ResponseEntity<?> response = controller.registerFcmToken(
+                Map.of("token", "device-token", "platform", "android"),
+                authenticatedRequest());
+
+        assertEquals(200, response.getStatusCode().value());
+        verify(jdbc).queryForObject(
+                eq("SELECT public.zentrip_register_user_push_token(?, ?)"),
+                eq(Boolean.class), eq("device-token"), eq("android"));
+    }
+
+    @Test
+    void fcmTokenRemovalIsScopedToTheAuthenticatedUser() {
+        when(jdbc.update(
+                eq("DELETE FROM public.user_push_tokens WHERE user_id = ? AND token = ?"),
+                eq(7L), eq("device-token")))
+                .thenReturn(1);
+
+        ResponseEntity<Void> response = controller.removeFcmToken(
+                Map.of("token", "device-token"), authenticatedRequest());
+
+        assertEquals(204, response.getStatusCode().value());
+        verify(jdbc).update(
+                eq("DELETE FROM public.user_push_tokens WHERE user_id = ? AND token = ?"),
+                eq(7L), eq("device-token"));
+    }
+
+    @Test
+    void notificationListingUsesAuthenticatedOwnerAndCapsRequestedLimit() {
+        when(jdbc.queryForObject(
+                eq("SELECT to_regclass('public.user_notifications') IS NOT NULL"),
+                eq(Boolean.class)))
+                .thenReturn(true);
+        when(jdbc.queryForList(any(String.class), any(Object[].class)))
+                .thenReturn(List.of(Map.of(
+                        "id", 9L,
+                        "kind", "booking",
+                        "title_en", "Booking confirmed",
+                        "title_ar", "تم تأكيد الحجز",
+                        "body_en", "Your booking is confirmed.",
+                        "body_ar", "تم تأكيد حجزك.",
+                        "is_read", false)));
+
+        Map<String, Object> response =
+                controller.userNotifications(500, authenticatedRequest());
+
+        assertEquals(1, ((List<?>) response.get("notifications")).size());
+        verify(jdbc).queryForList(
+                contains("WHERE user_id = ?"), eq(7L), eq(100));
+    }
+
+    @Test
+    void notificationInboxReturnsServiceUnavailableUntilMigrationIsInstalled() {
+        when(jdbc.queryForObject(
+                eq("SELECT to_regclass('public.user_notifications') IS NOT NULL"),
+                eq(Boolean.class)))
+                .thenReturn(false);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.userNotifications(50, authenticatedRequest()));
+
+        assertEquals(503, exception.getStatusCode().value());
+        verify(jdbc, never()).queryForList(any(String.class), any(Object[].class));
+    }
+
+    @Test
+    void notificationReadCannotUpdateAnotherUsersNotification() {
+        when(jdbc.queryForObject(
+                eq("SELECT to_regclass('public.user_notifications') IS NOT NULL"),
+                eq(Boolean.class)))
+                .thenReturn(true);
+        when(jdbc.update(
+                contains("WHERE id = ? AND user_id = ?"), eq(88L), eq(7L)))
+                .thenReturn(0);
+
+        ResponseEntity<?> response =
+                controller.markNotificationRead(88L, authenticatedRequest());
+
+        assertEquals(404, response.getStatusCode().value());
+        verify(jdbc).update(
+                contains("WHERE id = ? AND user_id = ?"), eq(88L), eq(7L));
+    }
+
+    @Test
+    void markAllNotificationsReadUsesAuthenticatedUserOnly() {
+        when(jdbc.queryForObject(
+                eq("SELECT to_regclass('public.user_notifications') IS NOT NULL"),
+                eq(Boolean.class)))
+                .thenReturn(true);
+        when(jdbc.update(
+                contains("WHERE user_id = ? AND read_at IS NULL"), eq(7L)))
+                .thenReturn(3);
+
+        Map<String, Object> response =
+                controller.markAllNotificationsRead(authenticatedRequest());
+
+        assertEquals(3, response.get("updated"));
+        verify(jdbc).update(
+                contains("WHERE user_id = ? AND read_at IS NULL"), eq(7L));
+    }
+
+    @Test
+    void recentAttractionDestinationRequiresVerifiedCustomerSession() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authRole", "partner");
+        request.setAttribute("authUserId", 7L);
+
+        Map<String, Object> response = controller.recentAttractionDestination(request);
+
+        assertEquals(null, response.get("destination"));
+        verifyNoInteractions(jdbc);
+    }
+
+    @Test
+    void recentAttractionDestinationUsesOnlyTheAuthenticatedCustomerId() {
+        when(jdbc.queryForList(any(String.class), any(Object[].class)))
+                .thenReturn(List.of(Map.of(
+                        "destination_city", "Rome",
+                        "destination_country", "Italy",
+                        "created_at", "2026-10-22T10:00:00Z")));
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setAttribute("authRole", "customer");
+        request.setAttribute("authUserId", 42L);
+
+        Map<String, Object> response = controller.recentAttractionDestination(request);
+
+        assertEquals("Rome", ((Map<?, ?>) response.get("destination")).get("city"));
+        assertEquals("Italy", ((Map<?, ?>) response.get("destination")).get("country"));
+        verify(jdbc).queryForList(any(String.class), any(Object[].class));
+    }
+
+    @Test
+    void bookingsReturnsEveryRecordForTheAuthenticatedCustomerWithLegacyPriceFallback() {
+        List<Map<String, Object>> rows = List.of(
+                Map.ofEntries(
+                        Map.entry("id", 81L),
+                        Map.entry("type", "hotel"),
+                        Map.entry("title", "Harbor Hotel"),
+                        Map.entry("subtitle", "Tunis"),
+                        Map.entry("date", "2027-04-10T14:00:00Z"),
+                        Map.entry("end_date", "2027-04-12T11:00:00Z"),
+                        Map.entry("effective_price", new BigDecimal("120.00")),
+                        Map.entry("ref_code", "HTL-81"),
+                        Map.entry("partner_listing_id", 14L),
+                        Map.entry("rooms", "2"),
+                        Map.entry("status", "upcoming")),
+                Map.of(
+                        "id", 80L,
+                        "type", "attraction",
+                        "title", "Museum Visit",
+                        "subtitle", "Tunis",
+                        "date", "2027-04-08T10:00:00Z",
+                        "end_date", "2027-04-08T11:00:00Z",
+                        "effective_price", new BigDecimal("25.00"),
+                        "ref_code", "TOUR-80",
+                        "status", "upcoming"));
+        when(jdbc.queryForList(
+                contains("FROM bookings"), eq(7L))).thenReturn(rows);
+
+        Map<String, Object> response = controller.bookings(authenticatedRequest());
+
+        List<?> bookings = (List<?>) response.get("bookings");
+        assertEquals(2, bookings.size());
+        Map<?, ?> hotel = (Map<?, ?>) bookings.getFirst();
+        assertEquals("81", hotel.get("id"));
+        assertEquals(new BigDecimal("120.00"), hotel.get("price"));
+        assertEquals(14L, hotel.get("partner_listing_id"));
+        assertEquals("2", hotel.get("rooms"));
+        verify(jdbc).queryForList(
+                contains("WHERE user_id = ?"), eq(7L));
     }
 
     @Test
@@ -144,6 +356,7 @@ class ApiControllerTest {
                 List<?> offers = (List<?>) response.get("offers");
                 Map<?, ?> offer = (Map<?, ?>) offers.getFirst();
 
+                assertEquals(false, response.get("flight_link_schema_ready"));
                 assertEquals(1, offers.size());
                 assertEquals("istanbul-dream", offer.get("id"));
                 assertEquals("IST", offer.get("destination_code"));
@@ -154,33 +367,234 @@ class ApiControllerTest {
         }
 
     @Test
-    void monumentSearchMapsAdminCatalogDataToAttractionContract() {
-        when(jdbc.queryForList(contains("FROM tourist_monuments"),
-                eq("khoms"), eq("%khoms%"), eq(""), eq("")))
-                .thenReturn(List.of(Map.ofEntries(
-                        Map.entry("id", "monument-1"),
-                        Map.entry("title", "Leptis Magna"),
-                        Map.entry("location", "Khoms, Libya"),
-                        Map.entry("category_tag", "Historical"),
-                        Map.entry("category", "landmark"),
-                        Map.entry("rating", new BigDecimal("4.90")),
-                        Map.entry("review_count", 3120),
-                        Map.entry("description", "A Roman city"),
-                        Map.entry("working_hours", "8:00 AM - 5:00 PM"),
-                        Map.entry("best_time_to_visit", "Oct - Apr"),
-                        Map.entry("entry_fee", new BigDecimal("5.00")),
-                        Map.entry("image_url", "https://example.com/leptis.jpg"),
-                        Map.entry("tags", "[\"Theatre\",\"Market\"]"))));
+    void monumentSearchReturnsVerifiedProviderPlacesAndCityStatus() {
+        when(openTripMapAttractionService.searchAttractionsWithStatus(
+                eq("Khoms"), eq("Libya"), eq("en"), eq(""), any(), any(), any(),
+                any(), any(), any(), any()))
+                .thenReturn(new OpenTripMapAttractionService.SearchOutcome(
+                        List.of(Map.of(
+                                "id", "N12345",
+                                "name", "Leptis Magna",
+                                "city", "Khoms",
+                                "country", "Libya",
+                                "category_tag", "historical",
+                                "source_provider", "opentripmap",
+                                "wikidata_id", "Q183733")),
+                        true, 1, Map.of(), List.of(), List.of(), 1));
 
-        Map<String, Object> response = controller.searchMonuments("Khoms", null);
+        Map<String, Object> response =
+                controller.searchMonuments("Khoms", null, "Libya", "en");
         Map<?, ?> monument = (Map<?, ?>) ((List<?>) response.get("attractions")).getFirst();
 
         assertEquals("Leptis Magna", monument.get("name"));
         assertEquals("Khoms", monument.get("city"));
         assertEquals("Libya", monument.get("country"));
-        assertEquals("Historical", monument.get("category_tag"));
-        assertEquals("8:00 AM - 5:00 PM", monument.get("opening_hours"));
-        assertEquals(List.of("Theatre", "Market"), monument.get("tags"));
+        assertEquals("historical", monument.get("category_tag"));
+        assertEquals("Q183733", monument.get("wikidata_id"));
+        assertEquals(true, response.get("city_found"));
+        assertEquals("opentripmap", response.get("source"));
+        assertEquals(List.of("opentripmap"), response.get("providers"));
+        verify(openTripMapAttractionService).searchAttractionsWithStatus(
+                "Khoms", "Libya", "en", "", null, null, null, null, null, null, null);
+    }
+
+    @Test
+    void unifiedPlacesEndpointPassesFiltersAndPaginationToTheCatalog() {
+        Map<String, Object> expected = Map.of(
+                "places", List.of(Map.of("canonical_name", "Leptis Magna")),
+                "total_count", 1L,
+                "limit", 10,
+                "offset", 20,
+                "has_more", false);
+        when(landmarkCatalogService.listCanonicalPlaces(
+                "Leptis", "Khoms", "Libya", "historic", "en", 10, 20))
+                .thenReturn(expected);
+
+        Map<String, Object> actual = controller.listCanonicalPlaces(
+                "Leptis", "Khoms", "Libya", "historic", "en", 10, 20);
+
+        assertEquals(expected, actual);
+        verify(landmarkCatalogService).listCanonicalPlaces(
+                "Leptis", "Khoms", "Libya", "historic", "en", 10, 20);
+    }
+
+    @Test
+    void placeIngestionUsesTheConfiguredOpenTripMapSource() {
+        List<Map<String, Object>> records = List.of(Map.of(
+                "xid", "N12345",
+                "name", "Leptis Magna",
+                "latitude", 32.64,
+                "longitude", 14.29));
+        when(landmarkCatalogService.ingestBatch("opentripmap", records))
+                .thenReturn(records);
+
+        Map<String, Object> response = controller.ingestCanonicalPlaces(
+                Map.of("source", "opentripmap", "places", records));
+
+        assertEquals(1, response.get("count"));
+        assertEquals("opentripmap", response.get("source"));
+        assertEquals(records, response.get("places"));
+        verify(landmarkCatalogService).ingestBatch("opentripmap", records);
+    }
+
+    @Test
+    void cityNotFoundIsDistinguishedFromAnEmptyLandmarkResult() {
+        when(openTripMapAttractionService.searchAttractionsWithStatus(
+                eq("No Such City"), eq("Libya"), eq("ar"), eq(""), any(), any(), any(),
+                any(), any(), any(), any()))
+                .thenReturn(new OpenTripMapAttractionService.SearchOutcome(
+                        List.of(), false, 0, Map.of(), List.of(), List.of(), 0));
+
+        Map<String, Object> response =
+                controller.searchMonuments("No Such City", null, "Libya", "ar");
+
+        assertEquals("opentripmap", response.get("source"));
+        assertEquals(false, response.get("city_found"));
+        assertEquals(List.of(), response.get("attractions"));
+        verify(openTripMapAttractionService).searchAttractionsWithStatus(
+                "No Such City", "Libya", "ar", "", null, null, null, null, null, null, null);
+    }
+
+    @Test
+    void arabicCitySearchUsesCountryFilteredGeocodingBeforeOpenTripMap() {
+        GeoapifyAirportService geocoder = mock(GeoapifyAirportService.class);
+        controller.setGeoapifyAirportService(geocoder);
+        when(geocoder.resolveLocation("طرابلس", "ly"))
+                .thenReturn(new GeoapifyAirportService.GeocodedPlace(
+                        "Tripoli", "Tripoli", "Libya", "ly", "Tripoli District",
+                        "Tripoli, Libya", "city", "geo-place", null, 32.89, 13.19));
+        when(openTripMapAttractionService.searchAttractionsWithStatus(
+                eq("Tripoli"), eq("Libya"), eq("ar"), eq(""),
+                eq(32.89), eq(13.19),
+                isNull(), isNull(), isNull(), isNull(), isNull()))
+                .thenReturn(new OpenTripMapAttractionService.SearchOutcome(
+                        List.of(Map.of(
+                                "id", "P123",
+                                "name", "Tripoli landmark",
+                                "source_provider", "opentripmap")),
+                        true, 1, Map.of(), List.of(), List.of(), 1));
+
+        Map<String, Object> response =
+                controller.searchMonuments("طرابلس", null, "ly", "ar");
+
+        assertEquals("opentripmap", response.get("source"));
+        assertEquals(1, ((List<?>) response.get("attractions")).size());
+        verify(geocoder).resolveLocation("طرابلس", "ly");
+        verify(openTripMapAttractionService).searchAttractionsWithStatus(
+                "Tripoli", "Libya", "ar", "", 32.89, 13.19,
+                null, null, null, null, null);
+    }
+
+    @Test
+    void attractionSuggestionsUseTheOpenTripMapServerAdapter() {
+        when(openTripMapAttractionService.suggestPlaces("Trip", "ar", null, null))
+                .thenReturn(List.of(Map.of("label", "طرابلس", "result_type", "city")));
+
+        Map<String, Object> response =
+                controller.suggestAttractionPlaces("Trip", "ar");
+
+        assertEquals(1, ((List<?>) response.get("suggestions")).size());
+        verify(openTripMapAttractionService).suggestPlaces("Trip", "ar", null, null);
+    }
+
+    @Test
+    void countryOnlySearchUsesOnlyOpenTripMap() {
+        when(openTripMapAttractionService.searchAttractionsWithStatus(
+                eq(""), eq("Indonesia"), eq("en"), eq(""), any(), any(), any(),
+                any(), any(), any(), any()))
+                .thenReturn(new OpenTripMapAttractionService.SearchOutcome(
+                        List.of(Map.of("id", "N6789", "name", "Bali place")),
+                        true, 1, Map.of(), List.of(), List.of(), 1));
+
+        Map<String, Object> response =
+                controller.searchMonuments("", null, "Indonesia", "en");
+
+        assertEquals("opentripmap", response.get("source"));
+        verify(openTripMapAttractionService).searchAttractionsWithStatus(
+                "", "Indonesia", "en", "", null, null, null, null, null, null, null);
+    }
+
+    @Test
+    void attractionVisitStoresOnlyAHashAndIncrementsTheCountOnce() {
+        String visitorId = "0123456789abcdef0123456789abcdef";
+        when(jdbc.queryForObject(
+                contains("FROM tourist_monuments"), eq(Boolean.class), eq("place-1")))
+                .thenReturn(true);
+        when(jdbc.update(
+                contains("INSERT INTO attraction_visit_dedup"),
+                eq("place-1"), any(String.class)))
+                .thenReturn(1);
+
+        Map<String, Object> result = controller.recordAttractionVisit(
+                "place-1", Map.of("visitor_id", visitorId));
+
+        assertEquals(Boolean.TRUE, result.get("counted"));
+        verify(jdbc).update(
+                contains("INSERT INTO attraction_visit_dedup"),
+                eq("place-1"),
+                org.mockito.ArgumentMatchers.<String>argThat(
+                        hash -> hash.matches("^[a-f0-9]{64}$") && !hash.equals(visitorId)));
+        verify(jdbc).update(contains("INSERT INTO attraction_visit_counts"), eq("place-1"));
+    }
+
+    @Test
+    void duplicateAttractionVisitDoesNotIncrementTheAggregate() {
+        String visitorId = "0123456789abcdef0123456789abcdef";
+        when(jdbc.queryForObject(
+                contains("FROM tourist_monuments"), eq(Boolean.class), eq("place-1")))
+                .thenReturn(true);
+        when(jdbc.update(
+                contains("INSERT INTO attraction_visit_dedup"),
+                eq("place-1"), any(String.class)))
+                .thenReturn(0);
+
+        Map<String, Object> result = controller.recordAttractionVisit(
+                "place-1", Map.of("visitor_id", visitorId));
+
+        assertEquals(Boolean.FALSE, result.get("counted"));
+        verify(jdbc, never()).update(
+                contains("INSERT INTO attraction_visit_counts"), eq("place-1"));
+    }
+
+    @Test
+    void attractionVisitBlocksBurstsOfDistinctAnonymousVisitors() {
+        ApiController rateLimitedController =
+                new ApiController(
+                        jdbc, "", photoStorage, passwordResetService, openTripMapAttractionService);
+        when(jdbc.queryForObject(
+                contains("FROM tourist_monuments"), eq(Boolean.class), eq("place-1")))
+                .thenReturn(true);
+        when(jdbc.update(
+                contains("INSERT INTO attraction_visit_dedup"),
+                eq("place-1"), any(String.class)))
+                .thenReturn(1);
+
+        for (int i = 0; i < 60; i++) {
+            String visitorId = String.format("%032x", i + 1);
+            Map<String, Object> result = rateLimitedController.recordAttractionVisit(
+                    "place-1", Map.of("visitor_id", visitorId));
+            assertEquals(Boolean.TRUE, result.get("counted"));
+        }
+
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> rateLimitedController.recordAttractionVisit(
+                        "place-1", Map.of("visitor_id", "00000000000000000000000000000061")));
+
+        assertEquals(HttpStatus.TOO_MANY_REQUESTS, error.getStatusCode());
+        verify(jdbc, times(60)).update(
+                contains("INSERT INTO attraction_visit_counts"), eq("place-1"));
+        verify(jdbc, times(60)).update(
+                contains("INSERT INTO attraction_visit_dedup"), eq("place-1"), any(String.class));
+    }
+
+    @Test
+    void attractionVisitRejectsMalformedVisitorIdentifiersBeforeDatabaseWrites() {
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> controller.recordAttractionVisit(
+                        "place-1", Map.of("visitor_id", "not-a-random-device-token")));
+
+        assertEquals(HttpStatus.UNPROCESSABLE_ENTITY, error.getStatusCode());
+        verifyNoInteractions(jdbc);
     }
 
     @Test
@@ -258,7 +672,7 @@ class ApiControllerTest {
                 any(org.springframework.jdbc.support.KeyHolder.class));
         java.sql.Connection connection = mock(java.sql.Connection.class);
         java.sql.PreparedStatement statement = mock(java.sql.PreparedStatement.class);
-        when(connection.prepareStatement(any(String.class), eq(java.sql.Statement.RETURN_GENERATED_KEYS)))
+        when(connection.prepareStatement(any(String.class), org.mockito.AdditionalMatchers.aryEq(new String[]{"id"})))
                 .thenReturn(statement);
         creator.getValue().createPreparedStatement(connection);
 
@@ -321,7 +735,9 @@ class ApiControllerTest {
                         "passenger_count", 2), authenticatedRequest()));
 
         assertEquals(409, error.getStatusCode().value());
-        verify(jdbc).update(contains("$.seats_available"), eq(2), eq(51L), eq(2));
+        verify(jdbc).queryForObject(
+                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                eq(Boolean.class), eq(51L), eq("flight_seats"), eq(2), eq(false));
         verify(jdbc, never()).update(
                 any(org.springframework.jdbc.core.PreparedStatementCreator.class),
                 any(org.springframework.jdbc.support.KeyHolder.class));
@@ -404,9 +820,11 @@ class ApiControllerTest {
                                                                 "passenger_count", "2",
                                                                 "refund_status", "",
                                                                 "refund_method", "")));
-                when(jdbc.update(contains("JSON_SET"), eq(12L), eq(7L))).thenReturn(1);
-                when(jdbc.update(contains("$.seats_available"), eq(2), eq(51L)))
-                                .thenReturn(1);
+                when(jdbc.update(contains("jsonb_build_object"), eq(12L), eq(7L))).thenReturn(1);
+                when(jdbc.queryForObject(
+                                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                                eq(Boolean.class), eq(51L), eq("flight_seats"), eq(2), eq(true)))
+                                .thenReturn(true);
 
                 ResponseEntity<?> response = controller.deleteTrip(12L, authenticatedRequest());
 
@@ -415,8 +833,9 @@ class ApiControllerTest {
                                 "status", "cancelled",
                                 "refund_status", "pending_airline_review",
                                 "refund_method", "original_payment_method"), response.getBody());
-                verify(jdbc).update(
-                                contains("$.seats_available"), eq(2), eq(51L));
+                verify(jdbc).queryForObject(
+                                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                                eq(Boolean.class), eq(51L), eq("flight_seats"), eq(2), eq(true));
                 verify(jdbc, never()).update(contains("DELETE FROM trips"), eq(12L), eq(7L));
         }
 
@@ -435,7 +854,7 @@ class ApiControllerTest {
 
                 assertEquals(200, response.getStatusCode().value());
                 assertEquals("pending_airline_review", ((Map<?, ?>) response.getBody()).get("refund_status"));
-                verify(jdbc, never()).update(contains("JSON_SET"), eq(12L), eq(7L));
+                verify(jdbc, never()).update(contains("jsonb_build_object"), eq(12L), eq(7L));
                 verify(jdbc, never()).update(contains("$.seats_available"), eq(2), eq(51L));
         }
 
@@ -495,8 +914,10 @@ class ApiControllerTest {
                         "hotel_rooms_reserved", 2)));
         when(jdbc.update(contains("UPDATE bookings SET status = 'cancelled'"),
                 eq(18L), eq(7L))).thenReturn(1);
-        when(jdbc.update(contains("available_rooms + ?"),
-                eq(2), eq(2), eq(42L), eq(2))).thenReturn(1);
+        when(jdbc.queryForObject(
+                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                eq(Boolean.class), eq(42L), eq("hotel_rooms"), eq(2), eq(true)))
+                .thenReturn(true);
 
         ResponseEntity<?> response = controller.cancelBooking(18L, authenticatedRequest());
 
@@ -504,8 +925,9 @@ class ApiControllerTest {
         assertEquals(Map.of("status", "cancelled"), response.getBody());
         verify(jdbc).update(contains("UPDATE bookings SET status = 'cancelled'"),
                 eq(18L), eq(7L));
-        verify(jdbc).update(contains("available_rooms + ?"),
-                eq(2), eq(2), eq(42L), eq(2));
+        verify(jdbc).queryForObject(
+                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                eq(Boolean.class), eq(42L), eq("hotel_rooms"), eq(2), eq(true));
     }
 
     @Test
@@ -574,6 +996,7 @@ class ApiControllerTest {
 
         assertTrue(withImage.contains("\"image_url\":\"https://example.com/car.jpg\""));
         assertTrue(withImage.contains("\"end_date\":\"2026-11-12T09:00Z\""));
+        assertTrue(withImage.contains("\"rooms\":2"));
         assertTrue(withImage.contains("\"hotel_rooms_reserved\":2"));
         assertTrue(!unsafe.contains("image_url"));
         assertTrue(!missing.contains("image_url"));
@@ -593,10 +1016,10 @@ class ApiControllerTest {
                 .thenReturn(List.of(Map.of("id", 7L)));
         when(jdbc.queryForList(contains("FROM bookings"), eq(7L), eq("hotel")))
                 .thenReturn(List.of());
-        when(jdbc.update(
-                contains("SET attributes = JSON_SET"),
-                eq(2), eq(2), eq(42L), eq(2)))
-                .thenReturn(0);
+        when(jdbc.queryForObject(
+                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                eq(Boolean.class), eq(42L), eq("hotel_rooms"), eq(2), eq(false)))
+                .thenReturn(false);
 
         ResponseStatusException error = assertThrows(
                 ResponseStatusException.class,
@@ -612,8 +1035,9 @@ class ApiControllerTest {
 
         assertEquals(409, error.getStatusCode().value());
         assertEquals("HOTEL_SOLD_OUT", error.getReason());
-        verify(jdbc).update(
-                contains("available_rooms >= ?"), eq(2), eq(2), eq(42L), eq(2));
+        verify(jdbc).queryForObject(
+                eq("SELECT public.zentrip_adjust_listing_inventory(?, ?, ?, ?)"),
+                eq(Boolean.class), eq(42L), eq("hotel_rooms"), eq(2), eq(false));
     }
 
     @Test
@@ -720,7 +1144,7 @@ class ApiControllerTest {
         assertEquals("ZT-12345678", booking.get("reference"));
         assertEquals(List.of("1A"), booking.get("seats"));
         assertEquals(List.of("extra_baggage"), booking.get("extras"));
-        verify(jdbc, never()).update(contains("SET attributes = JSON_SET"),
+        verify(jdbc, never()).update(contains("SET attributes = jsonb_set"),
                 any(Object[].class));
     }
 

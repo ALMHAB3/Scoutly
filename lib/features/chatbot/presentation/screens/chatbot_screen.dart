@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/currency_service.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/confirm_dialog.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -180,7 +181,28 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     }
                     final msg = _chatCtrl.messages[i];
                     if (msg.isItinerary && msg.itineraryData != null) {
-                      return ItineraryCard(data: msg.itineraryData!);
+                      return ItineraryCard(
+                        data: msg.itineraryData!,
+                        isSaved: msg.isSavedItinerary,
+                        onSave: () async {
+                          try {
+                            await _chatCtrl.saveItinerary(msg);
+                            if (ctx.mounted) {
+                              AppSnackbar.success(
+                                ctx,
+                                l10n.chatItinerarySavedSuccess,
+                              );
+                            }
+                          } catch (_) {
+                            if (ctx.mounted) {
+                              AppSnackbar.error(
+                                ctx,
+                                l10n.chatItinerarySaveFailed,
+                              );
+                            }
+                          }
+                        },
+                      );
                     }
                     return _MessageBubble(message: msg);
                   },
@@ -218,10 +240,15 @@ class _QuickPrompts extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).languageCode;
+    final budget = CurrencyService.instance.format(1000, locale: locale);
     final prompts = <(String, String)>[
       (l10n.chatQuickPromptIstanbul, l10n.chatQuickPromptIstanbulText),
       (l10n.chatQuickPromptCheapest, l10n.chatQuickPromptCheapestText),
-      (l10n.chatQuickPromptBudget, l10n.chatQuickPromptBudgetText),
+      (
+        l10n.chatQuickPromptBudget(budget),
+        l10n.chatQuickPromptBudgetText(budget)
+      ),
     ];
     return Container(
       height: 46,
@@ -308,14 +335,14 @@ class _MessageBubble extends StatelessWidget {
     );
 
     if (isUser) {
-      return Align(alignment: Alignment.centerRight, child: bubble)
+      return Align(alignment: AlignmentDirectional.centerEnd, child: bubble)
           .animate()
           .fade(duration: 200.ms)
           .slideX(begin: 0.05, end: 0);
     }
 
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -323,7 +350,7 @@ class _MessageBubble extends StatelessWidget {
           Container(
             width: 30,
             height: 30,
-            margin: const EdgeInsets.only(right: 6, bottom: 2),
+            margin: const EdgeInsetsDirectional.only(end: 6, bottom: 2),
             decoration: const BoxDecoration(
                 gradient: AppColors.purpleGradient, shape: BoxShape.circle),
             child: const Icon(Icons.auto_awesome_rounded,
@@ -340,14 +367,14 @@ class _TypingIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: AlignmentDirectional.centerStart,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 30,
             height: 30,
-            margin: const EdgeInsets.only(right: 6),
+            margin: const EdgeInsetsDirectional.only(end: 6),
             decoration: const BoxDecoration(
                 gradient: AppColors.purpleGradient, shape: BoxShape.circle),
             child: const Icon(Icons.auto_awesome_rounded,

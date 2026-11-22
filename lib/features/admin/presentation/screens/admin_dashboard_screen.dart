@@ -4,11 +4,22 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../global_widgets/app_logo.dart';
+import '../../../../global_widgets/confirm_dialog.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/admin_dashboard_model.dart';
 import '../../../../routes/app_routes.dart';
+import 'admin_catalog_management.dart';
+import 'admin_partners_management.dart';
 
-enum _AdminSection { overview, reservations, customers }
+enum _AdminSection {
+  overview,
+  popularity,
+  partners,
+  offers,
+  reservations,
+  customers,
+}
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -20,12 +31,16 @@ class AdminDashboardScreen extends StatefulWidget {
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   _AdminSection _section = _AdminSection.overview;
   AdminDashboardData? _dashboard;
+  AdminAttractionPopularity? _popularity;
   List<AdminReservation> _reservations = [];
   List<AdminCustomer> _customers = [];
   bool _loading = true;
   bool _loadingSection = false;
   String? _error;
   String _customerQuery = '';
+  final _partnersKey = GlobalKey<AdminPartnersManagementState>();
+  final _catalogKey = GlobalKey<AdminCatalogManagementState>();
+  AdminCatalogKind _catalogKind = AdminCatalogKind.offers;
 
   @override
   void initState() {
@@ -55,12 +70,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       _section = section;
       _error = null;
     });
-    if (section == _AdminSection.overview) return;
-    if (section == _AdminSection.reservations && _reservations.isNotEmpty) return;
+    if (section == _AdminSection.overview ||
+        section == _AdminSection.partners ||
+        section == _AdminSection.offers) {
+      return;
+    }
+    if (section == _AdminSection.popularity && _popularity != null) return;
+    if (section == _AdminSection.reservations && _reservations.isNotEmpty) {
+      return;
+    }
     if (section == _AdminSection.customers && _customers.isNotEmpty) return;
 
     setState(() => _loadingSection = true);
-    if (section == _AdminSection.reservations) {
+    if (section == _AdminSection.popularity) {
+      final result = await ApiService.instance.getAdminAttractionPopularity();
+      if (!mounted) return;
+      setState(() {
+        _loadingSection = false;
+        if (result.isSuccess && result.data != null) {
+          _popularity = result.data;
+        } else {
+          _error = result.errorMessage;
+        }
+      });
+    } else if (section == _AdminSection.reservations) {
       final result = await ApiService.instance.getAdminReservations();
       if (!mounted) return;
       setState(() {
@@ -104,7 +137,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       } else {
         setState(() => _error = result.errorMessage);
       }
+    } else if (_section == _AdminSection.popularity) {
+      final result = await ApiService.instance.getAdminAttractionPopularity();
+      if (!mounted) return;
+      if (result.isSuccess && result.data != null) {
+        setState(() => _popularity = result.data);
+      } else {
+        setState(() => _error = result.errorMessage);
+      }
+    } else if (_section == _AdminSection.partners) {
+      final state = _partnersKey.currentState;
+      if (state != null) await state.reload();
+    } else if (_section == _AdminSection.offers) {
+      final state = _catalogKey.currentState;
+      if (state != null) await state.reload();
     }
+  }
+
+  Future<void> _logout() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showAppConfirmDialog(
+      context,
+      title: l10n.logoutConfirmTitle,
+      message: l10n.logoutConfirmMessage,
+      confirmLabel: l10n.logout,
+      isDanger: true,
+    );
+    if (!confirmed || !mounted) return;
+    await ApiService.instance.logout();
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.auth, (_) => false);
   }
 
   @override
@@ -131,11 +193,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   children: [
                     _topBar(l10n, user!.name, isWide),
                     Expanded(
-                      child: RefreshIndicator(
-                        color: AppColors.primary,
-                        onRefresh: _refresh,
-                        child: _content(l10n, isWide),
-                      ),
+                      child: _section == _AdminSection.partners ||
+                              _section == _AdminSection.offers
+                          ? _managementContent()
+                          : RefreshIndicator(
+                              color: AppColors.primary,
+                              onRefresh: _refresh,
+                              child: _content(l10n, isWide),
+                            ),
                     ),
                   ],
                 ),
@@ -196,6 +261,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const SizedBox(height: 8),
           _navItem(
+            l10n.adminPopularity,
+            Icons.insights_outlined,
+            _AdminSection.popularity,
+          ),
+          const SizedBox(height: 8),
+          _navItem(
+            l10n.adminPartners,
+            Icons.business_outlined,
+            _AdminSection.partners,
+          ),
+          const SizedBox(height: 8),
+          _navItem(
+            l10n.adminCatalog,
+            Icons.local_offer_outlined,
+            _AdminSection.offers,
+          ),
+          const SizedBox(height: 8),
+          _navItem(
             l10n.adminReservations,
             Icons.book_online_outlined,
             _AdminSection.reservations,
@@ -208,15 +291,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           ),
           const Spacer(),
           Divider(color: isDark ? AppColors.darkBorder : AppColors.divider),
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-            leading: const Icon(Icons.open_in_new_rounded, size: 20),
-            title: Text(l10n.adminBackToApp,
-                style: const TextStyle(fontSize: 13)),
-            onTap: () =>
-                Navigator.pushReplacementNamed(context, AppRoutes.home),
-          ),
-          const SizedBox(height: 10),
           _AdminIdentity(name: name),
         ],
       ),
@@ -267,6 +341,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         NavigationDestination(
             icon: const Icon(Icons.space_dashboard_outlined),
             label: l10n.adminOverview),
+        NavigationDestination(
+            icon: const Icon(Icons.insights_outlined),
+            label: l10n.adminPopularity),
+        NavigationDestination(
+            icon: const Icon(Icons.business_outlined),
+            label: l10n.adminPartners),
+        NavigationDestination(
+            icon: const Icon(Icons.local_offer_outlined),
+            label: l10n.adminCatalog),
         NavigationDestination(
             icon: const Icon(Icons.book_online_outlined),
             label: l10n.adminReservations),
@@ -323,13 +406,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             onPressed: _loading ? null : _refresh,
             icon: const Icon(Icons.refresh_rounded),
           ),
-          if (!isWide)
-            IconButton(
-              tooltip: l10n.adminBackToApp,
-              onPressed: () =>
-                  Navigator.pushReplacementNamed(context, AppRoutes.home),
-              icon: const Icon(Icons.home_outlined),
-            ),
+          IconButton(
+            tooltip: l10n.logout,
+            onPressed: _logout,
+            icon: const Icon(Icons.logout_rounded),
+          ),
           const SizedBox(width: 4),
           CircleAvatar(
             radius: 18,
@@ -347,9 +428,59 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   String _sectionTitle(AppLocalizations l10n) => switch (_section) {
         _AdminSection.overview => l10n.adminOverview,
+        _AdminSection.popularity => l10n.adminPopularity,
+        _AdminSection.partners => l10n.adminPartners,
+        _AdminSection.offers => l10n.adminCatalog,
         _AdminSection.reservations => l10n.adminReservations,
         _AdminSection.customers => l10n.adminCustomers,
       };
+
+  Widget _managementContent() => LayoutBuilder(
+        builder: (context, constraints) => Center(
+          child: SizedBox(
+            width: constraints.maxWidth > 1320 ? 1320 : constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: _section == _AdminSection.partners
+                ? AdminPartnersManagement(key: _partnersKey)
+                : Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(18, 14, 18, 8),
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: SegmentedButton<AdminCatalogKind>(
+                            segments: [
+                              ButtonSegment(
+                                value: AdminCatalogKind.monuments,
+                                icon: const Icon(Icons.place_outlined),
+                                label: Text(
+                                    AppLocalizations.of(context).adminPlaces),
+                              ),
+                              ButtonSegment(
+                                value: AdminCatalogKind.offers,
+                                icon: const Icon(Icons.local_offer_outlined),
+                                label: Text(
+                                    AppLocalizations.of(context).adminOffers),
+                              ),
+                            ],
+                            selected: {_catalogKind},
+                            onSelectionChanged: (selection) {
+                              setState(() => _catalogKind = selection.first);
+                            },
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: AdminCatalogManagement(
+                          key: _catalogKey,
+                          kind: _catalogKind,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      );
 
   Widget _content(AppLocalizations l10n, bool isWide) {
     if (_loading && _dashboard == null) {
@@ -378,13 +509,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final horizontalPadding = isWide ? 32.0 : 18.0;
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(
-          horizontalPadding, 24, horizontalPadding, 32),
+      padding:
+          EdgeInsets.fromLTRB(horizontalPadding, 24, horizontalPadding, 32),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1320),
           child: switch (_section) {
             _AdminSection.overview => _overview(l10n, isWide),
+            _AdminSection.popularity => _popularityView(l10n),
+            _AdminSection.partners =>
+              AdminPartnersManagement(key: _partnersKey),
+            _AdminSection.offers => AdminCatalogManagement(
+                key: _catalogKey,
+                kind: _catalogKind,
+              ),
             _AdminSection.reservations => _reservationsView(l10n),
             _AdminSection.customers => _customersView(l10n, isWide),
           },
@@ -396,7 +534,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _overview(AppLocalizations l10n, bool isWide) {
     final data = _dashboard;
     if (data == null) return const SizedBox.shrink();
-    final cardColumns = isWide ? 4 : 2;
+    final cardColumns = isWide ? 3 : 2;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -417,12 +555,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             children: [
               _MetricCard(
                 width: cardWidth,
+                title: l10n.adminUserCount,
+                value: '${data.totalUserCount}',
+                icon: Icons.groups_rounded,
+                color: AppColors.primary,
+                footnote: l10n.adminCustomerCount,
+                footnoteValue: '${data.customerCount}',
+              ),
+              _MetricCard(
+                width: cardWidth,
                 title: l10n.adminCustomerCount,
                 value: '${data.customerCount}',
                 icon: Icons.people_alt_outlined,
                 color: AppColors.primary,
                 footnote: l10n.adminNewCustomers,
                 footnoteValue: '+${data.newCustomers}',
+              ),
+              _MetricCard(
+                width: cardWidth,
+                title: l10n.adminPartnerCount,
+                value: '${data.partnerCount}',
+                icon: Icons.business_outlined,
+                color: AppColors.accentPurple,
+                footnote: l10n.adminActivePartnerListings,
+                footnoteValue: '${data.activePartnerListingCount}',
               ),
               _MetricCard(
                 width: cardWidth,
@@ -445,11 +601,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               _MetricCard(
                 width: cardWidth,
                 title: l10n.adminBookedValue,
-                value: NumberFormat.currency(
-                  locale: Localizations.localeOf(context).toString(),
-                  symbol: '\$',
-                  decimalDigits: 0,
-                ).format(data.bookedValue),
+                value: '',
+                amount: data.bookedValue,
                 icon: Icons.payments_outlined,
                 color: AppColors.accentGreen,
                 footnote: l10n.adminReservationCount,
@@ -467,8 +620,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(width: 18),
               Expanded(
                 flex: 2,
-                child: _recentReservations(
-                    l10n, data.recentReservations, compact: true),
+                child: _recentReservations(l10n, data.recentReservations,
+                    compact: true),
               ),
             ],
           )
@@ -481,10 +634,77 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
+  Widget _popularityView(AppLocalizations l10n) {
+    final popularity = _popularity ??
+        const AdminAttractionPopularity(
+          places: [],
+          countries: [],
+        );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _Panel(
+          title: l10n.adminCountryVisits,
+          child: popularity.countries.isEmpty
+              ? _EmptyText(l10n.adminNoCountryVisits)
+              : Column(
+                  children: popularity.countries
+                      .map((item) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.public_rounded),
+                            title: Text(
+                              item.country == 'Unspecified country'
+                                  ? l10n.adminUnspecifiedCountry
+                                  : item.country,
+                            ),
+                            trailing: Text(
+                              NumberFormat.decimalPattern(
+                                      Localizations.localeOf(context)
+                                          .toString())
+                                  .format(item.visitCount),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ))
+                      .toList(),
+                ),
+        ),
+        const SizedBox(height: 18),
+        _Panel(
+          title: l10n.adminPlaceVisits,
+          child: popularity.places.isEmpty
+              ? _EmptyText(l10n.adminNoPlaceVisits)
+              : Column(
+                  children: popularity.places
+                      .map((item) => ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.place_outlined),
+                            title: Text(item.title),
+                            subtitle: Text([
+                              item.city,
+                              item.country.isEmpty
+                                  ? l10n.adminUnspecifiedCountry
+                                  : item.country,
+                            ].where((part) => part.isNotEmpty).join(', ')),
+                            trailing: Text(
+                              NumberFormat.decimalPattern(
+                                      Localizations.localeOf(context)
+                                          .toString())
+                                  .format(item.visitCount),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ))
+                      .toList(),
+                ),
+        ),
+      ],
+    );
+  }
+
   Widget _reservationMix(AppLocalizations l10n, AdminDashboardData data) {
-    final total = data.flightCount +
-        data.serviceBookingCount +
-        data.transferCount;
+    final total =
+        data.flightCount + data.serviceBookingCount + data.transferCount;
     return _Panel(
       title: l10n.adminReservationBreakdown,
       child: Column(
@@ -625,6 +845,7 @@ class _MetricCard extends StatelessWidget {
   final double width;
   final String title;
   final String value;
+  final double? amount;
   final IconData icon;
   final Color color;
   final String footnote;
@@ -634,6 +855,7 @@ class _MetricCard extends StatelessWidget {
     required this.width,
     required this.title,
     required this.value,
+    this.amount,
     required this.icon,
     required this.color,
     required this.footnote,
@@ -649,8 +871,8 @@ class _MetricCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.border),
+        border:
+            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.08 : 0.025),
@@ -690,10 +912,18 @@ class _MetricCard extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: AlignmentDirectional.centerStart,
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 27, fontWeight: FontWeight.w800),
-            ),
+            child: amount == null
+                ? Text(
+                    value,
+                    style: const TextStyle(
+                        fontSize: 27, fontWeight: FontWeight.w800),
+                  )
+                : CurrencyAmountText(
+                    amount: amount!,
+                    decimalDigits: 0,
+                    style: const TextStyle(
+                        fontSize: 27, fontWeight: FontWeight.w800),
+                  ),
           ),
           const SizedBox(height: 10),
           Row(
@@ -740,8 +970,8 @@ class _Panel extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.border),
+        border:
+            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -825,11 +1055,6 @@ class _ReservationTile extends StatelessWidget {
         ? '—'
         : DateFormat.yMMMd(Localizations.localeOf(context).toString())
             .format(reservation.reservationDate!.toLocal());
-    final amount = NumberFormat.currency(
-      locale: Localizations.localeOf(context).toString(),
-      symbol: '\$',
-      decimalDigits: 0,
-    ).format(reservation.amount);
     final normalizedStatus = reservation.status.toLowerCase();
     final statusColor = normalizedStatus.contains('cancel')
         ? AppColors.accentRed
@@ -900,7 +1125,9 @@ class _ReservationTile extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(amount,
+              CurrencyAmountText(
+                  amount: reservation.amount,
+                  decimalDigits: 0,
                   style: const TextStyle(
                       fontSize: 11, fontWeight: FontWeight.w700)),
               const SizedBox(height: 5),
@@ -1039,8 +1266,8 @@ class _EmptyText extends StatelessWidget {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style:
-                TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
       );
@@ -1095,8 +1322,8 @@ class _AccessDenied extends StatelessWidget {
                   Text(message, textAlign: TextAlign.center),
                   const SizedBox(height: 18),
                   FilledButton(
-                    onPressed: () => Navigator.pushReplacementNamed(
-                        context, AppRoutes.home),
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, AppRoutes.home),
                     child: Text(AppLocalizations.of(context).adminBackToApp),
                   ),
                 ],

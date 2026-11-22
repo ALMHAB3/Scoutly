@@ -26,17 +26,21 @@ class CarController extends ChangeNotifier {
 
   Future<void> search(CarSearchParams params) async {
     searchParams = params;
+    results = [];
     isLoading = true;
     notifyListeners();
-    results = await ApiService.instance.searchCars(
-      city: params.city,
-      pickupDate: params.pickupDate,
-      returnDate: params.returnDate,
-      carType: params.carType,
-    );
-    results.sort((a, b) => a.pricePerDay.compareTo(b.pricePerDay));
-    isLoading = false;
-    notifyListeners();
+    try {
+      results = await ApiService.instance.searchCars(
+        city: params.city,
+        pickupDate: params.pickupDate,
+        returnDate: params.returnDate,
+        carType: params.carType,
+      );
+      results.sort((a, b) => a.pricePerDay.compareTo(b.pricePerDay));
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> searchNearby(
@@ -46,16 +50,20 @@ class CarController extends ChangeNotifier {
     double radiusMeters = 50000,
   }) async {
     searchParams = params;
+    results = [];
     isLoading = true;
     notifyListeners();
-    results = await ApiService.instance.nearbyCars(
-      lat: latitude,
-      lng: longitude,
-      radiusMeters: radiusMeters,
-      carType: params.carType,
-    );
-    isLoading = false;
-    notifyListeners();
+    try {
+      results = await ApiService.instance.nearbyCars(
+        lat: latitude,
+        lng: longitude,
+        radiusMeters: radiusMeters,
+        carType: params.carType,
+      );
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 
   void selectCar(CarModel car) {

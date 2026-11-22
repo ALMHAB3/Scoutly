@@ -2,6 +2,7 @@ package com.zentrip.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 class PasswordResetServiceTest {
@@ -69,10 +71,19 @@ class PasswordResetServiceTest {
         resetRow.put("attempts", 0);
         when(jdbc.queryForList(contains("SELECT code_hash"), eq(EMAIL)))
                 .thenReturn(List.of(resetRow));
+        when(jdbc.queryForObject(contains("SELECT id FROM users"), eq(Long.class), eq(EMAIL)))
+                .thenReturn(1L);
         when(jdbc.update(contains("UPDATE users SET password"), anyString(), eq(EMAIL)))
                 .thenReturn(1);
 
         assertTrue(service.resetPassword(EMAIL, code, "new-password"));
+        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
+        verify(jdbc).update(
+                contains("UPDATE users SET password"),
+                passwordCaptor.capture(),
+                eq(EMAIL));
+        assertNotEquals("new-password", passwordCaptor.getValue());
+        assertTrue(new BCryptPasswordEncoder().matches("new-password", passwordCaptor.getValue()));
         verify(jdbc).update(contains("DELETE FROM api_tokens"), eq(EMAIL));
         verify(jdbc).update("DELETE FROM password_reset_codes WHERE email = ?", EMAIL);
     }

@@ -5,7 +5,7 @@
   "welcomeSubtitle": "رفيقك الذكي للرحلة المثالية",
   "navHome": "استكشف",
   "navTrips": "رحلاتي",
-  "navChatbot": "زن AI",
+  "navChatbot": "Zen AI",
   "navNearby": "قريب منك",
   "navProfile": "الملف",
   "greeting": "أهلاً بعودتك 👋",
@@ -34,7 +34,7 @@
   "quickActionTransfers": "تاكسي",
   "upcomingTrip": "الرحلة القادمة",
   "noUpcomingTrip": "لا توجد رحلة قادمة",
-  "startPlanningWithZen": "ابدأ التخطيط مع زن AI",
+  "startPlanningWithZen": "ابدأ التخطيط مع Zen AI",
   "inspiredDestinations": "وجهات مقترحة لك",
   "viewAll": "عرض الكل",
   "featured": "مميز",
@@ -86,6 +86,20 @@
   "resendCode": "إعادة إرسال الرمز",
   "resetPasswordTitle": "إنشاء كلمة مرور جديدة",
   "resetPasswordSubtitle": "اختر كلمة مرور قوية لحماية حسابك",
+  "resetPasswordTitleLine1": "إعادة تعيين",
+  "resetPasswordTitleLine2": "كلمة المرور",
+  "resetCodeInputHint": "أدخل رمز إعادة التعيين المكوّن من 6 أرقام",
+  "demoPasswordResetNotice": "للعرض التجريبي فقط: استخدم الرمز 123456. لن تتغير كلمة مرور أي حساب حقيقي.",
+  "resetCodeInvalid": "أدخل رمز إعادة تعيين صحيحًا مكوّنًا من 6 أرقام",
+  "resetPasswordFieldsRequired": "أدخل كلمة المرور الجديدة وأكدها",
+  "resetPasswordMinLength": "استخدم 8 أحرف على الأقل",
+  "resetPasswordMismatch": "كلمتا المرور غير متطابقتين",
+  "resetPasswordButton": "إعادة تعيين كلمة المرور",
+  "passwordResetSuccessTitle": "اكتملت إعادة تعيين كلمة المرور",
+  "demoPasswordResetComplete": "اكتمل العرض التجريبي. لم تتغير كلمة مرور أي حساب حقيقي.",
+  "backToLogin": "العودة إلى تسجيل الدخول",
+  "showPassword": "إظهار كلمة المرور",
+  "hidePassword": "إخفاء كلمة المرور",
   "saveNewPassword": "حفظ كلمة المرور",
   "genericError": "حدث خطأ ما، حاول مجدداً",
   "bookingLoadError": "تعذّر تحميل تفاصيل الحجز",
@@ -129,14 +143,35 @@
   "notifPromoTitle": "عرض خاص",
   "notifPromoBody": "خصم 20% على تأجير السيارات نهاية الأسبوع ده",
   "notifTripCancelledTitle": "تم إلغاء الرحلة",
-  "notifEmptyTitle": "مفيش إشعارات لسه",
+  "notifEmptyTitle": "لا توجد إشعارات حتى الآن",
+  "notifEmptyHint": "ستظهر هنا تحديثات الحجوزات والرحلات.",
+  "notifMarkAllRead": "تحديد الكل كمقروء",
+  "notifNewSection": "الجديد",
+  "notifEarlierSection": "السابق",
+  "notifTimeAgoNow": "الآن",
+  "notifTimeAgoMinutes": "منذ {minutes} دقيقة",
+  "@notifTimeAgoMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "Object"
+      }
+    }
+  },
+  "notifUnreadCount": "عدد الإشعارات غير المقروءة: {count}",
+  "@notifUnreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
   "notifTimeAgoHours": "من {hours} ساعة",
   "notifTimeAgoDays": "من {days} يوم",
   "tripReminders": "تذكيرات الرحلات",
   "tripRemindersDesc": "احصل على إشعار قبل رحلاتك",
   "promotions": "العروض والتخفيضات",
   "promotionsDesc": "صفقات وعروض حصرية",
-  "zenMessages": "رسائل زن AI",
+  "zenMessages": "رسائل Zen AI",
   "zenMessagesDesc": "ردود المحادثة والاقتراحات",
   "generalUpdates": "التحديثات العامة",
   "generalUpdatesDesc": "أخبار وتحديثات التطبيق",
@@ -176,6 +211,9 @@
   "visaOnArrival": "تأشيرة عند الوصول",
   "eVisa": "تأشيرة إلكترونية مطلوبة",
   "visaRequired": "تأشيرة مطلوبة",
+  "sampleDataLabel": "بيانات تجريبية",
+  "destinationInfoUnavailable": "معلومات الطقس والتأشيرة غير متاحة حاليًا.",
+  "destinationInfoPartial": "بعض معلومات الوجهة غير متاحة.",
   "offlineBannerText": "انت غير متصل — بنعرضلك آخر بيانات محفوظة",
   "security": "الأمان وكلمة المرور",
   "logout": "تسجيل الخروج",
@@ -188,7 +226,7 @@
   "arabic": "العربية",
   "english": "English",
   "onboardingTitle1": "خطط لرحلة أحلامك",
-  "onboardingDesc1": "يساعدك زن AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.",
+  "onboardingDesc1": "يساعدك Zen AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.",
   "onboardingTitle2": "اكتشف ما بالقرب منك",
   "onboardingDesc2": "استكشف المطاعم والمعالم والجواهر الخفية حولك — أينما كنت في العالم.",
   "onboardingTitle3": "احجز كل شيء في مكان واحد",
@@ -196,19 +234,19 @@
   "onboardingNext": "التالي",
   "onboardingStart": "ابدأ الآن",
   "onboardingSkip": "تخطي",
-  "chatbotTitle": "مساعد زن الذكي",
+  "chatbotTitle": "Zen AI",
   "chatbotSubtitle": "مدعوم بالذكاء الاصطناعي",
-  "chatbotWelcome": "أهلاً! أنا زن، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨",
-  "chatbotInputHint": "اسأل زن أي شيء...",
+  "chatbotWelcome": "أهلاً! أنا Zen AI، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨",
+  "chatbotInputHint": "اسأل Zen AI أي شيء...",
   "chatbotSend": "إرسال",
   "newChat": "محادثة جديدة",
   "chatHistoryTitle": "سجل المحادثات",
   "noChatHistory": "لا توجد محادثات سابقة",
-  "noChatHistorySubtitle": "ستظهر محادثاتك مع زن هنا",
+  "noChatHistorySubtitle": "ستظهر محادثاتك مع Zen AI هنا",
   "clearChatTitle": "محادثة جديدة",
   "clearChatMessage": "سيتم حفظ المحادثة الحالية وبدء محادثة جديدة. هل تريد المتابعة؟",
   "suggestItinerary": "اقترح برنامجاً",
-  "zenTyping": "زن يفكر...",
+  "zenTyping": "يفكر Zen AI...",
   "quickPrompt1": "خطط رحلة إلى إسطنبول",
   "quickPrompt2": "أفضل وقت لزيارة بالي؟",
   "quickPrompt3": "أفكار رحلات اقتصادية لأوروبا",
@@ -224,7 +262,13 @@
   "travelPaceBalanced": "متوازنة",
   "travelPacePacked": "مكثفة",
   "travelDurationLabel": "مدة الرحلة: {days} أيام",
-  "@travelDurationLabel": { "placeholders": { "days": { "type": "int" } } },
+  "@travelDurationLabel": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "travelersLabel": "عدد المسافرين",
   "travelDestinationLabel": "الوجهة المفضلة (اختياري)",
   "travelDestinationHint": "مثال: إسطنبول",
@@ -293,6 +337,31 @@
   "roundTrip": "ذهاب وعودة",
   "searchFlightsBtn": "البحث عن رحلات",
   "flightResults": "الرحلات المتاحة",
+  "flightSelectTitle": "اختر الرحلة",
+  "flightDateLabel": "تاريخ الرحلة",
+  "flightCalendar": "التقويم",
+  "flightAirlinesCount": "{count, plural, =0{لا توجد شركات طيران} =1{شركة طيران واحدة} =2{شركتا طيران} few{{count} شركات طيران} many{{count} شركة طيران} other{{count} شركة طيران}}",
+  "@flightAirlinesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flightFare": "الأجرة",
+  "flightSeatsLabel": "المقاعد",
+  "flightPerPerson": "لكل شخص",
+  "flightDurationShort": "{hours} س {minutes} د",
+  "@flightDurationShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "cheapest": "الأرخص",
   "fastest": "الأسرع",
   "seatsLeft": "{count} مقاعد متبقية",
@@ -380,8 +449,9 @@
   "carTypeAll": "الكل",
   "carSearching": "جارٍ البحث...",
   "carSearchButton": "ابحث عن سيارة",
+  "carSearchFailed": "تعذّر البحث عن السيارات حاليًا. يرجى المحاولة مرة أخرى.",
   "carResults": "النتائج",
-  "carNoResults": "لا توجد سيارات متاحة",
+  "carNoResults": "لا توجد سيارات من الشركاء تطابق الموقع والتواريخ المحددة.",
   "carSeatsCount": "{count} مقاعد",
   "carBagsCount": "{count} حقيبة",
   "carDaysCount": "{count} أيام",
@@ -420,7 +490,7 @@
   "transferChooseTime": "اختر الوقت",
   "transferVehicleOptions": "خيارات التاكسي",
   "transferRidePriceNote": "السعر الإجمالي لهذه السيارة",
-  "transferNoSuitableRides": "لا توجد سيارة تناسب عدد الركاب. جرّب تقليل العدد.",
+  "transferNoSuitableRides": "لا توجد خدمات نقل من الشركاء تطابق المواقع وعدد الركاب.",
   "transferLocationRequired": "أدخل موقع الانطلاق والوجهة.",
   "transferRidePrivate": "سيارة خاصة",
   "taxiSelectPickupOnMap": "حدد موقع الانطلاق على الخريطة",
@@ -432,7 +502,10 @@
   "taxiLocationPermissionDeniedForever": "تم حظر الوصول إلى الموقع. فعّله من إعدادات التطبيق لعرض الخريطة بالقرب منك.",
   "taxiLocationUnavailable": "تعذر تحديد موقعك الحالي. تحقق من الإشارة وحاول مرة أخرى.",
   "taxiUseCurrentLocation": "عرض موقعي الحالي على الخريطة",
-  "attractionSearchHint": "ابحث عن وجهة أو معلم...",
+  "attractionSearchHint": "ابحث عن مدينة أو دولة أو معلم...",
+  "attractionCountryFilter": "ابحث عن الأماكن حسب الدولة",
+  "attractionCountryLoadError": "تعذر تحميل الأماكن. تحقق من الاتصال وحاول مرة أخرى.",
+  "attractionCityNotFound": "لم نعثر على هذا المكان. تحقق من كتابة الاسم وحاول مرة أخرى.",
   "attractionCategoryAll": "الكل",
   "attractionTicketBookedSuccess": "🎫 تم حجز التذكرة بنجاح!",
   "attractionAbout": "عن المكان",
@@ -442,8 +515,7 @@
   "attractionBooking": "جارٍ الحجز...",
   "attractionBookTicket": "احجز تذكرة — {price}",
   "attractionOpenOnMap": "افتح على الخريطة",
-  "attractionMapComingSoon": "عرض الخريطة قيد التطوير قريباً",
-  "chatOnlineStatus": "متصل بالذكاء الاصطناعي",
+  "chatOnlineStatus": "متصل",
   "chatHistoryTooltip": "سجل المحادثات",
   "chatDeleteTitle": "حذف المحادثة",
   "chatDeleteMessage": "هل تريد حذف هذه المحادثة نهائياً؟",
@@ -451,10 +523,24 @@
   "chatMessagesCount": "رسالة",
   "chatQuickPromptIstanbul": "إسطنبول 7 أيام 🕌",
   "chatQuickPromptCheapest": "أرخص وجهات ✈️",
-  "chatQuickPromptBudget": "ميزانية $1000 💰",
+  "chatQuickPromptBudget": "ميزانية {budget} 💰",
+  "@chatQuickPromptBudget": {
+    "placeholders": {
+      "budget": {
+        "type": "String"
+      }
+    }
+  },
   "chatQuickPromptIstanbulText": "أريد برنامج سفر كامل إلى إسطنبول لمدة 7 أيام",
   "chatQuickPromptCheapestText": "ما هي أرخص وجهات السفر من مصر هذا الشهر؟",
-  "chatQuickPromptBudgetText": "رحلة مميزة بميزانية 1000 دولار — اقترح لي وجهات",
+  "chatQuickPromptBudgetText": "رحلة مميزة بميزانية {budget} — اقترح لي وجهات",
+  "@chatQuickPromptBudgetText": {
+    "placeholders": {
+      "budget": {
+        "type": "String"
+      }
+    }
+  },
   "chatConnectionError": "تعذّر الاتصال بالمساعد الذكي",
   "chatItineraryTitle": "برنامج {destination} السياحي",
   "chatItineraryBudget": "تكلفة تقديرية: {budget}",
@@ -462,7 +548,8 @@
   "chatItineraryDefaultDestination": "وجهتك",
   "chatItineraryDayFallback": "اليوم {number}",
   "chatItinerarySave": "حفظ البرنامج",
-  "chatItinerarySavedSuccess": "تم حفظ البرنامج في رحلاتك",
+  "chatItinerarySavedSuccess": "تم حفظ البرنامج في سجل المحادثة على هذا الجهاز",
+  "chatItinerarySaveFailed": "تعذر حفظ البرنامج. حاول مرة أخرى.",
   "chatItineraryFullRequest": "أريد برنامج سفر كامل إلى {destination} لمدة 7 أيام",
   "flightSearching": "جارٍ البحث...",
   "flightPassengersLabel": "المسافرون",
@@ -472,6 +559,20 @@
   "flightClassLabel": "الدرجة",
   "flightSelectThis": "اختر هذه الرحلة",
   "flightNoResults": "لا توجد رحلات متاحة",
+  "flightProviderWarning": "بعض مزودي الرحلات غير متاحين مؤقتًا. نعرض الرحلات المتوفرة.",
+  "flightFlexibleButton": "تواريخ مرنة",
+  "flightSelectDates": "اختر التواريخ",
+  "flightTripLength": "كم مدة رحلتك؟",
+  "flightWeekend": "عطلة نهاية الأسبوع",
+  "flightWeekendHint": "المغادرة يوم الجمعة، والعودة يوم الأحد للرحلات ذهابًا وإيابًا.",
+  "flightWeek": "أسبوع",
+  "flightMonth": "شهر",
+  "flightOther": "مدة أخرى",
+  "flightDuration": "المدة",
+  "flightDays": "أيام",
+  "flightWhenToGo": "متى تريد السفر؟",
+  "flightSelectUpToMonths": "اختر حتى 3 أشهر",
+  "flightFlexibleSearchLoading": "جارٍ البحث عن الرحلات خلال الأشهر المحددة…",
   "flightNoResultsForSearch": "لا توجد رحلات من {origin} إلى {destination} بتاريخ {date}.",
   "@flightNoResultsForSearch": {
     "placeholders": {
@@ -492,7 +593,6 @@
   "flightAircraft": "الطائرة",
   "flightBookingReferenceLabel": "مرجع الحجز",
   "flightSelectedSeats": "المقاعد المختارة",
-  "flightDuration": "المدة",
   "flightBookingConfirmed": "تم تأكيد الحجز",
   "flightConfirmationError": "تعذّر تأكيد الحجز. أعد المحاولة للتحقق من حالته بأمان.",
   "flightBackToHome": "العودة إلى الرئيسية",
@@ -527,12 +627,32 @@
   "flightTaxesFees": "الضرائب والرسوم",
   "flightServiceFee": "رسوم الخدمة",
   "flightTotal": "الإجمالي",
+  "flightDuffelOffer": "عرض Duffel",
+  "flightDuffelBookingUnavailable": "الحجز عبر Duffel غير متصل بعد",
+  "flightContinueToPayment": "المتابعة إلى الدفع",
+  "flightSimulationBadge": "محاكاة",
+  "flightSimulatedSeatMapNotice": "خريطة المقاعد تجريبية — أرقام المقاعد للعرض التوضيحي فقط.",
+  "flightChooseSeatsAndContinue": "اختر المقاعد وتابع",
+  "flightProviderUnavailable": "البحث المباشر عن الرحلات غير متاح مؤقتًا. حاول مرة أخرى.",
+  "flightDuffelTotal": "إجمالي Duffel لعدد {count} من المسافرين",
+  "@flightDuffelTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "flightTermsNotice": "بالنقر على تأكيد توافق على شروط الخدمة وسياسة الاسترداد",
   "flightDemoUser": "مستخدم تجريبي",
   "hotelSearching": "جارٍ البحث...",
   "hotelDestinationHint": "المدينة أو الوجهة...",
   "hotelDestinationRequired": "أدخل وجهة أو اسمح بالوصول إلى موقعك لتحديد مدينتك.",
+  "hotelSelectDestination": "اختر وجهة من قائمة الاقتراحات.",
+  "hotelLoadingDestinations": "جارٍ البحث عن الوجهات...",
+  "hotelNoDestinationSuggestions": "لم يتم العثور على وجهات لهذا البحث.",
+  "hotelDestinationSuggestionsError": "اقتراحات الوجهات غير متاحة مؤقتًا.",
   "hotelSearchNearby": "البحث بالقرب مني",
+  "openLocationSettings": "فتح الإعدادات",
   "hotelNearbyTitle": "فنادق بالقرب مني",
   "hotelNearbyUsingDemoLocation": "الموقع غير متاح؛ نعرض فنادق تجريبية بالقرب من طرابلس.",
   "hotelSortDistance": "📍 المسافة",
@@ -540,8 +660,33 @@
   "hotelRoomsLabel": "غرف",
   "hotelGuestsLabel": "ضيوف",
   "hotelStaySummary": "{nights} ليال · {rooms} غرفة · {guests} ضيوف",
+  "hotelNightsSummary": "{count, plural, =0{0 ليلة} one{{count} ليلة} two{ليلتان} few{{count} ليالٍ} many{{count} ليلة} other{{count} ليلة}}",
+  "@hotelNightsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hotelRoomsSummary": "{count, plural, =0{0 غرفة} one{{count} غرفة} two{غرفتان} few{{count} غرف} many{{count} غرفة} other{{count} غرفة}}",
+  "@hotelRoomsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hotelGuestsSummary": "{count, plural, =0{0 ضيف} one{{count} ضيف} two{ضيفان} few{{count} ضيوف} many{{count} ضيف} other{{count} ضيف}}",
+  "@hotelGuestsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hotelResultsTitle": "فنادق {city} · {nights} ليال",
-  "hotelNoResults": "لا توجد فنادق",
+  "hotelNoResults": "لا توجد فنادق لهذه التواريخ.",
+  "hotelSearchUnavailable": "البحث غير متاح مؤقتًا. حاول مرة أخرى.",
   "hotelFilterAll": "الكل",
   "hotelFilterBudget": "اقتصادي",
   "hotelFilterMidRange": "متوسط",
@@ -556,11 +701,17 @@
   "hotelBookingSuccess": "✅ تم حجز الفندق بنجاح!",
   "hotelBookingInProgress": "جارٍ الحجز...",
   "hotelBookNow": "احجز الآن",
+  "hotelDuffelBookingUnavailable": "حجز فنادق Duffel غير متاح بعد",
+  "hotelExternalBookingUnavailable": "الحجز داخل التطبيق لهذا الفندق غير متاح حاليًا",
   "hotelSoldOut": "نفدت الغرف",
   "hotelAbout": "عن الفندق",
   "hotelAmenities": "المرافق",
+  "hotelRoomRatesTitle": "أسعار الغرف المتاحة",
+  "hotelRoomRatesLoading": "جارٍ تحميل الأسعار الحالية…",
+  "hotelRoomRatesUnavailable": "أسعار الغرف غير متاحة مؤقتًا.",
   "hotelDefaultDescription": "فندق راقٍ يقع في قلب المدينة يوفر أجواءً مريحة ومرافق متكاملة للضيوف.",
   "hotelNightPrice": "سعر الليلة",
+  "hotelXoteloEstimateLabel": "تقدير Xotelo (غير مؤكد)",
   "hotelNightsCount": "عدد الليالي",
   "hotelNightsValue": "{nights} ليال",
   "hotelTaxesFees": "الضرائب والرسوم",
@@ -659,7 +810,7 @@
   "packageCatCity": "مدن",
   "packageCatMountain": "جبال",
   "packageCatDesert": "صحراء",
-  "homeMonuments": "المعالم السياحية",
+  "homeMonuments": "أماكن شهيرة في البلدان",
   "carTypeElectric": "كهربائية",
   "carFuelHybrid": "هجينة",
   "carFuelDiesel": "ديزل",
@@ -670,6 +821,11 @@
   "tripsFilterHotels": "فنادق",
   "tripsFilterCars": "تأجير سيارات",
   "tripsFilterTours": "جولات ومعالم",
+  "tripsFilterTransfers": "التوصيلات",
+  "tripsKindTransfer": "توصيلة",
+  "transferVehicleLabel": "السيارة",
+  "tripSeatsLabel": "المقاعد",
+  "tripExtrasLabel": "الإضافات",
   "tripsKindFlight": "طيران",
   "tripsKindHotel": "فندق",
   "tripsKindCar": "سيارة",
@@ -681,13 +837,70 @@
   "adminDashboard": "لوحة تحكم الإدارة",
   "adminWorkspaceLabel": "إدارة زنتريب",
   "adminOverview": "نظرة عامة",
+  "adminPartners": "الشركاء",
+  "adminOffers": "العروض",
+  "adminCatalog": "الكتالوج",
+  "adminPlaces": "الأماكن",
   "adminReservations": "الحجوزات",
   "adminCustomers": "العملاء",
+  "adminPopularity": "الشعبية",
+  "adminCountryVisits": "الزيارات حسب الدولة",
+  "adminPlaceVisits": "الزيارات حسب المكان",
+  "adminNoCountryVisits": "لا توجد إجماليات زيارات للدول بعد.",
+  "adminNoPlaceVisits": "لا توجد إجماليات زيارات للأماكن بعد.",
+  "adminUnspecifiedCountry": "دولة غير محددة",
   "adminWelcome": "أهلاً بك",
   "adminSubtitle": "نظرة سريعة على نشاط السفر.",
   "adminBackToApp": "العودة إلى تطبيق السفر",
   "adminRefresh": "تحديث",
   "adminCustomerCount": "العملاء",
+  "adminUserCount": "المستخدمون",
+  "adminPartnerCount": "الشركاء النشطون",
+  "adminPartnerListings": "القوائم",
+  "adminActivePartnerListings": "القوائم المتاحة",
+  "adminPartnerAccounts": "حسابات الشركاء",
+  "adminAddPartner": "إضافة شريك",
+  "adminPartnerName": "اسم الشريك أو الشركة",
+  "adminPartnerEmail": "بريد مستخدم مسجل",
+  "adminPartnerService": "خدمة الشريك",
+  "adminPartnerExistingAccountHint": "يجب أن يكون لدى الشريك حساب زنتريب مسبقاً. لن يتم إنشاء كلمة مرور أو تغييرها.",
+  "adminPartnerStatusActive": "نشط",
+  "adminPartnerStatusInactive": "غير نشط",
+  "adminDisablePartner": "تعطيل الشريك",
+  "adminRestorePartner": "استعادة الشريك",
+  "adminPartnerRestored": "تمت استعادة صلاحية الشريك.",
+  "adminDisablePartnerConfirmation": "سيتم إلغاء صلاحية الشريك مع الاحتفاظ بالشركة والقوائم وسجل الحجوزات.",
+  "adminPartnerDisabled": "تم تعطيل صلاحية الشريك مع الحفاظ على السجلات.",
+  "adminPartnerAdded": "تمت إضافة الشريك",
+  "adminNoPartners": "لم يتم العثور على شركاء.",
+  "adminLegacyAttractionReviewTitle": "مراجعة شركاء المعالم السابقين",
+  "adminLegacyAttractionReviewDescription": "راجع الحساب والقوائم. لكل معلم، اختر مكاناً موجوداً أو أنشئ مكاناً منسقاً أو اتركه دون ربط. لن تُلغى صلاحية الشريك إلا بعد موافقتك.",
+  "adminLegacyAttractionReviewAction": "مراجعة وإلغاء الوصول",
+  "adminLegacyAttractionReviewed": "تمت المراجعة وإلغاء الوصول",
+  "adminLegacyAttractionApproveRetire": "الموافقة وإلغاء الوصول",
+  "adminLegacyAttractionConfirmTitle": "هل توافق على إلغاء وصول الشريك؟",
+  "adminLegacyAttractionConfirmBody": "ستفقد حسابات الشريك صلاحية الشريك. ستبقى الشركة وسجل القوائم محفوظين، وستضاف الأماكن المحددة إلى الكتالوج المنسق.",
+  "adminLegacyAttractionReviewSaved": "تمت الموافقة على المراجعة وإلغاء وصول الشريك.",
+  "adminLegacyAttractionCreatePlace": "إنشاء مكان منسق",
+  "adminLegacyAttractionOmit": "اتركه دون ربط",
+  "adminLegacyAttractionUseExisting": "استخدم مكاناً موجوداً",
+  "adminLegacyAttractionNonPlaceListing": "لا يمكن إضافة هذا النوع إلى الأماكن. ستبقى القائمة محفوظة.",
+  "adminLegacyAttractionNoListings": "لا توجد قوائم مرتبطة بهذا الحساب.",
+  "adminLegacyAttractionReviewPlace": "ربط المكان",
+  "adminLegacyAttractionAccountReviewedBy": "تمت المراجعة بواسطة {name}",
+  "@adminLegacyAttractionAccountReviewedBy": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "adminServiceAirline": "شركة طيران",
+  "adminServiceHotel": "فندق",
+  "adminServiceCar": "تأجير سيارات",
+  "adminServiceTransfer": "توصيل",
+  "adminServiceTravel": "باقات سياحية",
+  "adminServiceAttraction": "المعالم (حسابات سابقة)",
+  "adminRequiredField": "هذا الحقل مطلوب.",
+  "adminInvalidEmail": "أدخل بريداً إلكترونياً صحيحاً.",
   "adminNewCustomers": "عملاء جدد (آخر 30 يوماً)",
   "adminReservationCount": "الحجوزات",
   "adminFlights": "الرحلات الجوية",
@@ -715,7 +928,7 @@
   "adminDeleteConfirmation": "لا يمكن التراجع عن هذا الإجراء.",
   "adminDelete": "حذف",
   "adminAddOffer": "إضافة عرض",
-  "adminAddMonument": "إضافة معلم",
+  "adminAddMonument": "إضافة مكان",
   "adminCatalogEmpty": "لا توجد عناصر في الكتالوج بعد.",
   "adminWorkingHours": "ساعات العمل",
   "adminBestTime": "أفضل وقت للزيارة",
@@ -731,12 +944,17 @@
   "adminStartingPrice": "السعر الابتدائي للشخص",
   "adminFlightPrice": "سعر الرحلة للشخص",
   "adminHotelPriceNight": "سعر الفندق للليلة",
+  "adminLinkedFlight": "الرحلة المضمنة في هذا العرض",
+  "adminSelectFlight": "اختر رحلة موجودة",
+  "adminOfferFlightMissing": "لم يتم ربط رحلة",
+  "packageAirline": "شركة الطيران",
+  "packageStayTotal": "الإقامة الفندقية",
   "adminRating": "التقييم (0–5)",
   "adminReviewCount": "عدد المراجعات",
   "adminCategoryTag": "تصنيف المعلم",
   "adminEntryFee": "رسوم الدخول",
   "adminEditOffer": "تعديل العرض",
-  "adminEditMonument": "تعديل المعلم",
+  "adminEditMonument": "تعديل المكان",
   "adminCategory": "الفئة",
   "adminFeaturedBadge": "عرض مميز",
   "adminHighlights": "النقاط البارزة",
@@ -782,7 +1000,6 @@
   "partnerTypeFlight": "رحلة طيران",
   "partnerTypeHotel": "إقامة",
   "partnerTypeCar": "تأجير سيارة",
-  "partnerTypeAttraction": "معلم سياحي",
   "partnerTypeTransfer": "توصيل",
   "partnerTypePackage": "باقة سياحية",
   "partnerAddListingHint": "يمكنك إضافة عروض لنوع الخدمة الخاص بشركتك فقط. أدخل تفاصيل الخدمة أدناه، وسيتم تحديد الدولة تلقائياً من الموقع المختار.",
@@ -844,5 +1061,263 @@
   "partnerDurationNights": "المدة بالليالي",
   "partnerHighlights": "أبرز المميزات",
   "partnerCommaSeparatedHint": "افصل بين القيم المتعددة بفواصل.",
-  "partnerInvalidServiceField": "أدخل قيمة صحيحة لهذا الحقل."
+  "partnerInvalidServiceField": "أدخل قيمة صحيحة لهذا الحقل.",
+  "airportMajorLabel": "مطار رئيسي",
+  "airportMinorLabel": "مطار إقليمي",
+  "airportNearestLabel": "أقرب مطار",
+  "airportCategoryAddLocation": "أضف مدينة أو مكاناً، مثل الطبيعة في بالي، إندونيسيا.",
+  "compareIn": "قارن بعملة",
+  "lydFixedRate": "سعر مرجعي ثابت: 1 دولار أمريكي = 6.4 دينار ليبي",
+  "refreshRates": "تحديث الأسعار",
+  "retryRates": "إعادة محاولة الأسعار",
+  "frankfurterRatesUnavailable": "أسعار فرانكفورتر المرجعية اليومية · لا يتوفر تاريخ للأسعار",
+  "frankfurterRatesDate": "أسعار فرانكفورتر المرجعية اليومية · حتى {date}",
+  "@frankfurterRatesDate": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "rateRefreshFailed": "تعذر تحديث أسعار الصرف. قد لا تتوفر الأسعار المحوّلة.",
+  "ratesMayBeStale": "قد تكون الأسعار المرجعية قديمة. حدّث للتحقق من وجود تحديثات.",
+  "unpricedOffers": "{count} من العروض بلا سعر قابل للمقارنة، وتُستثنى من تصفية الأسعار.",
+  "@unpricedOffers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "priceEstimateDisclaimer": "المبالغ المحوّلة تقديرية وليست أسعار حجز. قد تختلف الرسوم وأسعار التسوية.",
+  "providerPrice": "سعر المزوّد",
+  "comparisonEstimate": "تقدير للمقارنة",
+  "priceUnavailable": "غير متاح",
+  "providerTotal": "إجمالي المزوّد",
+  "providerPerPerson": "للفرد",
+  "flightAllTravelersEstimate": "إجمالي تقديري لجميع المسافرين",
+  "flightPartnerOutboundOnly": "للذهاب فقط",
+  "flightPartnerRoundTripWarning": "تغطي أسعار الشركاء رحلة الذهاب فقط، ولا يمكن مقارنتها بإجمالي رحلات الذهاب والعودة.",
+  "flightMaxBudget": "الحد الأقصى لإجمالي المسافرين",
+  "clearBudget": "مسح الميزانية",
+  "hotelPerRoomNight": "سعر المزوّد للغرفة / الليلة",
+  "hotelEstimatePerRoomNight": "تقدير للغرفة / الليلة",
+  "hotelBudgetThreshold": "اقتصادي أقل من 100 {currency} / الليلة",
+  "@hotelBudgetThreshold": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "hotelMidThreshold": "متوسط من 100 إلى أقل من 250 {currency} / الليلة",
+  "@hotelMidThreshold": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "hotelLuxuryThreshold": "فاخر 250 {currency} أو أكثر / الليلة",
+  "@hotelLuxuryThreshold": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "offerSourcePartner": "شريك",
+  "offerSourceDuffel": "دافل",
+  "tryAgain": "حاول مرة أخرى",
+  "invalidComparisonBudget": "أدخل مبلغاً صحيحاً لا يقل عن صفر",
+  "referenceRatePolicy": "تُميّز الأسعار الأقدم من 4 أيام؛ ولا تُستخدم أسعار الصرف الأقدم من 7 أيام.",
+  "authInvalidEmail": "أدخل بريدًا إلكترونيًا صحيحًا",
+  "forgotTitleLine1": "نسيت كلمة المرور؟",
+  "forgotTitleLine2": "سنساعدك على استعادة حسابك",
+  "forgotSubtitle": "أدخل البريد الإلكتروني المرتبط بحسابك وسنرسل لك رمزًا لإعادة تعيين كلمة المرور.",
+  "authEmailHint": "أدخل بريدك الإلكتروني",
+  "sendResetCode": "إرسال رمز إعادة التعيين",
+  "rememberedIt": "تذكرتها؟",
+  "backToLoginLower": "العودة لتسجيل الدخول",
+  "authPasswordHint": "أدخل كلمة المرور",
+  "loginTitleLine1": "سجّل دخولك",
+  "loginTitleLine2": "وسافر حول العالم",
+  "rememberMe": "تذكرني",
+  "forgotPasswordLink": "نسيت كلمة المرور؟",
+  "loginButton": "تسجيل الدخول",
+  "orSignUpWith": "أو سجّل باستخدام",
+  "noAccountPrompt": "ليس لديك حساب؟ ",
+  "createAnAccount": "أنشئ حسابًا",
+  "fullNameHint": "أدخل اسمك الكامل",
+  "phoneExactDigits": "أدخل {count} أرقام بالضبط لـ {country}",
+  "@phoneExactDigits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "phoneDigitRange": "أدخل من {min} إلى {max} أرقام لـ {country}",
+  "@phoneDigitRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordMinLength": "استخدم 8 أحرف على الأقل",
+  "passwordsDontMatch": "كلمتا المرور غير متطابقتين",
+  "acceptTermsError": "يرجى الموافقة على الشروط للمتابعة",
+  "phoneHint": "أدخل رقم هاتفك",
+  "addProfilePhotoOptional": "أضف صورة شخصية (اختياري)",
+  "registerTitleLine1": "أنشئ حسابك",
+  "registerTitleLine2": "وابدأ رحلتك",
+  "createPasswordHint": "أنشئ كلمة مرور",
+  "confirmPasswordHint": "أكّد كلمة المرور",
+  "agreeToThe": "أوافق على ",
+  "termsOfService": "شروط الخدمة",
+  "createAccountButton": "إنشاء حساب",
+  "enterSixDigitCode": "أدخل رمز التحقق المكوّن من 6 أرقام",
+  "enterAndConfirmPassword": "أدخل كلمة المرور الجديدة وأكّدها",
+  "verifyTitleLine1": "تحقّق من",
+  "verifyTitleLine2": "بريدك الإلكتروني",
+  "verifySubtitle": "أدخل الرمز المكوّن من 6 أرقام المرسل إلى بريدك الإلكتروني.",
+  "verificationCodeHint": "أدخل رمز التحقق",
+  "verifyCodeButton": "تحقّق من الرمز",
+  "didntReceiveCode": "لم يصلك الرمز؟",
+  "resendInSeconds": "إعادة الإرسال بعد {seconds} ث",
+  "@resendInSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "newPasswordTitleLine1": "اختر",
+  "newPasswordTitleLine2": "كلمة مرور جديدة",
+  "newPasswordSubtitle": "أنشئ كلمة مرور جديدة لحسابك.",
+  "newPasswordHint": "كلمة المرور الجديدة",
+  "confirmNewPasswordHint": "تأكيد كلمة المرور الجديدة",
+  "resetPasswordAction": "إعادة تعيين كلمة المرور",
+  "passwordUpdatedSuccess": "تم تحديث كلمة المرور بنجاح.",
+  "backToLoginButton": "العودة لتسجيل الدخول",
+  "photoTooLarge": "اختر صورة أصغر من 5 ميجابايت.",
+  "photoUnreadable": "تعذّرت قراءة هذه الصورة. جرّب صورة أخرى.",
+  "seatListingMissing": "هذه الرحلة بلا معرّف إدراج.",
+  "seatLoadFailed": "تعذّر تحميل توفر المقاعد.",
+  "seatNoLongerAvailable": "أحد المقاعد التي اخترتها لم يعد متاحًا. يرجى الاختيار مرة أخرى.",
+  "selectUpToSeats": "اختر حتى {count} مقاعد لهذا الحجز.",
+  "@selectUpToSeats": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectSeatsToContinue": "{count, plural, =1{اختر مقعدًا واحدًا للمتابعة.} other{اختر {count} مقاعد للمتابعة.}}",
+  "@selectSeatsToContinue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fareNotEnoughSeats": "لم يعد في هذه الفئة مقاعد كافية.",
+  "flightAvailabilityUnverified": "تعذّر التحقق من توفر الرحلة.",
+  "flightConflictsBooking": "تتعارض هذه الرحلة مع حجز آخر في حسابك.",
+  "seatsNoLongerAvailable": "هذه المقاعد لم تعد متاحة.",
+  "paymentNotCompletedNoTrip": "لم يكتمل الدفع. لم يتم حفظ أي رحلة.",
+  "paymentHoldNotReleased": "لم يكتمل الدفع وتعذّر إلغاء حجز المقعد المؤقت. {details}",
+  "@paymentHoldNotReleased": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentHoldReleased": "لم يكتمل الدفع. تم إلغاء حجز مقعدك المؤقت.",
+  "chooseSeats": "اختر المقاعد",
+  "refreshAvailability": "تحديث التوفر",
+  "proceedToPaymentAmount": "المتابعة إلى الدفع · {amount}",
+  "@proceedToPaymentAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "seatAvailabilityUnavailable": "توفر المقاعد غير متاح حاليًا.",
+  "aircraftDetails": "تفاصيل الطائرة",
+  "sharedInventory": "مخزون مشترك",
+  "cabinNumber": "المقصورة {number}",
+  "@cabinNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalExtras": "إضافات اختيارية",
+  "optionalExtrasSubtitle": "أضف ما تحتاجه فقط",
+  "extraLegroomSeats": "مقاعد بمساحة إضافية للأرجل",
+  "taxesAndFees": "الضرائب والرسوم",
+  "estimatedTotal": "الإجمالي التقديري",
+  "retryShort": "إعادة المحاولة",
+  "boardingDirect": "مباشر",
+  "boardingOneStop": "توقف واحد",
+  "clearSearch": "مسح البحث",
+  "passwordResetTitleLine1": "تمت إعادة",
+  "passwordResetTitleLine2": "تعيين كلمة المرور",
+  "boardingDate": "التاريخ",
+  "boardingFlight": "الرحلة",
+  "boardingClass": "الدرجة",
+  "boardingRef": "المرجع",
+  "resendCodeLink": "إعادة إرسال الرمز",
+  "attractionLocationUnavailable": "موقع هذا المكان غير متاح.",
+  "fareTimesPassengers": "سعر {fare} × {count}",
+  "@fareTimesPassengers": {
+    "placeholders": {
+      "fare": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nearbySearching": "جارٍ البحث عن أماكن قريبة…",
+  "nearbyCategoryRestaurant": "مطعم",
+  "nearbyCategoryCafe": "مقهى",
+  "nearbyCategoryHotel": "فندق",
+  "nearbyCategoryMuseum": "متحف",
+  "nearbyCategoryActivity": "نشاط",
+  "nearbyCategoryAttraction": "معلم سياحي",
+  "nearbyCategoryLandmark": "مَعلَم",
+  "cityIstanbul": "إسطنبول",
+  "cityJeddah": "جدة",
+  "cityBali": "بالي",
+  "cityMale": "ماليه",
+  "cityTunis": "تونس",
+  "cityJakarta": "جاكرتا",
+  "cityAlBayda": "البيضاء",
+  "cityTobruk": "طبرق",
+  "citySirte": "سرت",
+  "cityKhoms": "الخمس",
+  "countryLibya": "ليبيا",
+  "countryEgypt": "مصر",
+  "countrySaudiArabia": "السعودية",
+  "countryTurkey": "تركيا",
+  "countryIndonesia": "إندونيسيا",
+  "countryUnitedArabEmirates": "الإمارات العربية المتحدة",
+  "countryMaldives": "المالديف",
+  "countryTunisia": "تونس",
+  "countryFrance": "فرنسا",
+  "countryJapan": "اليابان",
+  "adminOfferTitleArabic": "عنوان العرض بالعربية",
+  "adminOfferCityArabic": "المدينة بالعربية",
+  "adminOfferCountryArabic": "الدولة بالعربية",
+  "adminOfferDescriptionArabic": "وصف العرض بالعربية",
+  "adminOfferHighlightsArabic": "أبرز معالم العرض بالعربية",
+  "adminOfferHighlightsArabicHint": "أدخل معالم مفصولة بفواصل"
 }

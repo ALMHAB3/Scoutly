@@ -1,17 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
+import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_booking_model.dart';
 import '../../../../models/flight_model.dart';
 import 'flight_primary_button.dart';
+import 'flight_checkout_shared_components.dart';
 
 class BookingConfirmedScreen extends StatefulWidget {
   final FlightBookingDraft draft;
+  final FlightBookingConfirmation? initialConfirmation;
 
-  const BookingConfirmedScreen({super.key, required this.draft});
+  const BookingConfirmedScreen({
+    super.key,
+    required this.draft,
+    this.initialConfirmation,
+  });
 
   @override
   State<BookingConfirmedScreen> createState() => _BookingConfirmedScreenState();
@@ -31,7 +41,13 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
   @override
   void initState() {
     super.initState();
-    _confirmBooking();
+    final initialConfirmation = widget.initialConfirmation;
+    if (initialConfirmation != null) {
+      _confirmation = initialConfirmation;
+      _loading = false;
+    } else {
+      _confirmBooking();
+    }
   }
 
   Future<void> _confirmBooking() async {
@@ -47,6 +63,10 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
         seatClass: widget.draft.seatClass,
         returnDate: widget.draft.returnDate,
         extras: widget.draft.extras,
+        paymentAttemptId: widget.draft.paymentAttemptId,
+        packageOfferId: widget.draft.packageOffer?.id,
+        bookingCurrencyCode: widget.draft.currencyCode,
+        bookingDisplayAmount: widget.draft.totalPrice,
       );
       if (!mounted) return;
       if (result.isFailure || result.data == null) {
@@ -61,6 +81,12 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
         _confirmation = result.data;
         _loading = false;
       });
+      unawaited(NotificationsStore.instance.refreshAfterBooking(
+        title: AppLocalizations.of(context).notifBookingConfirmedTitle,
+        subtitle:
+            '${widget.draft.flight.originCity} → ${widget.draft.flight.destinationCity}',
+        bookingRef: result.data!.reference,
+      ));
     } catch (error, stackTrace) {
       debugPrint('Flight booking confirmation failed: $error\n$stackTrace');
       if (!mounted) return;
@@ -141,6 +167,28 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
               fontSize: 12,
             ),
           ),
+          if (flight.isDuffelOffer) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Text(
+                  l10n.flightSimulationBadge,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 4),
           Text(
             '${flight.originCity} to ${flight.destinationCity}',
@@ -157,8 +205,56 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
             seats: seats,
             seatClass: widget.draft.seatClass,
             totalPrice: confirmation.totalPrice,
+            currencyCode: confirmation.trip.bookingCurrencyCode,
             passengerName: passengerName,
           ),
+          if (widget.draft.packageOffer case final offer?) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.darkSurface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.35)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    offer.displayTitle(
+                      Localizations.localeOf(context).languageCode,
+                    ),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    l10n.hotelNightsSummary(offer.durationNights),
+                    style: const TextStyle(
+                      color: AppColors.darkTextSecondary,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CurrencyAmountText(
+                    amount: offer.hotelPricePerNight *
+                        offer.durationNights *
+                        widget.draft.passengerCount,
+                    prefix: '${l10n.packageStayTotal}: ',
+                    decimalDigits: 2,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (extras.isNotEmpty) ...[
             const SizedBox(height: 16),
             Wrap(
@@ -188,6 +284,7 @@ class FlightTicketCard extends StatelessWidget {
   final List<String> seats;
   final String seatClass;
   final double totalPrice;
+  final String currencyCode;
   final String? passengerName;
 
   const FlightTicketCard({
@@ -197,6 +294,7 @@ class FlightTicketCard extends StatelessWidget {
     required this.seats,
     required this.seatClass,
     required this.totalPrice,
+    required this.currencyCode,
     this.passengerName,
   });
 
@@ -354,7 +452,7 @@ class FlightTicketCard extends StatelessWidget {
                     Expanded(
                       child: _TicketDetail(
                         label: l10n.flightSelectedSeats,
-                        value: seats.join(', '),
+                        value: seats.isEmpty ? '—' : seats.join(', '),
                         alignEnd: true,
                       ),
                     ),
@@ -433,7 +531,11 @@ class FlightTicketCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     _TicketDetail(
                       label: l10n.flightTotal,
-                      value: '\$${totalPrice.toStringAsFixed(2)}',
+                      value: checkoutMoney(
+                        currencyCode,
+                        totalPrice,
+                        locale: Localizations.localeOf(context).languageCode,
+                      ),
                       valueSize: 17,
                       alignEnd: true,
                     ),

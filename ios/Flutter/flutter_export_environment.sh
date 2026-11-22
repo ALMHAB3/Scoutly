@@ -1,10 +1,10 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=C:\Users\Saif\flutter"
-export "FLUTTER_APPLICATION_PATH=C:\Users\Saif\Desktop\zentrip_java"
-export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=C:\Users\Saif\Desktop\zentrip_java\ios\Flutter\ephemeral\Packages\.packages\FlutterFramework"
+export "FLUTTER_ROOT=/home/runner/workspace/.local/toolchains/flutter"
+export "FLUTTER_APPLICATION_PATH=/home/runner/workspace"
+export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/home/runner/workspace/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
-export "FLUTTER_TARGET=lib\main.dart"
+export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"
 export "FLUTTER_BUILD_NAME=1.0.0"
 export "FLUTTER_BUILD_NUMBER=1"

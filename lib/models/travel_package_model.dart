@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
+import 'flight_model.dart';
 
 class TravelPackage {
   final String id;
@@ -8,6 +9,10 @@ class TravelPackage {
   final String country;
   final String destinationCode;
   final String description;
+  final String titleAr;
+  final String locationAr;
+  final String countryAr;
+  final String descriptionAr;
   final String imageUrl;
   final double pricePerPerson;
   final double flightPricePerPerson;
@@ -18,11 +23,14 @@ class TravelPackage {
   final LinearGradient gradient;
   final IconData icon;
   final List<String> highlights;
+  final List<String> highlightsAr;
   final bool isFeatured;
   final String badge;
   final String
       category; // 'beach' | 'city' | 'mountain' | 'desert' | 'cultural'
   final int? partnerListingId;
+  final int? flightListingId;
+  final FlightModel? flight;
 
   const TravelPackage({
     required this.id,
@@ -31,6 +39,10 @@ class TravelPackage {
     required this.country,
     this.destinationCode = '',
     required this.description,
+    this.titleAr = '',
+    this.locationAr = '',
+    this.countryAr = '',
+    this.descriptionAr = '',
     required this.imageUrl,
     required this.pricePerPerson,
     required this.flightPricePerPerson,
@@ -41,13 +53,37 @@ class TravelPackage {
     required this.gradient,
     required this.icon,
     required this.highlights,
+    this.highlightsAr = const [],
     this.isFeatured = false,
     this.badge = '',
     this.category = 'city',
     this.partnerListingId,
+    this.flightListingId,
+    this.flight,
   });
 
-  String get durationLabel => '$durationNights nights';
+  String displayTitle(String languageCode) =>
+      _localized(title, titleAr, languageCode);
+
+  String displayLocation(String languageCode) =>
+      _localized(location, locationAr, languageCode);
+
+  String displayCountry(String languageCode) =>
+      _localized(country, countryAr, languageCode);
+
+  String displayDescription(String languageCode) =>
+      _localized(description, descriptionAr, languageCode);
+
+  List<String> displayHighlights(String languageCode) =>
+      languageCode.toLowerCase().startsWith('ar') && highlightsAr.isNotEmpty
+          ? highlightsAr
+          : highlights;
+
+  static String _localized(
+          String original, String localized, String languageCode) =>
+      languageCode.toLowerCase().startsWith('ar') && localized.trim().isNotEmpty
+          ? localized
+          : original;
 
   /// إجمالي سعر العرض للشخص الواحد (تذكرة + إقامة الليالي كلها).
   double get totalPricePerPerson =>
@@ -66,6 +102,10 @@ class TravelPackage {
   factory TravelPackage.fromJson(Map<String, dynamic> json) {
     final category = (json['category'] ?? 'city').toString();
     final id = (json['id'] ?? '').toString();
+    final rawFlight = json['flight'];
+    final flight = rawFlight is Map
+        ? FlightModel.fromJson(Map<String, dynamic>.from(rawFlight))
+        : null;
     return TravelPackage(
       id: id,
       title: (json['title'] ?? '').toString(),
@@ -73,9 +113,17 @@ class TravelPackage {
       country: (json['country'] ?? '').toString(),
       destinationCode: (json['destination_code'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
+      titleAr: (json['title_ar'] ?? '').toString(),
+      locationAr: (json['city_ar'] ?? json['location_ar'] ?? '').toString(),
+      countryAr: (json['country_ar'] ?? '').toString(),
+      descriptionAr: (json['description_ar'] ?? '').toString(),
       imageUrl: (json['image_url'] ?? '').toString(),
-      pricePerPerson: _parseDouble(json['price_per_person']),
-      flightPricePerPerson: _parseDouble(json['flight_price_per_person']),
+      pricePerPerson: _parseDouble(
+          json['total_price_per_person'] ?? json['price_per_person']),
+      flightPricePerPerson: _parseDouble(
+        json['flight_price_per_person'],
+        flight?.economyPrice ?? 0,
+      ),
       hotelPricePerNight: _parseDouble(json['hotel_price_per_night']),
       durationNights: _parseInt(json['duration_nights']),
       rating: _parseDouble(json['rating']),
@@ -88,14 +136,21 @@ class TravelPackage {
       highlights: (json['highlights'] as List? ?? const [])
           .map((e) => e.toString())
           .toList(),
+      highlightsAr: (json['highlights_ar'] as List? ?? const [])
+          .map((e) => e.toString())
+          .toList(),
       isFeatured: json['is_featured'] == true ||
-          const {'1', 'true'}.contains(
-              json['is_featured']?.toString().toLowerCase()),
+          const {'1', 'true'}
+              .contains(json['is_featured']?.toString().toLowerCase()),
       badge: (json['badge'] ?? '').toString(),
       category: category,
       partnerListingId: json['partner_listing_id'] == null
           ? null
           : _parseInt(json['partner_listing_id']),
+      flightListingId: json['flight_listing_id'] == null
+          ? null
+          : _parseInt(json['flight_listing_id']),
+      flight: flight,
     );
   }
 
@@ -119,10 +174,14 @@ class TravelPackage {
   Map<String, dynamic> toJson() => {
         'id': id,
         'title': title,
+        'title_ar': titleAr,
         'location': location,
+        'city_ar': locationAr,
         'country': country,
+        'country_ar': countryAr,
         'destination_code': destinationCode,
         'description': description,
+        'description_ar': descriptionAr,
         'image_url': imageUrl,
         'price_per_person': pricePerPerson,
         'flight_price_per_person': flightPricePerPerson,
@@ -131,9 +190,11 @@ class TravelPackage {
         'rating': rating,
         'review_count': reviewCount,
         'highlights': highlights,
+        'highlights_ar': highlightsAr,
         'is_featured': isFeatured,
         'badge': badge,
         'category': category,
         'partner_listing_id': partnerListingId,
+        'flight_listing_id': flightListingId,
       };
 }

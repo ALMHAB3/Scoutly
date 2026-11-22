@@ -1,0 +1,22 @@
+- [Imported database safety](imported-database-safety.md) — preserve existing account roles and database schema during environment setup.
+- [PostgreSQL verification](postgresql-verification.md) — SQL mocks can pass while PostgreSQL rejects queries; validate migrations on a disposable real database.
+- [Supabase RLS runtime](supabase-rls-runtime.md) — run backend requests under a transaction-local, non-bypass role; the managed postgres connection can bypass policies.
+- [Seat inventory fidelity](seat-inventory-fidelity.md) — reference-image cabin and class counts are not real allocations; never invent them.
+- [Flutter cache restoration](flutter-cache-restoration.md) — use the workspace SDK and restore locked packages; the system Flutter or Pub cache may be stale or missing.
+- [Backend test database isolation](backend-test-database-isolation.md) — keep real database settings out of Maven test processes; use the loopback-only PostgreSQL integration harness.
+- [Backend Java toolchain](backend-java-toolchain.md) — run Maven with the workspace JDK 25; the system JDK 21 cannot compile this backend.
+- [Anonymous visit abuse limits](anonymous-visit-abuse-limits.md) — protect popularity counts with aggregate ephemeral limits, not IP, account, or location tracking.
+- [Wikidata SPARQL URI encoding](wikidata-sparql-uri-encoding.md) — encode SPARQL text before passing it as a Spring RestClient URI parameter.
+- [Geocoding ambiguity](geocoding-ambiguity.md) — country-filter explicit hints and reuse coordinates; free-text homonyms can resolve to the wrong destination.
+- [Packaged runtime verification](packaged-runtime-verification.md) — passing source tests do not prove the running JAR and web bundle contain current changes.
+- [Nonblocking startup](startup-initialization.md) — optional preferences and plugin initialization must not prevent the first screen from rendering.
+- [Currency comparison scope](currency-comparison-scope.md) — comparison estimates do not authorize booking-table or settlement changes.
+- [UI styling preservation](ui-styling-preservation.md) — keep existing screen design intact during backend and data integrations.
+- [LiteAPI hotel-data boundary](liteapi-hotel-data-boundary.md) — LiteAPI provides hotel data only; Zentrip retains simulated booking and partner fallback.
+- [OpenTripMap landmark source](opentripmap-landmarks.md) — keep landmark records on OpenTripMap, with only the requested Wikipedia image fallback; preserve Geoapify for airport/geocoding use.
+- [Flight checkout data boundary](flight-checkout-data-boundary.md) — use only existing trip and booking persistence; passenger passport and payment details remain transient.
+- [Replit preview framing](replit-preview-framing.md) — a default DENY frame header can blank the embedded preview while the app still works directly.
+- [Notification persistence rollout safety](notification-persistence.md) — keep booking success independent of the inbox migration and retain a local alert fallback until server storage is ready.
+- [RLS catalog reads](offer-catalog-rls.md) — avoid row-locking public catalog reads when update policies are admin-only; lock queries can hide otherwise visible rows.
+- [Word diagram text](word-diagram-text.md) — legacy Word shape fallbacks can duplicate diagram text; update both shape representations when editing embedded labels.
+- [RestClient mock isolation](restclient-mock-isolation.md) — preserve injected request factories in provider tests so mocked calls cannot escape to the network.

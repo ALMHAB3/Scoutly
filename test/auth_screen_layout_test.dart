@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:zentrip/l10n/app_localizations.dart';
 import 'package:zentrip/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:zentrip/features/auth/presentation/screens/login_screen.dart';
 import 'package:zentrip/features/auth/presentation/screens/register_screen.dart';
+import 'package:zentrip/features/auth/presentation/screens/verify_screen.dart';
 
 void main() {
   setUp(() {
@@ -13,15 +15,22 @@ void main() {
       (tester) async {
     _setViewport(tester);
     await tester.pumpWidget(
-      const MaterialApp(home: ForgotPasswordScreen()),
+      const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ForgotPasswordScreen()),
     );
     await tester.pump(const Duration(milliseconds: 100));
 
     final scrollRect = tester.getRect(find.byType(SingleChildScrollView));
     expect(scrollRect.bottom, closeTo(tester.view.physicalSize.height, 1));
+    final handleRect =
+        tester.getRect(find.byKey(const Key('auth-sheet-handle')));
+    expect(handleRect.top, closeTo(scrollRect.top + 12, 1));
     final titleRect = tester.getRect(find.text('Forgot Your Password?'));
-    expect(titleRect.center.dy, greaterThan(scrollRect.top + 60));
-    expect(titleRect.center.dy, lessThan(scrollRect.bottom - 200));
+    expect(titleRect.top, greaterThan(handleRect.bottom + 16));
+    expect(titleRect.top, lessThan(scrollRect.top + 110));
     await tester.ensureVisible(find.text('Send Reset Code'));
     await tester.pump();
     expect(find.text('Send Reset Code'), findsOneWidget);
@@ -33,7 +42,11 @@ void main() {
       (tester) async {
     _setViewport(tester);
     await tester.pumpWidget(
-      const MaterialApp(home: RegisterScreen()),
+      const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: RegisterScreen()),
     );
     await tester.pump(const Duration(milliseconds: 100));
 
@@ -46,6 +59,32 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('OTP sheet fits compact screens and scrolls to verification',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        
+        home: VerifyScreen(email: 'traveler@example.com'),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(tester.takeException(), isNull);
+    await tester.ensureVisible(find.text('Verify Code'));
+    await tester.pump();
+    expect(find.text('Verify Code'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('login sheet fits compact screens and clears the keyboard',
       (tester) async {
     tester.view.physicalSize = const Size(360, 640);
@@ -53,10 +92,16 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+    await tester.pumpWidget(const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: LoginScreen()));
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(tester.takeException(), isNull);
+    expect(find.text('Login to'), findsOneWidget);
+    expect(find.text('Travel Around the Globe'), findsOneWidget);
     final createAccountText = find.byWidgetPredicate(
       (widget) => widget is Text && widget.textSpan != null,
     );
@@ -72,6 +117,28 @@ void main() {
     expect(scrollRect.bottom, lessThanOrEqualTo(391));
     expect(tester.takeException(), isNull);
 
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('unconfigured social sign-in options are hidden', (tester) async {
+    _setViewport(tester);
+    await tester.pumpWidget(const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: LoginScreen()));
+    await tester.pump();
+    expect(find.text('Google'), findsNothing);
+    expect(find.text('Apple'), findsNothing);
+
+    await tester.pumpWidget(const MaterialApp(
+        locale: Locale('en'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: RegisterScreen()));
+    await tester.pump();
+    expect(find.text('Google'), findsNothing);
+    expect(find.text('Apple'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
   });
 }

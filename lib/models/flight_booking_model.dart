@@ -1,5 +1,6 @@
 import 'flight_model.dart';
 import 'trip_model.dart';
+import 'travel_package_model.dart';
 
 class FlightBookingDraft {
   final FlightModel flight;
@@ -8,7 +9,10 @@ class FlightBookingDraft {
   final List<String> seats;
   final DateTime? returnDate;
   final double totalPrice;
+  final String currencyCode;
   final List<String> extras;
+  final int? paymentAttemptId;
+  final TravelPackage? packageOffer;
 
   const FlightBookingDraft({
     required this.flight,
@@ -17,7 +21,10 @@ class FlightBookingDraft {
     required this.seats,
     required this.returnDate,
     required this.totalPrice,
+    this.currencyCode = 'USD',
     this.extras = const [],
+    this.paymentAttemptId,
+    this.packageOffer,
   });
 }
 
@@ -47,7 +54,12 @@ class FlightBookingConfirmation {
       trip: trip,
       reference: (booking['reference'] ?? trip.bookingRef ?? '').toString(),
       seats: seats is List ? seats.map((seat) => seat.toString()).toList() : [],
-      totalPrice: _doubleFromDynamic(booking['total_price'] ?? trip.price),
+      totalPrice: _doubleFromDynamic(
+        booking['booking_display_amount'] ??
+            booking['total_price'] ??
+            trip.bookingDisplayAmount ??
+            trip.price,
+      ),
       extras: extras is List
           ? extras.map((extra) => extra.toString()).toList()
           : [],

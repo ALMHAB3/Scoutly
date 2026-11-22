@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/services/api_result.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/push_notification_service.dart';
@@ -7,6 +7,7 @@ import '../../../core/services/social_auth_service.dart';
 import '../../../features/favorites/logic/favorites_controller.dart';
 import '../../../features/notifications/logic/notifications_store.dart';
 import '../../../features/price_alerts/logic/price_alerts_store.dart';
+import '../../../core/services/user_settings_sync.dart';
 import '../../../models/user_model.dart';
 
 /// كل منطق المصادقة — الشاشات تستمع عبر ListenableBuilder ولا تتحدث مع
@@ -32,6 +33,7 @@ class AuthController extends ChangeNotifier {
         await FavoritesController.instance.load();
         await NotificationsStore.instance.load();
         await PriceAlertsStore.instance.load();
+        await UserSettingsSync.instance.pullAndApply();
         await PushNotificationService.instance.syncTokenWithBackend();
       }
       return r;
@@ -43,16 +45,22 @@ class AuthController extends ChangeNotifier {
     required String email,
     required String phone,
     required String password,
-    File? photo,
+    XFile? photo,
   }) {
     return _run(() async {
-      final r = await _api.register(name: name, email: email, phone: phone, password: password, photo: photo);
+      final r = await _api.register(
+          name: name,
+          email: email,
+          phone: phone,
+          password: password,
+          photo: photo);
       if (r.isSuccess) {
         currentUser = r.data;
         // حساب جديد يبدأ ببيانات فاضية فعليًا، مش شايل حاجة من حساب قديم.
         await FavoritesController.instance.load();
         await NotificationsStore.instance.load();
         await PriceAlertsStore.instance.load();
+        await UserSettingsSync.instance.pullAndApply();
         await PushNotificationService.instance.syncTokenWithBackend();
       }
       return r;
@@ -66,12 +74,14 @@ class AuthController extends ChangeNotifier {
     return _run(() async {
       final idToken = await SocialAuthService.instance.signInWithGoogle();
       if (idToken == null) return ApiResult.failure('');
-      final r = await _api.loginWithSocial(provider: 'google', idToken: idToken);
+      final r =
+          await _api.loginWithSocial(provider: 'google', idToken: idToken);
       if (r.isSuccess) {
         currentUser = r.data;
         await FavoritesController.instance.load();
         await NotificationsStore.instance.load();
         await PriceAlertsStore.instance.load();
+        await UserSettingsSync.instance.pullAndApply();
         await PushNotificationService.instance.syncTokenWithBackend();
       }
       return r;
@@ -88,6 +98,7 @@ class AuthController extends ChangeNotifier {
         await FavoritesController.instance.load();
         await NotificationsStore.instance.load();
         await PriceAlertsStore.instance.load();
+        await UserSettingsSync.instance.pullAndApply();
         await PushNotificationService.instance.syncTokenWithBackend();
       }
       return r;
@@ -119,6 +130,7 @@ class AuthController extends ChangeNotifier {
 
   Future<bool> logout() {
     return _run(() async {
+      await PushNotificationService.instance.detachTokenFromCurrentUser();
       final r = await _api.logout();
       if (r.isSuccess) {
         currentUser = null;

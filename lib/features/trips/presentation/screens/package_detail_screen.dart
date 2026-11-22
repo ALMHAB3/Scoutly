@@ -4,16 +4,14 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../features/favorites/logic/favorites_controller.dart';
+import '../../../../features/flight_booking/logic/flight_controller.dart';
+import '../../../../features/flight_booking/presentation/screens/flight_booking_flow_screen.dart';
 import '../../../../global_widgets/app_network_image.dart';
-import '../../../../global_widgets/app_shell.dart';
 import '../../../../global_widgets/app_snackbar.dart';
-import '../../../../global_widgets/payment_checkout_screen.dart';
-import '../../../../features/notifications/logic/notifications_store.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../models/booking_model.dart';
 import '../../../../models/destination_info_model.dart';
 import '../../../../models/travel_package_model.dart';
-import '../../../../routes/app_routes.dart';
 
 class PackageDetailScreen extends StatefulWidget {
   final TravelPackage package;
@@ -29,75 +27,37 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   Future<void> _bookOffer() async {
     final l10n = AppLocalizations.of(context);
     final package = widget.package;
-    final ref =
-        'ZT-P-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-    final bookingStart = DateTime.now().add(const Duration(days: 14));
-    final bookingEnd = bookingStart.add(Duration(days: package.durationNights));
-
-    final availability = await ApiService.instance.checkBookingAvailability(
-      type: BookingType.package,
-      title: package.title,
-      startDate: bookingStart,
-      endDate: bookingEnd,
+    final flight = package.flight;
+    if (flight == null || !flight.isActive) {
+      AppSnackbar.error(context, l10n.flightProviderUnavailable);
+      return;
+    }
+    final controller = FlightController();
+    controller.selectFlight(flight);
+    controller.searchParams = FlightSearchParams(
+      originCode: flight.originCode,
+      originCity: flight.originCity,
+      destinationCode: flight.destinationCode,
+      destinationCity: flight.destinationCity,
+      departureDate: flight.departureTime,
+      passengers: 1,
+      seatClass: 'economy',
+      isRoundTrip: false,
     );
-    if (!mounted) return;
-    if (availability.isFailure || availability.data != true) {
-      AppSnackbar.error(
-        context,
-        availability.isFailure
-            ? availability.errorMessage ?? l10n.genericError
-            : l10n.bookingScheduleConflict,
-      );
-      return;
-    }
-
-    final paid = await PaymentCheckoutScreen.start(context,
-        amountUsd: package.totalPricePerPerson,
-        description: package.title,
-        referenceId: ref);
-    if (!mounted) return;
-    if (!paid) {
-      AppSnackbar.error(context, l10n.paymentFailedMessage);
-      return;
-    }
-
     setState(() => _isBooking = true);
-    await Future.delayed(const Duration(seconds: 1));
-    final booking = BookingModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: BookingType.package,
-      title: package.title,
-      subtitle: '${package.location}, ${package.country}',
-      date: bookingStart,
-      endDate: bookingEnd,
-      price: package.totalPricePerPerson,
-      refCode: ref,
-      status: 'upcoming',
-      imageUrl: package.imageUrl.isEmpty ? null : package.imageUrl,
-      partnerListingId: package.partnerListingId,
-    );
-    final createResult = await ApiService.instance.createBooking(booking);
-    if (createResult.isFailure) {
-      if (!mounted) return;
-      setState(() => _isBooking = false);
-      AppSnackbar.error(
-        context,
-        createResult.errorMessage == 'BOOKING_SCHEDULE_CONFLICT'
-            ? l10n.bookingScheduleConflict
-            : createResult.errorMessage ?? l10n.genericError,
+    try {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => FlightBookingFlowScreen(
+            controller: controller,
+            packageOffer: package,
+          ),
+        ),
       );
-      return;
+    } finally {
+      controller.dispose();
+      if (mounted) setState(() => _isBooking = false);
     }
-    setState(() => _isBooking = false);
-    if (!mounted) return;
-    AppSnackbar.success(context, l10n.packageBookingSuccess(package.location));
-    await NotificationsStore.instance.add(
-        kind: NotifKind.booking,
-        title: l10n.notifBookingConfirmedTitle,
-        subtitle: package.title);
-    if (!mounted) return;
-    AppShellTabController.goToTab(3); // تاب "رحلاتي" — عشان يشوف حجزه فورًا
-    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.home, (_) => false);
   }
 
   @override
@@ -105,6 +65,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final package = widget.package;
+    final languageCode = Localizations.localeOf(context).languageCode;
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -113,7 +74,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
             pinned: true,
             stretch: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(package.title,
+              title: Text(package.displayTitle(languageCode),
                   style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
@@ -139,8 +100,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                     onPressed: () => FavoritesController.instance.toggle(
                       FavoritePlace(
                           id: package.id,
-                          title: package.title,
-                          subtitle: package.location,
+                          title: package.displayTitle(languageCode),
+                          subtitle: package.displayLocation(languageCode),
                           type: 'destination'),
                     ),
                   );
@@ -161,7 +122,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       decoration: BoxDecoration(
                           color: AppColors.primarySurface,
                           borderRadius: BorderRadius.circular(8)),
-                      child: Text(package.location,
+                      child: Text(package.displayLocation(languageCode),
                           style: const TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.w600,
@@ -174,7 +135,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         itemBuilder: (_, __) => const Icon(Icons.star_rounded,
                             color: Colors.amber)),
                     const SizedBox(width: 6),
-                    Text('${package.rating}  (${package.reviewCount})',
+                    Text('${package.rating} (${package.reviewCount})',
+                        textDirection: TextDirection.ltr,
                         style: const TextStyle(
                             fontSize: 12, color: AppColors.textSecondary)),
                   ],
@@ -197,7 +159,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                           const Icon(Icons.nights_stay_rounded,
                               color: AppColors.accentTeal, size: 18),
                           const SizedBox(width: 8),
-                          Text(package.durationLabel,
+                          Text(l10n.hotelNightsSummary(package.durationNights),
                               style: const TextStyle(
                                   fontWeight: FontWeight.w800, fontSize: 15)),
                           const Spacer(),
@@ -219,10 +181,44 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Divider(height: 1)),
+                      if (package.flight case final flight?)
+                        Row(
+                          children: [
+                            const Icon(Icons.flight_takeoff_rounded,
+                                color: AppColors.primary, size: 18),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                '${l10n.packageAirline}: ${flight.airline}'
+                                '${flight.flightNumber.isEmpty ? '' : ' · ${flight.flightNumber}'}'
+                                ' · ${flight.originCode} → ${flight.destinationCode}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: Text(
+                            l10n.flightProviderUnavailable,
+                            style: const TextStyle(
+                              color: AppColors.accentOrange,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 12),
                       _PriceLine(
                           icon: Icons.flight_rounded,
                           label: l10n.packageTicketPrice,
-                          value: package.flightPricePerPerson),
+                          value: package.flight?.economyPrice ??
+                              package.flightPricePerPerson),
                       const SizedBox(height: 10),
                       _PriceLine(
                           icon: Icons.hotel_rounded,
@@ -237,8 +233,9 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                           Text(l10n.packageTotalPrice,
                               style: const TextStyle(
                                   fontWeight: FontWeight.w700, fontSize: 14)),
-                          Text(
-                              '\$${package.totalPricePerPerson.toStringAsFixed(0)}',
+                          CurrencyAmountText(
+                              amount: package.totalPricePerPerson,
+                              decimalDigits: 0,
                               style: const TextStyle(
                                   fontWeight: FontWeight.w800,
                                   fontSize: 22,
@@ -250,7 +247,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 ).animate().fade(delay: 100.ms).slideY(begin: 0.05, end: 0),
                 const SizedBox(height: 16),
                 _DestinationInfoRow(
-                        city: package.location, country: package.country)
+                        city: package.displayLocation(languageCode),
+                        country: package.displayCountry(languageCode))
                     .animate()
                     .fade(delay: 130.ms),
                 const SizedBox(height: 20),
@@ -261,7 +259,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         .titleMedium
                         ?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
-                Text(package.description,
+                Text(package.displayDescription(languageCode),
                         style: Theme.of(context)
                             .textTheme
                             .bodyMedium
@@ -279,7 +277,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: package.highlights
+                  children: package
+                      .displayHighlights(languageCode)
                       .asMap()
                       .entries
                       .map((e) => Container(
@@ -317,7 +316,11 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: _isBooking ? null : _bookOffer,
+                    onPressed: _isBooking ||
+                            package.flight == null ||
+                            !package.flight!.isActive
+                        ? null
+                        : _bookOffer,
                     icon: _isBooking
                         ? const SizedBox(
                             width: 16,
@@ -357,7 +360,9 @@ class _PriceLine extends StatelessWidget {
             child: Text(label,
                 style: const TextStyle(
                     fontSize: 13, color: AppColors.textSecondary))),
-        Text('\$${value.toStringAsFixed(0)}',
+        CurrencyAmountText(
+            amount: value,
+            decimalDigits: 0,
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
       ],
     );
@@ -378,6 +383,7 @@ class _DestinationInfoRow extends StatefulWidget {
 class _DestinationInfoRowState extends State<_DestinationInfoRow> {
   WeatherInfo? _weather;
   VisaInfo? _visa;
+  bool _loading = true;
 
   @override
   void initState() {
@@ -386,14 +392,27 @@ class _DestinationInfoRowState extends State<_DestinationInfoRow> {
   }
 
   Future<void> _load() async {
-    final weatherResult =
-        await ApiService.instance.getDestinationWeather(widget.city);
-    final visaResult = await ApiService.instance.getVisaInfo(widget.country);
-    if (!mounted) return;
-    setState(() {
-      _weather = weatherResult.data;
-      _visa = visaResult.data;
-    });
+    try {
+      final weatherRequest =
+          ApiService.instance.getDestinationWeather(widget.city);
+      final visaRequest = ApiService.instance.getVisaInfo(widget.country);
+      final weatherResult = await weatherRequest;
+      final visaResult = await visaRequest;
+      if (!mounted) return;
+      setState(() {
+        _weather = weatherResult.data;
+        _visa = visaResult.data;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _weather = null;
+          _visa = null;
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   String _visaLabel(AppLocalizations l10n, String requirement) =>
@@ -408,48 +427,90 @@ class _DestinationInfoRowState extends State<_DestinationInfoRow> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    if (_weather == null && _visa == null) return const SizedBox.shrink();
+    if (_loading) return const SizedBox.shrink();
+    if (_weather == null && _visa == null) {
+      return Text(
+        l10n.destinationInfoUnavailable,
+        style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+      );
+    }
 
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        if (_weather != null)
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkSurfaceSecondary
-                      : AppColors.surfaceSecondary,
-                  borderRadius: BorderRadius.circular(14)),
-              child: Row(children: [
-                const Icon(Icons.wb_sunny_rounded,
-                    color: AppColors.accentOrange, size: 20),
-                const SizedBox(width: 8),
-                Text('${_weather!.tempCelsius.toStringAsFixed(0)}°C',
-                    style: const TextStyle(fontWeight: FontWeight.w800)),
-              ]),
-            ),
-          ),
-        if (_weather != null && _visa != null) const SizedBox(width: 10),
-        if (_visa != null)
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkSurfaceSecondary
-                      : AppColors.surfaceSecondary,
-                  borderRadius: BorderRadius.circular(14)),
-              child: Row(children: [
-                const Icon(Icons.badge_outlined,
-                    color: AppColors.primary, size: 20),
-                const SizedBox(width: 8),
-                Expanded(
-                    child: Text(_visaLabel(l10n, _visa!.requirement),
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 12),
-                        overflow: TextOverflow.ellipsis)),
-              ]),
+        Row(
+          children: [
+            if (_weather != null)
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.darkSurfaceSecondary
+                          : AppColors.surfaceSecondary,
+                      borderRadius: BorderRadius.circular(14)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.wb_sunny_rounded,
+                            color: AppColors.accentOrange, size: 20),
+                        const SizedBox(width: 8),
+                        Text('${_weather!.tempCelsius.toStringAsFixed(0)}°C',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w800)),
+                      ]),
+                      if (_weather!.isSample)
+                        Text(l10n.sampleDataLabel,
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 10)),
+                    ],
+                  ),
+                ),
+              ),
+            if (_weather != null && _visa != null) const SizedBox(width: 10),
+            if (_visa != null)
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.darkSurfaceSecondary
+                          : AppColors.surfaceSecondary,
+                      borderRadius: BorderRadius.circular(14)),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.badge_outlined,
+                            color: AppColors.primary, size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: Text(_visaLabel(l10n, _visa!.requirement),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w700, fontSize: 12),
+                                overflow: TextOverflow.ellipsis)),
+                      ]),
+                      if (_visa!.isSample)
+                        Text(l10n.sampleDataLabel,
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 10)),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+        if (_weather == null || _visa == null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              l10n.destinationInfoPartial,
+              style:
+                  const TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
       ],

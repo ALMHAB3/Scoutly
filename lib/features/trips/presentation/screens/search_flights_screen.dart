@@ -37,7 +37,9 @@ class _SearchFlightsScreenState extends State<SearchFlightsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final package = ModalRoute.of(context)?.settings.arguments as TravelPackage?;
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final package =
+        ModalRoute.of(context)?.settings.arguments as TravelPackage?;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.searchFlights)),
@@ -54,8 +56,13 @@ class _SearchFlightsScreenState extends State<SearchFlightsScreen> {
                       icon: Icons.card_travel_rounded,
                       color: AppColors.accentPurple,
                       title: l10n.tripsSuggestedFromPackage,
-                      subtitle: '${package.location}, ${package.country}',
-                      buttonLabel: l10n.tripsSearchFlightsTo(package.location),
+                      subtitle:
+                          '${package.displayLocation(languageCode)}${languageCode == 'ar' ? '، ' : ', '}${package.displayCountry(languageCode)}',
+                      buttonLabel: l10n.tripsSearchFlightsTo(
+                        package.displayLocation(
+                          languageCode,
+                        ),
+                      ),
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -71,8 +78,10 @@ class _SearchFlightsScreenState extends State<SearchFlightsScreen> {
                       icon: Icons.history_rounded,
                       color: AppColors.primary,
                       title: l10n.tripsRepeatLastSearch,
-                      subtitle: '${_lastDestination!.code} · ${_lastDestination!.city}',
-                      buttonLabel: l10n.tripsSearchFlightsTo(_lastDestination!.city),
+                      subtitle:
+                          '${_lastDestination!.code} · ${_lastDestination!.city}',
+                      buttonLabel:
+                          l10n.tripsSearchFlightsTo(_lastDestination!.city),
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -87,7 +96,8 @@ class _SearchFlightsScreenState extends State<SearchFlightsScreen> {
                   OutlinedButton.icon(
                     onPressed: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const FlightSearchScreen()),
+                      MaterialPageRoute(
+                          builder: (_) => const FlightSearchScreen()),
                     ),
                     icon: const Icon(Icons.search_rounded),
                     label: Text(l10n.tripsGoToFlightSearch),
@@ -125,10 +135,16 @@ class _SuggestionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
+        border:
+            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
         boxShadow: isDark
             ? []
-            : [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 6))],
+            : [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6))
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,7 +153,9 @@ class _SuggestionCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12)),
                 child: Icon(icon, color: color, size: 20),
               ),
               const SizedBox(width: 12),
@@ -145,11 +163,20 @@ class _SuggestionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textSecondary)),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? AppColors.darkTextPrimary
+                              : AppColors.textPrimary),
                     ),
                   ],
                 ),

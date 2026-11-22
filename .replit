@@ -1,0 +1,74 @@
+modules = ["java-graalvm22.3", "python-base-3.13", "nodejs-24"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["maven", "postgresql", "jdk21"]
+
+[agent]
+expertMode = true
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_ANON_KEY = "sb_publishable_RMsZOpssbB7g8wqIyM3yzQ_i7s8qUp1"
+SUPABASE_URL = "https://zrzhgotsnqclzrkybuzj.supabase.co"
+
+[userenv.development]
+ZENTRIP_PROVIDER_ENV_FILE = "attached_assets/_1793470398811.env"
+ZENTRIP_SECURITY_ALLOW_REPLIT_PREVIEW_EMBEDDING = "true"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Zentrip"
+
+[[workflows.workflow]]
+name = "Start Zentrip"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash scripts/start-replit.sh"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 5010
+externalPort = 5000
+
+[[ports]]
+localPort = 5999
+externalPort = 4200
+
+[[ports]]
+localPort = 8088
+externalPort = 3000
+
+[[ports]]
+localPort = 8089
+externalPort = 3001
+
+[[ports]]
+localPort = 8090
+externalPort = 3003
+
+[[ports]]
+localPort = 8091
+externalPort = 3002
+
+[postMerge]
+path = "scripts/build-replit.sh"
+timeoutMs = 600000

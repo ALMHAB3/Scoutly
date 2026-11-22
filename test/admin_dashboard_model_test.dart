@@ -11,6 +11,9 @@ void main() {
         'summary': {
           'customer_count': 15,
           'new_customers_30d': 4,
+          'total_user_count': 24,
+          'partner_count': 6,
+          'active_partner_listing_count': 19,
           'reservation_count': 21,
           'flight_count': 5,
           'service_booking_count': 11,
@@ -31,11 +34,54 @@ void main() {
       });
 
       expect(data.customerCount, 15);
+      expect(data.totalUserCount, 24);
+      expect(data.partnerCount, 6);
+      expect(data.activePartnerListingCount, 19);
       expect(data.bookedValue, 1240.5);
       expect(data.recentReservations.single.id, 'booking-9');
       expect(data.recentReservations.single.reservationDate,
           DateTime(2026, 10, 15, 12));
     });
+  });
+
+  test('admin attraction popularity parses aggregate counts and empty fields',
+      () {
+    final popularity = AdminAttractionPopularity.fromJson({
+      'places': [
+        {
+          'title': 'Leptis Magna',
+          'city': 'Khoms',
+          'country': 'Libya',
+          'visit_count': 41,
+        },
+        {
+          'title': null,
+          'city': '',
+          'country': null,
+          'visit_count': null,
+        },
+      ],
+      'countries': [
+        {'country': 'Libya', 'visit_count': 41},
+        {'country': '', 'visit_count': '0'},
+      ],
+    });
+
+    expect(popularity.places.first.title, 'Leptis Magna');
+    expect(popularity.places.first.visitCount, 41);
+    expect(popularity.places.last.title, 'Unnamed place');
+    expect(popularity.places.last.visitCount, 0);
+    expect(popularity.countries.first.country, 'Libya');
+    expect(popularity.countries.last.country, 'Unspecified country');
+    expect(popularity.countries.last.visitCount, 0);
+  });
+
+  test('admin attraction popularity accepts empty country and place lists', () {
+    final popularity =
+        AdminAttractionPopularity.fromJson({'places': [], 'countries': []});
+
+    expect(popularity.places, isEmpty);
+    expect(popularity.countries, isEmpty);
   });
 
   test('admin role is parsed without granting it to legacy users', () {
@@ -90,6 +136,55 @@ void main() {
     expect(dashboard.recentReservations.single.listingId, 44);
   });
 
+  test('partner dashboard ignores missing or null-heavy database fields', () {
+    final dashboard = PartnerDashboardData.fromJson({
+      'company': null,
+      'summary': {'listing_count': null, 'booked_value': 'NaN'},
+      'recent_reservations': [
+        null,
+        'invalid row',
+        {
+          'id': null,
+          'title': null,
+          'customer_email': null,
+          'customer_phone': null,
+          'amount': null,
+          'reservation_date': null,
+        },
+      ],
+    });
+    final listing = PartnerListing.fromJson({
+      'id': 11,
+      'type': 'flight',
+      'title': null,
+      'city': null,
+      'country': null,
+      'attributes': {
+        'flight_number': null,
+        'meal_plan': 'Breakfast included',
+        'features': [null, 'Wi-Fi', null],
+        'contact_email': 'private@example.com',
+      },
+    });
+    final malformedListing = PartnerListing.fromJson({
+      'type': 'hotel',
+      'attributes': '{not-json',
+    });
+
+    expect(dashboard.companyName, 'Partner account');
+    expect(dashboard.listingCount, 0);
+    expect(dashboard.bookedValue, 0);
+    expect(dashboard.recentReservations, hasLength(1));
+    expect(dashboard.recentReservations.single.customerEmail, isEmpty);
+    expect(listing.locationName, isEmpty);
+    expect(
+      listing.nonEmptyAttributes.keys,
+      containsAll(['meal_plan', 'features', 'contact_email']),
+    );
+    expect(listing.nonEmptyAttributes.keys, isNot(contains('flight_number')));
+    expect(malformedListing.attributes, isEmpty);
+  });
+
   test('partner listing preserves ownership fields and JSON attributes', () {
     final listing = PartnerListing.fromJson({
       'id': 6,
@@ -100,7 +195,8 @@ void main() {
       'image_url': 'https://example.com/hotel.jpg',
       'price': '84.50',
       'active': true,
-      'attributes': '{"listing_code":"HTL-000006","stars":4,"amenities":["wifi"]}',
+      'attributes':
+          '{"listing_code":"HTL-000006","stars":4,"amenities":["wifi"]}',
     });
 
     expect(listing.id, 6);

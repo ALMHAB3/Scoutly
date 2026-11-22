@@ -70,6 +70,56 @@ void main() {
     expect(hotel.isActive, isTrue);
   });
 
+  test('Duffel room offers and rating provenance are retained', () {
+    final hotel = HotelModel.fromJson({
+      'id': 'duffel-srr-example',
+      'source': 'duffel',
+      'provider_search_result_id': 'srr_example',
+      'rating_source': 'duffel',
+      'review_score': 8.6,
+      'room_types': [
+        {
+          'name': 'Double room',
+          'rates': [
+            {
+              'id': 'rate-1',
+              'name': 'Breakfast included',
+              'total_amount': '400.00',
+              'total_currency': 'GBP',
+            },
+          ],
+        },
+      ],
+      'offers': [
+        {
+          'id': 'rate-1',
+          'room_name': 'Double room',
+          'name': 'Breakfast included',
+          'total_amount': '400.00',
+          'total_currency': 'GBP',
+        },
+      ],
+    });
+
+    expect(hotel.ratingSource, 'duffel');
+    expect(hotel.reviewScore, 8.6);
+    expect(hotel.hasComparisonPrice, isFalse);
+    expect(hotel.roomTypes.single['rates'], hasLength(1));
+    expect(hotel.offers.single['total_currency'], 'GBP');
+
+    final updated = hotel.withRoomOffers(
+      roomTypes: hotel.roomTypes,
+      offers: hotel.offers,
+      pricePerNight: 130,
+      priceCurrencyCode: 'GBP',
+    );
+    expect(updated.providerSearchResultId, 'srr_example');
+    expect(updated.offers, hasLength(1));
+    expect(updated.pricePerNight, 130);
+    expect(updated.priceCurrencyCode, 'GBP');
+    expect(updated.hasComparisonPrice, isTrue);
+  });
+
   test('hotel location coordinates parse from a Google Maps query URL', () {
     final hotel = HotelModel.fromJson({
       'id': 'hotel-url-coordinates',
@@ -140,6 +190,66 @@ void main() {
     expect(
         '(${nestedFields.reviewCount}) ${nestedFields.rating.toStringAsFixed(1)}',
         '(8240) 4.9');
+  });
+
+  test('LiteAPI hotel data uses shared offers without partner ownership',
+      () {
+    final hotel = HotelModel.fromJson({
+      'id': 'liteapi-123',
+      'source': 'liteapi',
+      'provider_accommodation_id': '123',
+      'name': 'Example London Hotel',
+      'city': 'London',
+      'country': 'GB',
+      'location_name': '100 Clifton Street',
+      'rating': 4.4,
+      'review_count': 336,
+      'price_per_night': '200.00',
+      'price_currency': 'GBP',
+      'tax_and_fees_percentage': 0,
+      'available_rooms': 3,
+      'availability_known': true,
+      'image_url': 'https://example.com/hotel.jpg',
+      'gallery_images': ['https://example.com/hotel.jpg'],
+      'amenities': ['Wi-Fi'],
+      'offers': [
+        {
+          'room_name': 'Double Room',
+          'price_per_night': 100,
+          'stay_total': 200,
+          'currency': 'GBP',
+        },
+      ],
+    });
+
+    expect(hotel.isLiteApiOffer, isTrue);
+    expect(hotel.source, 'liteapi');
+    expect(hotel.providerAccommodationId, '123');
+    expect(hotel.priceCurrencyCode, 'GBP');
+    expect(hotel.pricePerNight, 200);
+    expect(hotel.availableRooms, 3);
+    expect(hotel.availabilityKnown, isTrue);
+    expect(hotel.offers.single['stay_total'], 200);
+    expect(hotel.googleRating, 4.4);
+    expect(hotel.photos, ['https://example.com/hotel.jpg']);
+  });
+
+  test('malformed optional hotel data safely falls back to empty values', () {
+    final hotel = HotelModel.fromJson({
+      'id': 'partner-bad-attributes',
+      'name': 'Safe Hotel',
+      'attributes': 'not valid json',
+      'gallery_images': 'not a list',
+      'amenities': null,
+      'price_per_night': 'NaN',
+      'latitude': double.nan,
+    });
+
+    expect(hotel.name, 'Safe Hotel');
+    expect(hotel.galleryImages, isEmpty);
+    expect(hotel.amenities, isEmpty);
+    expect(hotel.pricePerNight.isFinite, isTrue);
+    expect(hotel.latitude, isNull);
   });
 
   test('visible mock hotels expose the unified hotel listing fields', () {

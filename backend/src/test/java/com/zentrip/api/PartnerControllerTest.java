@@ -1,6 +1,7 @@
 package com.zentrip.api;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
@@ -13,11 +14,15 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.mockito.ArgumentCaptor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -26,8 +31,46 @@ import static org.mockito.Mockito.when;
 class PartnerControllerTest {
     private final JdbcTemplate jdbc = mock(JdbcTemplate.class);
     private final ProfilePhotoStorage imageStorage = mock(ProfilePhotoStorage.class);
+    private final AirportDirectoryService airportDirectoryService =
+            mock(AirportDirectoryService.class);
+    private final DuffelFlightService duffelFlightService = mock(DuffelFlightService.class);
+    private final LiteApiHotelService liteApiHotelService =
+            mock(LiteApiHotelService.class);
+    private final HotelDestinationCatalogService hotelDestinationCatalogService =
+            mock(HotelDestinationCatalogService.class);
     private final PartnerController controller = new PartnerController(
-            jdbc, imageStorage, mock(GooglePlacesRatingSync.class));
+            jdbc,
+            imageStorage,
+            mock(GooglePlacesRatingSync.class),
+            airportDirectoryService,
+            duffelFlightService,
+            liteApiHotelService,
+            hotelDestinationCatalogService,
+            mock(ExchangeRateService.class));
+
+    @Test
+    void airportSearchDelegatesTheUniversalSearchQuery() {
+        Map<String, Object> expected = Map.of(
+                "query_type", "city",
+                "airports", List.of(Map.of("code", "LHR"), Map.of("code", "LGW")));
+        when(airportDirectoryService.search(" London ")).thenReturn(expected);
+
+        assertEquals(expected, controller.searchAirports(" London "));
+        verify(airportDirectoryService).search(" London ");
+    }
+
+    @Test
+    void hotelDestinationSuggestionsUseTheLocalCatalogService() {
+        List<Map<String, Object>> expected =
+                List.of(Map.of("name", "London", "type", "city"));
+        when(hotelDestinationCatalogService.suggest("lo", "ar"))
+                .thenReturn(expected);
+
+        assertEquals(
+                Map.of("suggestions", expected),
+                controller.suggestHotelDestinations("lo", "ar"));
+        verify(hotelDestinationCatalogService).suggest("lo", "ar");
+    }
 
     @Test
     void hotelImageUploadRequiresAnAuthenticatedHotelPartnerAndStoresImage() {
@@ -116,8 +159,29 @@ class PartnerControllerTest {
                 () -> controller.updateListing(
                         42L, Map.of("title", "Other company's hotel"), authenticatedRequest()));
 
-        assertEquals(404, error.getStatusCode().value());
+        assertEquals(403, error.getStatusCode().value());
         verify(jdbc, never()).update(contains("UPDATE partner_listings SET"));
+    }
+
+    @Test
+    void partnerReservationsOnlyIncludeRowsLinkedToListingsOwnedByThatPartner() {
+        when(jdbc.queryForMap(contains("FROM users u JOIN partners p"), eq(7L)))
+                .thenReturn(Map.of(
+                        "partner_id", 3L,
+                        "name", "Example Hotel",
+                        "service_type", "hotel"));
+        when(jdbc.queryForList(
+                contains("l.id = t.partner_listing_id"),
+                eq(3L), eq(3L), eq(3L), eq(50)))
+                .thenReturn(List.of());
+
+        Map<String, Object> response =
+                controller.partnerReservations(50, authenticatedRequest());
+
+        assertEquals(List.of(), response.get("reservations"));
+        verify(jdbc).queryForList(
+                contains("l.id = t.partner_listing_id"),
+                eq(3L), eq(3L), eq(3L), eq(50));
     }
 
     @Test
@@ -456,26 +520,14 @@ class PartnerControllerTest {
     }
 
     @Test
-    void airportSearchReturnsTheDatabaseDirectoryMatches() {
-        when(jdbc.queryForList(
-                contains("FROM airports"),
-                eq("mra"),
-                eq("%mra%"),
-                eq("%mra%"),
-                eq("%mra%"),
-                eq("%mra%"),
-                eq("%mra%")))
-                .thenReturn(List.of(Map.of(
-                        "code", "MRA",
-                        "city", "Misrata",
-                        "airport_name", "Misrata International Airport",
-                        "country", "Libya",
-                        "region", "Central Libya")));
+    void airportSearchPreservesExactIataQuery() {
+        Map<String, Object> expected = Map.of(
+                "query_type", "airport_code",
+                "airports", List.of(Map.of("code", "MRA")));
+        when(airportDirectoryService.search("MRA")).thenReturn(expected);
 
-        Map<String, Object> response = controller.searchAirports("MRA");
-
-        assertEquals("MRA", ((List<Map<?, ?>>) response.get("airports"))
-                .getFirst().get("code"));
+        assertEquals(expected, controller.searchAirports("MRA"));
+        verify(airportDirectoryService).search("MRA");
     }
 
     @Test
@@ -498,6 +550,271 @@ class PartnerControllerTest {
         assertEquals(1, flights.size());
         assertEquals("MRA", ((Map<?, ?>) flights.getFirst()).get("origin_code"));
         assertEquals("MJI", ((Map<?, ?>) flights.getFirst()).get("destination_code"));
+    }
+
+    @Test
+    void flexibleFlightSearchIncludesPartnerFlightsFromEachSelectedMonth() {
+        java.time.LocalDate firstDate = java.time.LocalDate.now().plusDays(2);
+        java.time.YearMonth firstMonth = java.time.YearMonth.from(firstDate);
+        java.time.YearMonth secondMonth = firstMonth.plusMonths(1);
+        java.time.YearMonth thirdMonth = firstMonth.plusMonths(2);
+        java.time.LocalDate secondDate = secondMonth.atDay(5);
+        java.time.LocalDate thirdDate = thirdMonth.atDay(7);
+        String selectedMonths = String.join(
+                ",", firstMonth.toString(), secondMonth.toString(), thirdMonth.toString());
+        when(jdbc.queryForList(contains("WHERE l.type = 'flight'")))
+                .thenReturn(List.of(
+                        partnerFlight(31L, "MRA", "MJI",
+                                firstDate + "T08:00:00", 3),
+                        partnerFlight(32L, "MRA", "MJI",
+                                secondDate + "T09:00:00", 3),
+                        partnerFlight(33L, "MRA", "MJI",
+                                thirdDate + "T10:00:00", 3),
+                        partnerFlight(34L, "MRA", "BEN",
+                                firstDate + "T11:00:00", 3)));
+
+        Map<String, Object> response = controller.searchFlexibleFlights(
+                "mra", "mji", selectedMonths, "round_trip", 7, 1, "economy", false);
+
+        List<?> flights = (List<?>) response.get("flights");
+        assertEquals(3, flights.size());
+        assertEquals(List.of(
+                firstMonth.toString(), secondMonth.toString(), thirdMonth.toString()),
+                response.get("months"));
+        assertEquals("partner-31", ((Map<?, ?>) flights.getFirst()).get("id"));
+        assertEquals("partner-33", ((Map<?, ?>) flights.getLast()).get("id"));
+    }
+
+    @Test
+    void flexibleFlightSearchRejectsMoreThanThreeMonthsBeforeQueryingDatabase() {
+        String months = java.time.YearMonth.now() + ","
+                + java.time.YearMonth.now().plusMonths(1) + ","
+                + java.time.YearMonth.now().plusMonths(2) + ","
+                + java.time.YearMonth.now().plusMonths(3);
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.searchFlexibleFlights(
+                        "MRA", "MJI", months, "one_way", 7, 1, "economy", false));
+
+        assertEquals(400, error.getStatusCode().value());
+        verify(jdbc, never()).queryForList(
+                org.mockito.ArgumentMatchers.anyString());
+    }
+
+    @Test
+    void flexibleWeekendSearchOnlyIncludesFridayDepartures() {
+        java.time.LocalDate friday = java.time.LocalDate.now().with(
+                java.time.temporal.TemporalAdjusters.next(java.time.DayOfWeek.FRIDAY));
+        java.time.LocalDate saturday = friday.plusDays(1);
+        String months = java.util.stream.Stream.of(friday, saturday)
+                .map(java.time.YearMonth::from)
+                .distinct()
+                .map(java.time.YearMonth::toString)
+                .collect(java.util.stream.Collectors.joining(","));
+        when(jdbc.queryForList(contains("WHERE l.type = 'flight'")))
+                .thenReturn(List.of(
+                        partnerFlight(41L, "MRA", "MJI", friday + "T08:00:00", 3),
+                        partnerFlight(42L, "MRA", "MJI", saturday + "T08:00:00", 3)));
+
+        Map<String, Object> response = controller.searchFlexibleFlights(
+                "MRA", "MJI", months, "round_trip", 2, 1, "economy", true);
+
+        List<?> flights = (List<?>) response.get("flights");
+        assertEquals(1, flights.size());
+        assertEquals("partner-41", ((Map<?, ?>) flights.getFirst()).get("id"));
+    }
+
+    @Test
+    void flightSearchKeepsPartnerResultsWhenDuffelIsUnavailable() {
+        when(jdbc.queryForList(contains("WHERE l.type = 'flight'")))
+                .thenReturn(List.of(partnerFlight(
+                        25L, "MRA", "MJI", "2026-11-10T08:00:00", 3)));
+        when(duffelFlightService.isConfigured()).thenReturn(true);
+        when(duffelFlightService.searchFlights(
+                eq("MRA"),
+                eq("MJI"),
+                eq(java.time.LocalDate.parse("2026-11-10")),
+                isNull(),
+                eq(2),
+                eq("economy")))
+                .thenThrow(new ResponseStatusException(
+                        org.springframework.http.HttpStatus.BAD_GATEWAY,
+                        "provider unavailable"));
+
+        Map<String, Object> response = controller.searchFlights(
+                "MRA", "MJI", "2026-11-10", null, 2, "economy");
+
+        List<?> flights = (List<?>) response.get("flights");
+        assertEquals(1, flights.size());
+        assertEquals("partner-25", ((Map<?, ?>) flights.getFirst()).get("id"));
+    }
+
+    @Test
+    void hotelSearchUsesLiteApiAndPreservesProviderOffers() {
+        when(jdbc.queryForList(contains("WHERE l.type = 'hotel'")))
+                .thenReturn(List.of());
+        Map<String, Object> liteApiHotel = Map.of(
+                "id", "liteapi-lp123",
+                "source", "liteapi",
+                "name", "LiteAPI Data Hotel",
+                "price", new BigDecimal("125.00"),
+                "price_currency", "USD",
+                "availability_known", true,
+                "available_rooms", 2,
+                "offers", List.of(Map.of(
+                        "room_name", "Double",
+                        "price_per_night", new BigDecimal("125.00"),
+                        "stay_total", new BigDecimal("250.00"),
+                        "currency", "USD")));
+        when(liteApiHotelService.searchHotels(
+                "London",
+                LocalDate.parse("2026-12-01"),
+                LocalDate.parse("2026-12-03"),
+                1,
+                2,
+                "USD",
+                null,
+                null,
+                ""))
+                .thenReturn(UnifiedInventoryService.SourceOutcome.of(
+                        List.of(liteApiHotel)));
+
+        Map<String, Object> response = controller.searchHotels(
+                "London",
+                "2026-12-01",
+                "2026-12-03",
+                1,
+                2,
+                "USD",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        List<?> hotels = (List<?>) response.get("hotels");
+        assertEquals(1, hotels.size());
+        assertEquals(Map.of(
+                "partner", 0L, "liteapi", 1L),
+                response.get("sources"));
+        assertEquals(List.of(), response.get("warnings"));
+        verify(liteApiHotelService).searchHotels(
+                "London",
+                LocalDate.parse("2026-12-01"),
+                LocalDate.parse("2026-12-03"),
+                1,
+                2,
+                "USD",
+                null,
+                null,
+                "");
+    }
+
+    @Test
+    void liteApiAccessFailureKeepsPartnerHotelsVisible() {
+        Map<String, Object> partnerHotel = new LinkedHashMap<>(Map.ofEntries(
+                Map.entry("id", 17L),
+                Map.entry("title", "Partner London Hotel"),
+                Map.entry("city", "London"),
+                Map.entry("country", "United Kingdom"),
+                Map.entry("partner_name", "Local Partner"),
+                Map.entry("description", "Partner inventory"),
+                Map.entry("image_url", "https://example.test/hotel.jpg"),
+                Map.entry("price", new BigDecimal("88.00")),
+                Map.entry("attributes", "{}"),
+                Map.entry("location_name", "Central London"),
+                Map.entry("google_maps_url", ""),
+                Map.entry("place_id", ""),
+                Map.entry("google_rating", BigDecimal.ZERO),
+                Map.entry("google_review_count", 0),
+                Map.entry("amenities", List.of("Wi-Fi")),
+                Map.entry("tax_and_fees_percentage", BigDecimal.ZERO),
+                Map.entry("available_rooms", 3),
+                Map.entry("aggregated_rating", BigDecimal.ZERO),
+                Map.entry("aggregated_review_count", 0)));
+        when(jdbc.queryForList(
+                contains("WHERE l.type = 'hotel'"),
+                any(Object[].class)))
+                .thenReturn(List.of(partnerHotel));
+        when(liteApiHotelService.searchHotels(
+                eq("London"),
+                eq(LocalDate.parse("2026-12-01")),
+                eq(LocalDate.parse("2026-12-03")),
+                eq(1),
+                eq(2),
+                eq("USD"),
+                isNull(),
+                isNull(),
+                eq("")))
+                .thenReturn(new UnifiedInventoryService.SourceOutcome(
+                        List.of(),
+                        List.of("LiteAPI access was denied.")));
+
+        Map<String, Object> response = controller.searchHotels(
+                "London",
+                "2026-12-01",
+                "2026-12-03",
+                1,
+                2,
+                "USD",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        List<?> hotels = (List<?>) response.get("hotels");
+        assertEquals(1, hotels.size());
+        assertEquals("partner", ((Map<?, ?>) hotels.getFirst()).get("source"));
+        assertEquals(Map.of("partner", 1L, "liteapi", 0L), response.get("sources"));
+        assertEquals(List.of("LiteAPI access was denied."), response.get("warnings"));
+    }
+
+    @Test
+    void hotelSearchRejectsCurrencyOutsideTheSupportedDisplaySet() {
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.searchHotels(
+                        "London",
+                        null,
+                        null,
+                        1,
+                        2,
+                        "CAD",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+
+        assertEquals(400, error.getStatusCode().value());
+        verify(jdbc, never()).queryForList(org.mockito.ArgumentMatchers.anyString());
+    }
+
+    @Test
+    void hotelSearchValidatesFiltersBeforeCallingInventorySources() {
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.searchHotels(
+                        "London",
+                        null,
+                        null,
+                        1,
+                        2,
+                        "USD",
+                        new BigDecimal("200"),
+                        new BigDecimal("100"),
+                        null,
+                        null,
+                        null,
+                        null));
+
+        assertEquals(400, error.getStatusCode().value());
+        verify(jdbc, never()).queryForList(org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
@@ -532,7 +849,7 @@ class PartnerControllerTest {
     }
 
     @Test
-    void publicInventoryMapsCustomerContractsForCarsAttractionsTransfersAndPackages() {
+    void publicInventoryMapsCustomerContractsForCarsTransfersAndPackages() {
         assertPublicListing("car", Map.of(
                 "category", "suv",
                 "seats", 5,
@@ -545,16 +862,6 @@ class PartnerControllerTest {
                         "category", "suv",
                         "price_per_day", new BigDecimal("48.00"),
                         "has_gps", true));
-        assertPublicListing("attraction", Map.of(
-                "category", "museum",
-                "opening_hours", "09:00-17:00",
-                "latitude", 32.9,
-                "longitude", 13.2,
-                "tags", List.of("history")),
-                Map.of(
-                        "category", "museum",
-                        "entry_fee", new BigDecimal("48.00"),
-                        "opening_hours", "09:00-17:00"));
         assertPublicListing("transfer", Map.of(
                 "vehicle_type", "minivan",
                 "max_passengers", 6,
@@ -579,6 +886,43 @@ class PartnerControllerTest {
                         "location", "Tripoli",
                         "flight_price_per_person", new BigDecimal("48.00"),
                         "duration_nights", 3));
+    }
+
+    @Test
+    void carInventorySearchMatchesPickupAreasAndNotOnlyCityNames() {
+        when(jdbc.queryForList(any(String.class), any(Object[].class)))
+                .thenReturn(List.of());
+
+        controller.publicInventory("car", "Airport");
+
+        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+        verify(jdbc).queryForList(sql.capture(), any(Object[].class));
+        assertTrue(sql.getValue().contains("l.attributes ->> 'pickup_location'"));
+        assertTrue(sql.getValue().contains("l.attributes ->> 'district'"));
+        assertTrue(sql.getValue().contains("l.attributes ->> 'neighborhood'"));
+        assertTrue(sql.getValue().contains("l.attributes ->> 'landmark'"));
+    }
+
+    @Test
+    void carLocationSuggestionsDoNotSuggestVehicleNames() {
+        when(jdbc.queryForList(any(String.class), any(Object[].class)))
+                .thenReturn(List.of(Map.of(
+                        "city", "Tripoli",
+                        "attributes", Map.of("pickup_location", "Tripoli Airport"),
+                        "title", "Toyota Corolla")));
+
+        Map<String, Object> response = controller.carLocations("airport");
+
+        assertEquals(List.of("Tripoli Airport"), response.get("suggestions"));
+    }
+
+    @Test
+    void attractionsAreNotPartnerInventory() {
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.publicInventory("attraction", null));
+
+        assertEquals(400, exception.getStatusCode().value());
     }
 
     @Test

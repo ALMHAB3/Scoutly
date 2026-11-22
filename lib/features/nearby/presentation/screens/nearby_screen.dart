@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:geolocator/geolocator.dart';
+import '../../../../core/services/location_settings_service.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../features/favorites/logic/favorites_controller.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -8,12 +8,12 @@ import '../../../../models/map_search_result.dart';
 import '../../logic/nearby_controller.dart';
 import 'places_map_screen.dart';
 
-IconData _nearbyCategoryIcon(String category) => switch (category.toLowerCase()) {
+IconData _nearbyCategoryIcon(String category) =>
+    switch (category.toLowerCase()) {
       'all' => Icons.explore_rounded,
       'landmark' || 'landmarks' => Icons.account_balance_rounded,
       'restaurant' || 'restaurants' => Icons.restaurant_rounded,
       'cafe' || 'cafes' => Icons.local_cafe_rounded,
-      'hotel' || 'hotels' => Icons.hotel_rounded,
       'attraction' || 'attractions' => Icons.attractions_rounded,
       'museum' || 'museums' => Icons.museum_rounded,
       'park' || 'parks' => Icons.park_rounded,
@@ -32,11 +32,19 @@ class NearbyScreen extends StatefulWidget {
 class _NearbyScreenState extends State<NearbyScreen> {
   final _ctrl = NearbyController();
   final _searchCtrl = TextEditingController();
+  String? _lastLanguageCode;
 
   @override
-  void initState() {
-    super.initState();
-    _ctrl.init();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final languageCode = Localizations.localeOf(context).languageCode;
+    if (_lastLanguageCode == null) {
+      _lastLanguageCode = languageCode;
+      _ctrl.init(languageCode: languageCode);
+    } else if (_lastLanguageCode != languageCode) {
+      _lastLanguageCode = languageCode;
+      _ctrl.setLanguage(languageCode);
+    }
   }
 
   @override
@@ -146,9 +154,19 @@ class _NearbyScreenState extends State<NearbyScreen> {
                 listenable: _ctrl,
                 builder: (_, __) {
                   if (_ctrl.isLoadingPlaces || _ctrl.isLoadingLocation) {
-                    return const Center(
-                        child: CircularProgressIndicator(
-                            color: AppColors.primary));
+                    return Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(
+                              color: AppColors.primary),
+                          const SizedBox(height: 14),
+                          Text(l10n.nearbySearching,
+                              style: const TextStyle(
+                                  color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    );
                   }
                   final placeResults = _ctrl.filtered;
                   if (placeResults.isEmpty) {
@@ -229,7 +247,6 @@ class _FilterChips extends StatelessWidget {
       (NearbyFilter.landmark, l10n.nearbyLandmarks),
       (NearbyFilter.restaurant, l10n.nearbyRestaurants),
       (NearbyFilter.cafe, l10n.nearbyCafes),
-      (NearbyFilter.hotel, l10n.nearbyHotels),
       (NearbyFilter.attraction, l10n.nearbyAttractions),
     ];
     return ListenableBuilder(
@@ -248,7 +265,6 @@ class _FilterChips extends StatelessWidget {
               NearbyFilter.landmark => 'landmark',
               NearbyFilter.restaurant => 'restaurant',
               NearbyFilter.cafe => 'cafe',
-              NearbyFilter.hotel => 'hotel',
               NearbyFilter.attraction => 'attraction',
             });
             return GestureDetector(
@@ -303,6 +319,7 @@ class _PlaceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
@@ -377,7 +394,7 @@ class _PlaceCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(place.category,
+                Text(_nearbyCategoryLabel(l10n, place.category),
                     style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -415,8 +432,18 @@ class _PlaceCard extends StatelessWidget {
       ),
     );
   }
-
 }
+
+String _nearbyCategoryLabel(AppLocalizations l10n, String category) =>
+    switch (category.trim().toLowerCase()) {
+      'restaurant' || 'restaurants' => l10n.nearbyCategoryRestaurant,
+      'cafe' || 'cafes' => l10n.nearbyCategoryCafe,
+      'museum' || 'museums' => l10n.nearbyCategoryMuseum,
+      'activity' || 'activities' => l10n.nearbyCategoryActivity,
+      'attraction' || 'attractions' => l10n.nearbyCategoryAttraction,
+      'landmark' || 'landmarks' => l10n.nearbyCategoryLandmark,
+      _ => category,
+    };
 
 class _PlacesLoadError extends StatelessWidget {
   final AppLocalizations l10n;
@@ -516,7 +543,9 @@ class _LocationErrorView extends StatelessWidget {
                       color: AppColors.textSecondary, fontSize: 12)),
             ),
             TextButton(
-              onPressed: () => Geolocator.openLocationSettings(),
+              onPressed: LocationSettingsService.isSupported
+                  ? LocationSettingsService.openLocationSettings
+                  : null,
               child: Text(l10n.openSettings),
             ),
           ],
@@ -540,7 +569,9 @@ class _LocationErrorView extends StatelessWidget {
                 style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => Geolocator.openLocationSettings(),
+              onPressed: LocationSettingsService.isSupported
+                  ? LocationSettingsService.openLocationSettings
+                  : null,
               icon: const Icon(Icons.settings_outlined),
               label: Text(l10n.openSettings),
             ),

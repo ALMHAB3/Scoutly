@@ -16,6 +16,7 @@ class HotelModel {
   final double googleRating;
   final int googleReviewCount;
   final double pricePerNight;
+  final bool hasComparisonPrice;
   final double taxAndFeesPercentage;
   final int availableRooms;
   final String? imageUrl;
@@ -34,6 +35,14 @@ class HotelModel {
   final bool isActive;
   final String? locationInput;
   final String? googlePlaceId;
+  final String source;
+  final String priceCurrencyCode;
+  final String? providerSearchResultId;
+  final String? providerAccommodationId;
+  final bool availabilityKnown;
+  final String ratingSource;
+  final double? reviewScore;
+  final List<Map<String, dynamic>> offers;
 
   const HotelModel({
     required this.id,
@@ -46,6 +55,7 @@ class HotelModel {
     required this.googleRating,
     required this.googleReviewCount,
     required this.pricePerNight,
+    this.hasComparisonPrice = true,
     this.taxAndFeesPercentage = 12,
     this.availableRooms = 0,
     this.imageUrl,
@@ -64,7 +74,23 @@ class HotelModel {
     this.isActive = true,
     this.locationInput,
     this.googlePlaceId,
+    this.source = 'partner',
+    this.priceCurrencyCode = 'USD',
+    this.providerSearchResultId,
+    this.providerAccommodationId,
+    this.availabilityKnown = true,
+    this.ratingSource = 'unknown',
+    this.reviewScore,
+    this.offers = const [],
   });
+
+  bool get isLiteApiOffer => source == 'liteapi';
+
+  /// The search contract supplies a per-room, per-night provider amount.
+  double? get comparisonNightlyPrice =>
+      hasComparisonPrice && pricePerNight.isFinite && pricePerNight >= 0
+          ? pricePerNight
+          : null;
 
   static String _stringFromDynamic(dynamic value, [String fallback = '']) {
     if (value == null) return fallback;
@@ -85,8 +111,12 @@ class HotelModel {
 
   static double _doubleFromDynamic(dynamic value, [double fallback = 0]) {
     if (value == null) return fallback;
-    if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value) ?? fallback;
+    final parsed = value is num
+        ? value.toDouble()
+        : value is String
+            ? double.tryParse(value)
+            : null;
+    if (parsed != null && parsed.isFinite) return parsed;
     return fallback;
   }
 
@@ -94,10 +124,41 @@ class HotelModel {
     final raw = json['attributes'];
     if (raw is Map) return Map<String, dynamic>.from(raw);
     if (raw is String && raw.trim().isNotEmpty) {
-      final decoded = jsonDecode(raw);
-      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      } on FormatException {
+        return const {};
+      }
     }
     return const {};
+  }
+
+  static List<String> _stringList(dynamic value) {
+    if (value is! List) return const [];
+    return value
+        .where((item) => item != null)
+        .map((item) => item.toString().trim())
+        .where((item) => item.isNotEmpty)
+        .toList();
+  }
+
+  static bool _boolFromDynamic(dynamic value, [bool fallback = false]) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      switch (value.trim().toLowerCase()) {
+        case '1':
+        case 'true':
+        case 'yes':
+          return true;
+        case '0':
+        case 'false':
+        case 'no':
+          return false;
+      }
+    }
+    return fallback;
   }
 
   static List<Map<String, dynamic>> _objectList(dynamic value) {
@@ -109,8 +170,9 @@ class HotelModel {
   }
 
   static double? _coordinateFrom(Object? value) {
-    if (value is num) return value.toDouble();
-    return double.tryParse('$value'.trim());
+    final parsed =
+        value is num ? value.toDouble() : double.tryParse('$value'.trim());
+    return parsed != null && parsed.isFinite ? parsed : null;
   }
 
   static (double?, double?) _coordinatesFromInput(String value) {
@@ -186,6 +248,7 @@ class HotelModel {
         googleRating: googleRating,
         googleReviewCount: googleReviewCount,
         pricePerNight: pricePerNight,
+        hasComparisonPrice: hasComparisonPrice,
         taxAndFeesPercentage: taxAndFeesPercentage,
         availableRooms: availableRooms,
         imageUrl: imageUrl,
@@ -204,6 +267,62 @@ class HotelModel {
         isActive: isActive,
         locationInput: locationInput,
         googlePlaceId: googlePlaceId,
+        source: source,
+        priceCurrencyCode: priceCurrencyCode,
+        providerSearchResultId: providerSearchResultId,
+        providerAccommodationId: providerAccommodationId,
+        availabilityKnown: availabilityKnown,
+        ratingSource: ratingSource,
+        reviewScore: reviewScore,
+        offers: offers,
+      );
+
+  HotelModel withRoomOffers({
+    required List<Map<String, dynamic>> roomTypes,
+    required List<Map<String, dynamic>> offers,
+    double? pricePerNight,
+    String? priceCurrencyCode,
+  }) =>
+      HotelModel(
+        id: id,
+        name: name,
+        city: city,
+        country: country,
+        locationName: locationName,
+        googleMapsUrl: googleMapsUrl,
+        placeId: placeId,
+        googleRating: googleRating,
+        googleReviewCount: googleReviewCount,
+        pricePerNight: pricePerNight ?? this.pricePerNight,
+        hasComparisonPrice: pricePerNight == null
+            ? hasComparisonPrice
+            : pricePerNight.isFinite && pricePerNight >= 0,
+        taxAndFeesPercentage: taxAndFeesPercentage,
+        availableRooms: availableRooms,
+        imageUrl: imageUrl,
+        galleryImages: galleryImages,
+        amenities: amenities,
+        description: description,
+        stars: stars,
+        latitude: latitude,
+        longitude: longitude,
+        partnerListingId: partnerListingId,
+        partnerName: partnerName,
+        distanceMeters: distanceMeters,
+        roomTypes: List.unmodifiable(roomTypes),
+        availabilitySchedule: availabilitySchedule,
+        status: status,
+        isActive: isActive,
+        locationInput: locationInput,
+        googlePlaceId: googlePlaceId,
+        source: source,
+        priceCurrencyCode: priceCurrencyCode ?? this.priceCurrencyCode,
+        providerSearchResultId: providerSearchResultId,
+        providerAccommodationId: providerAccommodationId,
+        availabilityKnown: availabilityKnown,
+        ratingSource: ratingSource,
+        reviewScore: reviewScore,
+        offers: List.unmodifiable(offers),
       );
 
   factory HotelModel.fromJson(Map<String, dynamic> json) {
@@ -238,16 +357,14 @@ class HotelModel {
       ),
     );
 
-    final rawGoogleRating = json['google_rating'] ??
-        attributes['google_rating'] ??
-        json['rating'];
+    final rawGoogleRating =
+        json['google_rating'] ?? attributes['google_rating'] ?? json['rating'];
     final rawGoogleReviewCount = json['google_review_count'] ??
         attributes['google_review_count'] ??
         json['review_count'];
     final googleRating = _doubleFromDynamic(rawGoogleRating);
     final googleReviewCount = _intFromDynamic(rawGoogleReviewCount);
-    if (kDebugMode &&
-        _stringFromDynamic(json['id']).startsWith('partner-')) {
+    if (kDebugMode && _stringFromDynamic(json['id']).startsWith('partner-')) {
       debugPrint(
         '[HotelModel] Google rating parse for ${json['id']}: '
         'rating=$rawGoogleRating (${rawGoogleRating.runtimeType}) '
@@ -278,6 +395,9 @@ class HotelModel {
       pricePerNight: _doubleFromDynamic(
         json['price_per_night'] ?? json['price'],
       ),
+      hasComparisonPrice: _validComparisonPrice(
+        json['price_per_night'] ?? json['price'],
+      ),
       taxAndFeesPercentage: _doubleFromDynamic(
         json['tax_and_fees_percentage'] ??
             attributes['tax_and_fees_percentage'],
@@ -290,17 +410,10 @@ class HotelModel {
               _stringFromDynamic(json['image_url']).trim().isEmpty
           ? _fallbackImageUrl
           : _stringFromDynamic(json['image_url']),
-      galleryImages: (json['gallery_images'] as List? ??
-              attributes['gallery_images'] as List? ??
-              const [])
-          .map((image) => image.toString())
-          .where((image) => image.trim().isNotEmpty)
-          .toList(),
-      amenities: (json['amenities'] as List? ??
-              attributes['amenities'] as List? ??
-              const [])
-          .map((e) => e.toString())
-          .toList(),
+      galleryImages: _stringList(
+        json['gallery_images'] ?? attributes['gallery_images'],
+      ),
+      amenities: _stringList(json['amenities'] ?? attributes['amenities']),
       description: _stringFromDynamic(json['description']),
       stars: _intFromDynamic(json['stars'] ?? attributes['stars']),
       latitude: latitude,
@@ -317,22 +430,45 @@ class HotelModel {
         json['availability_schedule'] ?? attributes['availability_schedule'],
       ),
       status: status,
-      isActive: activeValue is bool
-          ? activeValue
-          : activeValue == null ||
-              activeValue == 1 ||
-              activeValue == '1' ||
-              activeValue == 'true',
+      isActive: _boolFromDynamic(activeValue, true),
       locationInput: locationInput.isEmpty ? null : locationInput,
       googlePlaceId: _stringFromDynamic(
         json['google_place_id'] ?? attributes['google_place_id'],
       ),
+      source: _stringFromDynamic(json['source'], 'partner').toLowerCase(),
+      priceCurrencyCode: _stringFromDynamic(
+        json['price_currency'] ?? json['currency'],
+        'USD',
+      ).toUpperCase(),
+      providerSearchResultId: _nullableString(
+        json['provider_search_result_id'],
+      ),
+      providerAccommodationId: _nullableString(
+        json['provider_accommodation_id'],
+      ),
+      availabilityKnown: _boolFromDynamic(
+        json['availability_known'],
+        true,
+      ),
+      ratingSource: _stringFromDynamic(
+        json['rating_source'],
+        _stringFromDynamic(json['source'], 'unknown') == 'partner'
+            ? 'google_places'
+            : _stringFromDynamic(json['source'], 'unknown'),
+      ),
+      reviewScore: _coordinateFrom(json['review_score']),
+      offers: _objectList(json['offers'] ?? attributes['offers']),
     );
   }
 
   static String? _nullableString(Object? value) {
     final text = value?.toString().trim() ?? '';
     return text.isEmpty ? null : text;
+  }
+
+  static bool _validComparisonPrice(Object? value) {
+    final parsed = double.tryParse(value?.toString() ?? '');
+    return parsed != null && parsed.isFinite && parsed >= 0;
   }
 }
 

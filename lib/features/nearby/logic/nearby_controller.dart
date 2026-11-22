@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../core/services/current_location_service.dart';
 import '../../../core/services/api_service.dart';
 import '../../../models/map_search_result.dart';
 
-enum NearbyFilter { all, landmark, restaurant, cafe, hotel, attraction }
+enum NearbyFilter { all, landmark, restaurant, cafe, attraction }
 
 /// Location error reasons — the UI maps these to localized messages.
 typedef NearbyLocationError = CurrentLocationError;
@@ -21,13 +23,25 @@ class NearbyController extends ChangeNotifier {
   bool isLoadingPlaces = false;
   NearbyLocationError? locationError;
   String? placesLoadError;
+  String languageCode = 'ar';
 
   List<MapSearchResult> get allPlaces => List.unmodifiable(_all);
 
-  Future<void> init() async {
+  Future<void> init({String languageCode = 'ar'}) async {
+    this.languageCode = _supportedLanguage(languageCode);
     await _getLocation();
     await _loadPlaces();
   }
+
+  void setLanguage(String language) {
+    final next = _supportedLanguage(language);
+    if (next == languageCode) return;
+    languageCode = next;
+    unawaited(_loadPlaces());
+  }
+
+  static String _supportedLanguage(String language) =>
+      language.toLowerCase().startsWith('ar') ? 'ar' : 'en';
 
   Future<void> _getLocation() async {
     isLoadingLocation = true;
@@ -64,32 +78,30 @@ class NearbyController extends ChangeNotifier {
           latitude: lat,
           longitude: lng,
           category: 'restaurant',
+          language: languageCode,
         ),
         ApiService.instance.searchGoogleMaps(
           query: 'cafes',
           latitude: lat,
           longitude: lng,
           category: 'cafe',
+          language: languageCode,
         ),
         ApiService.instance.searchGoogleMaps(
           query: 'tourist attractions',
           latitude: lat,
           longitude: lng,
           category: 'attraction',
+          language: languageCode,
         ),
         ApiService.instance.searchGoogleMaps(
           query: 'landmarks',
           latitude: lat,
           longitude: lng,
           category: 'landmark',
+          language: languageCode,
         ),
-        ApiService.instance.searchGoogleMaps(
-          query: 'hotels',
-          latitude: lat,
-          longitude: lng,
-          category: 'hotel',
-        ),
-      ]);
+      ]).timeout(const Duration(seconds: 18));
 
       final successfulResponses =
           responses.where((response) => response.isSuccess);
@@ -140,7 +152,6 @@ class NearbyController extends ChangeNotifier {
         NearbyFilter.landmark: 'landmark',
         NearbyFilter.restaurant: 'restaurant',
         NearbyFilter.cafe: 'cafe',
-        NearbyFilter.hotel: 'hotel',
         NearbyFilter.attraction: 'attraction',
       };
       result =

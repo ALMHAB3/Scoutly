@@ -2,28 +2,144 @@ package com.zentrip.api;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    @ConditionalOnBean(DataSource.class)
+    @ConditionalOnMissingBean(PlatformTransactionManager.class)
+    PlatformTransactionManager jdbcTransactionManager(DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            TokenAuthFilter tokenAuthFilter,
+            RlsContextFilter rlsContextFilter,
+            @Value("${ZENTRIP_SECURITY_ALLOW_REPLIT_PREVIEW_EMBEDDING:false}")
+            boolean allowReplitPreviewEmbedding) throws Exception {
         http
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(errors -> errors.authenticationEntryPoint(
+                    (request, response, exception) ->
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/uploads/**", "/error").permitAll()
+                // The original REQUEST dispatch is authenticated before Spring MVC starts
+                // StreamingResponseBody. Its container-generated ASYNC redispatch resumes
+                // that already-authorized request and may not carry the stateless auth context.
+                .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
+                .requestMatchers(
+                    "/api/auth/register",
+                    "/api/auth/login",
+                    "/api/auth/forgot-password",
+                    "/api/auth/verify-code",
+                    "/api/auth/reset-password",
+                    "/uploads/**",
+                    "/error"
+                ).permitAll()
+                .requestMatchers("/api/admin", "/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/partner", "/api/partner/**").hasRole("PARTNER")
+                .requestMatchers(HttpMethod.POST, "/api/places/ingest").hasRole("ADMIN")
+                .requestMatchers(
+                    "/api/auth/me", "/api/auth/logout", "/api/users/fcm-token"
+                ).authenticated()
+                .requestMatchers("/api/notifications", "/api/notifications/**")
+                    .hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.POST, "/api/attractions/*/visits")
+                    .permitAll()
+                .requestMatchers(
+                    "/api/trips", "/api/trips/**",
+                    "/api/bookings", "/api/bookings/**",
+                    "/api/transfers", "/api/transfers/**",
+                    "/api/payments", "/api/payments/**",
+                    "/api/flights/*/seats", "/api/flights/*/seats/**",
+                    "/api/maps/**",
+                    "/api/ai", "/api/ai/**",
+                    "/api/preferences/travel", "/api/preferences/travel/**",
+                    "/api/profile", "/api/profile/**",
+                    "/api/favorites", "/api/favorites/**",
+                    "/api/price-alerts", "/api/price-alerts/**",
+                    "/api/settings", "/api/settings/**"
+                ).hasRole("CUSTOMER")
+                .requestMatchers(HttpMethod.GET, "/api/reviews").permitAll()
+                .requestMatchers(
+                    "/api/airports/search",
+                    "/api/flights/search",
+                    "/api/flights/search/flexible",
+                    "/api/hotels/destinations/suggest",
+                    "/api/hotels/search",
+                    "/api/hotels/nearby",
+                    "/api/cars/locations",
+                    "/api/cars/nearby",
+                    "/api/inventory/**",
+                    "/api/offers",
+                    "/api/attractions/search",
+                    "/api/places",
+                    "/api/attractions/nearby",
+                    "/api/attractions/map",
+                    "/api/attractions/suggestions",
+                    "/api/attractions/recent-destination",
+                    "/api/exchange-rates"
+                ).permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/reviews", "/api/reviews/**")
+                    .hasRole("CUSTOMER")
+                .requestMatchers("/api/**").denyAll()
                 .anyRequest().permitAll()
-            );
+            )
+            .addFilterBefore(tokenAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(rlsContextFilter, TokenAuthFilter.class);
+
+        if (allowReplitPreviewEmbedding) {
+            http.headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.disable())
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                    "frame-ancestors 'self' https://*.replit.dev "
+                        + "https://*.replit.com https://*.replit.app")));
+        }
 
         return http.build();
+    }
+
+    @Bean
+    FilterRegistrationBean<TokenAuthFilter> tokenAuthFilterRegistration(
+            TokenAuthFilter tokenAuthFilter) {
+        FilterRegistrationBean<TokenAuthFilter> registration =
+                new FilterRegistrationBean<>(tokenAuthFilter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    FilterRegistrationBean<RlsContextFilter> rlsContextFilterRegistration(
+            RlsContextFilter rlsContextFilter) {
+        FilterRegistrationBean<RlsContextFilter> registration =
+                new FilterRegistrationBean<>(rlsContextFilter);
+        registration.setEnabled(false);
+        return registration;
     }
 }

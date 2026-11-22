@@ -26,7 +26,12 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
 
   Future<void> _load() async {
     final sessions = await ChatbotController.loadHistory();
-    if (mounted) setState(() { _sessions = sessions; _isLoading = false; });
+    if (mounted) {
+      setState(() {
+        _sessions = sessions;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _delete(ChatSession session) async {
@@ -57,11 +62,17 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.chat_bubble_outline_rounded, size: 64, color: AppColors.textHint),
+                      const Icon(Icons.chat_bubble_outline_rounded,
+                          size: 64, color: AppColors.textHint),
                       const SizedBox(height: 16),
-                      Text(l10n.noChatHistory, style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+                      Text(l10n.noChatHistory,
+                          style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600)),
                       const SizedBox(height: 6),
-                      Text(l10n.noChatHistorySubtitle, style: const TextStyle(color: AppColors.textHint, fontSize: 13)),
+                      Text(l10n.noChatHistorySubtitle,
+                          style: const TextStyle(
+                              color: AppColors.textHint, fontSize: 13)),
                     ],
                   ),
                 )
@@ -76,23 +87,30 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                       direction: DismissDirection.endToStart,
                       background: Container(
                         alignment: AlignmentDirectional.centerEnd,
-                        padding: const EdgeInsets.only(right: 20),
+                        padding: const EdgeInsetsDirectional.only(end: 20),
                         decoration: BoxDecoration(
                           color: AppColors.accentRed.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(Icons.delete_outline_rounded, color: AppColors.accentRed),
+                        child: const Icon(Icons.delete_outline_rounded,
+                            color: AppColors.accentRed),
                       ),
-                      onDismissed: (_) => ChatbotController.deleteSession(session.id),
+                      onDismissed: (_) =>
+                          ChatbotController.deleteSession(session.id),
                       child: GestureDetector(
                         onTap: () => Navigator.pop(context, session),
                         onLongPress: () => _delete(session),
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkSurface : AppColors.surface,
+                            color: isDark
+                                ? AppColors.darkSurface
+                                : AppColors.surface,
                             borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
+                            border: Border.all(
+                                color: isDark
+                                    ? AppColors.darkBorder
+                                    : AppColors.border),
                           ),
                           child: Row(
                             children: [
@@ -102,27 +120,38 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                                   gradient: AppColors.purpleGradient,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.chat_rounded, color: Colors.white, size: 18),
+                                child: const Icon(Icons.chat_rounded,
+                                    color: Colors.white, size: 18),
                               ),
                               const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(session.title, maxLines: 2, overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                    Text(session.title,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14)),
                                     const SizedBox(height: 4),
                                     Text(
                                       '${session.messages.length} ${l10n.chatMessagesCount} · ${DateTimeUtils.relativeTime(session.savedAt, locale: Localizations.localeOf(context).languageCode)}',
-                                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.textSecondary),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
+                              const Icon(Icons.chevron_right_rounded,
+                                  color: AppColors.textHint),
                             ],
                           ),
-                        ).animate(delay: Duration(milliseconds: 60 * i)).fade().slideY(begin: 0.05, end: 0),
+                        )
+                            .animate(delay: Duration(milliseconds: 60 * i))
+                            .fade()
+                            .slideY(begin: 0.05, end: 0),
                       ),
                     );
                   },

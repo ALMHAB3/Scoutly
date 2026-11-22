@@ -24,7 +24,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navTrips => 'رحلاتي';
 
   @override
-  String get navChatbot => 'زن AI';
+  String get navChatbot => 'Zen AI';
 
   @override
   String get navNearby => 'قريب منك';
@@ -113,7 +113,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noUpcomingTrip => 'لا توجد رحلة قادمة';
 
   @override
-  String get startPlanningWithZen => 'ابدأ التخطيط مع زن AI';
+  String get startPlanningWithZen => 'ابدأ التخطيط مع Zen AI';
 
   @override
   String get inspiredDestinations => 'وجهات مقترحة لك';
@@ -271,6 +271,51 @@ class AppLocalizationsAr extends AppLocalizations {
   String get resetPasswordSubtitle => 'اختر كلمة مرور قوية لحماية حسابك';
 
   @override
+  String get resetPasswordTitleLine1 => 'إعادة تعيين';
+
+  @override
+  String get resetPasswordTitleLine2 => 'كلمة المرور';
+
+  @override
+  String get resetCodeInputHint => 'أدخل رمز إعادة التعيين المكوّن من 6 أرقام';
+
+  @override
+  String get demoPasswordResetNotice =>
+      'للعرض التجريبي فقط: استخدم الرمز 123456. لن تتغير كلمة مرور أي حساب حقيقي.';
+
+  @override
+  String get resetCodeInvalid =>
+      'أدخل رمز إعادة تعيين صحيحًا مكوّنًا من 6 أرقام';
+
+  @override
+  String get resetPasswordFieldsRequired => 'أدخل كلمة المرور الجديدة وأكدها';
+
+  @override
+  String get resetPasswordMinLength => 'استخدم 8 أحرف على الأقل';
+
+  @override
+  String get resetPasswordMismatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get resetPasswordButton => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get passwordResetSuccessTitle => 'اكتملت إعادة تعيين كلمة المرور';
+
+  @override
+  String get demoPasswordResetComplete =>
+      'اكتمل العرض التجريبي. لم تتغير كلمة مرور أي حساب حقيقي.';
+
+  @override
+  String get backToLogin => 'العودة إلى تسجيل الدخول';
+
+  @override
+  String get showPassword => 'إظهار كلمة المرور';
+
+  @override
+  String get hidePassword => 'إخفاء كلمة المرور';
+
+  @override
   String get saveNewPassword => 'حفظ كلمة المرور';
 
   @override
@@ -400,7 +445,32 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notifTripCancelledTitle => 'تم إلغاء الرحلة';
 
   @override
-  String get notifEmptyTitle => 'مفيش إشعارات لسه';
+  String get notifEmptyTitle => 'لا توجد إشعارات حتى الآن';
+
+  @override
+  String get notifEmptyHint => 'ستظهر هنا تحديثات الحجوزات والرحلات.';
+
+  @override
+  String get notifMarkAllRead => 'تحديد الكل كمقروء';
+
+  @override
+  String get notifNewSection => 'الجديد';
+
+  @override
+  String get notifEarlierSection => 'السابق';
+
+  @override
+  String get notifTimeAgoNow => 'الآن';
+
+  @override
+  String notifTimeAgoMinutes(Object minutes) {
+    return 'منذ $minutes دقيقة';
+  }
+
+  @override
+  String notifUnreadCount(Object count) {
+    return 'عدد الإشعارات غير المقروءة: $count';
+  }
 
   @override
   String notifTimeAgoHours(Object hours) {
@@ -425,7 +495,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get promotionsDesc => 'صفقات وعروض حصرية';
 
   @override
-  String get zenMessages => 'رسائل زن AI';
+  String get zenMessages => 'رسائل Zen AI';
 
   @override
   String get zenMessagesDesc => 'ردود المحادثة والاقتراحات';
@@ -551,6 +621,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get visaRequired => 'تأشيرة مطلوبة';
 
   @override
+  String get sampleDataLabel => 'بيانات تجريبية';
+
+  @override
+  String get destinationInfoUnavailable =>
+      'معلومات الطقس والتأشيرة غير متاحة حاليًا.';
+
+  @override
+  String get destinationInfoPartial => 'بعض معلومات الوجهة غير متاحة.';
+
+  @override
   String get offlineBannerText => 'انت غير متصل — بنعرضلك آخر بيانات محفوظة';
 
   @override
@@ -589,7 +669,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingDesc1 =>
-      'يساعدك زن AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.';
+      'يساعدك Zen AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.';
 
   @override
   String get onboardingTitle2 => 'اكتشف ما بالقرب منك';
@@ -615,17 +695,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingSkip => 'تخطي';
 
   @override
-  String get chatbotTitle => 'مساعد زن الذكي';
+  String get chatbotTitle => 'Zen AI';
 
   @override
   String get chatbotSubtitle => 'مدعوم بالذكاء الاصطناعي';
 
   @override
   String get chatbotWelcome =>
-      'أهلاً! أنا زن، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨';
+      'أهلاً! أنا Zen AI، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨';
 
   @override
-  String get chatbotInputHint => 'اسأل زن أي شيء...';
+  String get chatbotInputHint => 'اسأل Zen AI أي شيء...';
 
   @override
   String get chatbotSend => 'إرسال';
@@ -640,7 +720,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noChatHistory => 'لا توجد محادثات سابقة';
 
   @override
-  String get noChatHistorySubtitle => 'ستظهر محادثاتك مع زن هنا';
+  String get noChatHistorySubtitle => 'ستظهر محادثاتك مع Zen AI هنا';
 
   @override
   String get clearChatTitle => 'محادثة جديدة';
@@ -653,7 +733,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get suggestItinerary => 'اقترح برنامجاً';
 
   @override
-  String get zenTyping => 'زن يفكر...';
+  String get zenTyping => 'يفكر Zen AI...';
 
   @override
   String get quickPrompt1 => 'خطط رحلة إلى إسطنبول';
@@ -889,6 +969,44 @@ class AppLocalizationsAr extends AppLocalizations {
   String get flightResults => 'الرحلات المتاحة';
 
   @override
+  String get flightSelectTitle => 'اختر الرحلة';
+
+  @override
+  String get flightDateLabel => 'تاريخ الرحلة';
+
+  @override
+  String get flightCalendar => 'التقويم';
+
+  @override
+  String flightAirlinesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count شركة طيران',
+      many: '$count شركة طيران',
+      few: '$count شركات طيران',
+      two: 'شركتا طيران',
+      one: 'شركة طيران واحدة',
+      zero: 'لا توجد شركات طيران',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get flightFare => 'الأجرة';
+
+  @override
+  String get flightSeatsLabel => 'المقاعد';
+
+  @override
+  String get flightPerPerson => 'لكل شخص';
+
+  @override
+  String flightDurationShort(int hours, int minutes) {
+    return '$hours س $minutes د';
+  }
+
+  @override
   String get cheapest => 'الأرخص';
 
   @override
@@ -1116,10 +1234,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get carSearchButton => 'ابحث عن سيارة';
 
   @override
+  String get carSearchFailed =>
+      'تعذّر البحث عن السيارات حاليًا. يرجى المحاولة مرة أخرى.';
+
+  @override
   String get carResults => 'النتائج';
 
   @override
-  String get carNoResults => 'لا توجد سيارات متاحة';
+  String get carNoResults =>
+      'لا توجد سيارات من الشركاء تطابق الموقع والتواريخ المحددة.';
 
   @override
   String carSeatsCount(Object count) {
@@ -1249,7 +1372,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get transferNoSuitableRides =>
-      'لا توجد سيارة تناسب عدد الركاب. جرّب تقليل العدد.';
+      'لا توجد خدمات نقل من الشركاء تطابق المواقع وعدد الركاب.';
 
   @override
   String get transferLocationRequired => 'أدخل موقع الانطلاق والوجهة.';
@@ -1290,7 +1413,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get taxiUseCurrentLocation => 'عرض موقعي الحالي على الخريطة';
 
   @override
-  String get attractionSearchHint => 'ابحث عن وجهة أو معلم...';
+  String get attractionSearchHint => 'ابحث عن مدينة أو دولة أو معلم...';
+
+  @override
+  String get attractionCountryFilter => 'ابحث عن الأماكن حسب الدولة';
+
+  @override
+  String get attractionCountryLoadError =>
+      'تعذر تحميل الأماكن. تحقق من الاتصال وحاول مرة أخرى.';
+
+  @override
+  String get attractionCityNotFound =>
+      'لم نعثر على هذا المكان. تحقق من كتابة الاسم وحاول مرة أخرى.';
 
   @override
   String get attractionCategoryAll => 'الكل';
@@ -1322,10 +1456,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get attractionOpenOnMap => 'افتح على الخريطة';
 
   @override
-  String get attractionMapComingSoon => 'عرض الخريطة قيد التطوير قريباً';
-
-  @override
-  String get chatOnlineStatus => 'متصل بالذكاء الاصطناعي';
+  String get chatOnlineStatus => 'متصل';
 
   @override
   String get chatHistoryTooltip => 'سجل المحادثات';
@@ -1349,7 +1480,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chatQuickPromptCheapest => 'أرخص وجهات ✈️';
 
   @override
-  String get chatQuickPromptBudget => 'ميزانية \$1000 💰';
+  String chatQuickPromptBudget(String budget) {
+    return 'ميزانية $budget 💰';
+  }
 
   @override
   String get chatQuickPromptIstanbulText =>
@@ -1360,8 +1493,9 @@ class AppLocalizationsAr extends AppLocalizations {
       'ما هي أرخص وجهات السفر من مصر هذا الشهر؟';
 
   @override
-  String get chatQuickPromptBudgetText =>
-      'رحلة مميزة بميزانية 1000 دولار — اقترح لي وجهات';
+  String chatQuickPromptBudgetText(String budget) {
+    return 'رحلة مميزة بميزانية $budget — اقترح لي وجهات';
+  }
 
   @override
   String get chatConnectionError => 'تعذّر الاتصال بالمساعد الذكي';
@@ -1391,7 +1525,11 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chatItinerarySave => 'حفظ البرنامج';
 
   @override
-  String get chatItinerarySavedSuccess => 'تم حفظ البرنامج في رحلاتك';
+  String get chatItinerarySavedSuccess =>
+      'تم حفظ البرنامج في سجل المحادثة على هذا الجهاز';
+
+  @override
+  String get chatItinerarySaveFailed => 'تعذر حفظ البرنامج. حاول مرة أخرى.';
 
   @override
   String chatItineraryFullRequest(Object destination) {
@@ -1423,6 +1561,51 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get flightNoResults => 'لا توجد رحلات متاحة';
+
+  @override
+  String get flightProviderWarning =>
+      'بعض مزودي الرحلات غير متاحين مؤقتًا. نعرض الرحلات المتوفرة.';
+
+  @override
+  String get flightFlexibleButton => 'تواريخ مرنة';
+
+  @override
+  String get flightSelectDates => 'اختر التواريخ';
+
+  @override
+  String get flightTripLength => 'كم مدة رحلتك؟';
+
+  @override
+  String get flightWeekend => 'عطلة نهاية الأسبوع';
+
+  @override
+  String get flightWeekendHint =>
+      'المغادرة يوم الجمعة، والعودة يوم الأحد للرحلات ذهابًا وإيابًا.';
+
+  @override
+  String get flightWeek => 'أسبوع';
+
+  @override
+  String get flightMonth => 'شهر';
+
+  @override
+  String get flightOther => 'مدة أخرى';
+
+  @override
+  String get flightDuration => 'المدة';
+
+  @override
+  String get flightDays => 'أيام';
+
+  @override
+  String get flightWhenToGo => 'متى تريد السفر؟';
+
+  @override
+  String get flightSelectUpToMonths => 'اختر حتى 3 أشهر';
+
+  @override
+  String get flightFlexibleSearchLoading =>
+      'جارٍ البحث عن الرحلات خلال الأشهر المحددة…';
 
   @override
   String flightNoResultsForSearch(
@@ -1470,9 +1653,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get flightSelectedSeats => 'المقاعد المختارة';
-
-  @override
-  String get flightDuration => 'المدة';
 
   @override
   String get flightBookingConfirmed => 'تم تأكيد الحجز';
@@ -1529,6 +1709,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get flightTotal => 'الإجمالي';
 
   @override
+  String get flightDuffelOffer => 'عرض Duffel';
+
+  @override
+  String get flightDuffelBookingUnavailable => 'الحجز عبر Duffel غير متصل بعد';
+
+  @override
+  String get flightContinueToPayment => 'المتابعة إلى الدفع';
+
+  @override
+  String get flightSimulationBadge => 'محاكاة';
+
+  @override
+  String get flightSimulatedSeatMapNotice =>
+      'خريطة المقاعد تجريبية — أرقام المقاعد للعرض التوضيحي فقط.';
+
+  @override
+  String get flightChooseSeatsAndContinue => 'اختر المقاعد وتابع';
+
+  @override
+  String get flightProviderUnavailable =>
+      'البحث المباشر عن الرحلات غير متاح مؤقتًا. حاول مرة أخرى.';
+
+  @override
+  String flightDuffelTotal(int count) {
+    return 'إجمالي Duffel لعدد $count من المسافرين';
+  }
+
+  @override
   String get flightTermsNotice =>
       'بالنقر على تأكيد توافق على شروط الخدمة وسياسة الاسترداد';
 
@@ -1546,7 +1754,24 @@ class AppLocalizationsAr extends AppLocalizations {
       'أدخل وجهة أو اسمح بالوصول إلى موقعك لتحديد مدينتك.';
 
   @override
+  String get hotelSelectDestination => 'اختر وجهة من قائمة الاقتراحات.';
+
+  @override
+  String get hotelLoadingDestinations => 'جارٍ البحث عن الوجهات...';
+
+  @override
+  String get hotelNoDestinationSuggestions =>
+      'لم يتم العثور على وجهات لهذا البحث.';
+
+  @override
+  String get hotelDestinationSuggestionsError =>
+      'اقتراحات الوجهات غير متاحة مؤقتًا.';
+
+  @override
   String get hotelSearchNearby => 'البحث بالقرب مني';
+
+  @override
+  String get openLocationSettings => 'فتح الإعدادات';
 
   @override
   String get hotelNearbyTitle => 'فنادق بالقرب مني';
@@ -1575,12 +1800,60 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String hotelNightsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ليلة',
+      many: '$count ليلة',
+      few: '$count ليالٍ',
+      two: 'ليلتان',
+      one: '$count ليلة',
+      zero: '0 ليلة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hotelRoomsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count غرفة',
+      many: '$count غرفة',
+      few: '$count غرف',
+      two: 'غرفتان',
+      one: '$count غرفة',
+      zero: '0 غرفة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hotelGuestsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ضيف',
+      many: '$count ضيف',
+      few: '$count ضيوف',
+      two: 'ضيفان',
+      one: '$count ضيف',
+      zero: '0 ضيف',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String hotelResultsTitle(Object city, Object nights) {
     return 'فنادق $city · $nights ليال';
   }
 
   @override
-  String get hotelNoResults => 'لا توجد فنادق';
+  String get hotelNoResults => 'لا توجد فنادق لهذه التواريخ.';
+
+  @override
+  String get hotelSearchUnavailable => 'البحث غير متاح مؤقتًا. حاول مرة أخرى.';
 
   @override
   String get hotelFilterAll => 'الكل';
@@ -1627,6 +1900,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hotelBookNow => 'احجز الآن';
 
   @override
+  String get hotelDuffelBookingUnavailable => 'حجز فنادق Duffel غير متاح بعد';
+
+  @override
+  String get hotelExternalBookingUnavailable =>
+      'الحجز داخل التطبيق لهذا الفندق غير متاح حاليًا';
+
+  @override
   String get hotelSoldOut => 'نفدت الغرف';
 
   @override
@@ -1636,11 +1916,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get hotelAmenities => 'المرافق';
 
   @override
+  String get hotelRoomRatesTitle => 'أسعار الغرف المتاحة';
+
+  @override
+  String get hotelRoomRatesLoading => 'جارٍ تحميل الأسعار الحالية…';
+
+  @override
+  String get hotelRoomRatesUnavailable => 'أسعار الغرف غير متاحة مؤقتًا.';
+
+  @override
   String get hotelDefaultDescription =>
       'فندق راقٍ يقع في قلب المدينة يوفر أجواءً مريحة ومرافق متكاملة للضيوف.';
 
   @override
   String get hotelNightPrice => 'سعر الليلة';
+
+  @override
+  String get hotelXoteloEstimateLabel => 'تقدير Xotelo (غير مؤكد)';
 
   @override
   String get hotelNightsCount => 'عدد الليالي';
@@ -1965,7 +2257,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packageCatDesert => 'صحراء';
 
   @override
-  String get homeMonuments => 'المعالم السياحية';
+  String get homeMonuments => 'أماكن شهيرة في البلدان';
 
   @override
   String get carTypeElectric => 'كهربائية';
@@ -1996,6 +2288,21 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tripsFilterTours => 'جولات ومعالم';
+
+  @override
+  String get tripsFilterTransfers => 'التوصيلات';
+
+  @override
+  String get tripsKindTransfer => 'توصيلة';
+
+  @override
+  String get transferVehicleLabel => 'السيارة';
+
+  @override
+  String get tripSeatsLabel => 'المقاعد';
+
+  @override
+  String get tripExtrasLabel => 'الإضافات';
 
   @override
   String get tripsKindFlight => 'طيران';
@@ -2032,10 +2339,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminOverview => 'نظرة عامة';
 
   @override
+  String get adminPartners => 'الشركاء';
+
+  @override
+  String get adminOffers => 'العروض';
+
+  @override
+  String get adminCatalog => 'الكتالوج';
+
+  @override
+  String get adminPlaces => 'الأماكن';
+
+  @override
   String get adminReservations => 'الحجوزات';
 
   @override
   String get adminCustomers => 'العملاء';
+
+  @override
+  String get adminPopularity => 'الشعبية';
+
+  @override
+  String get adminCountryVisits => 'الزيارات حسب الدولة';
+
+  @override
+  String get adminPlaceVisits => 'الزيارات حسب المكان';
+
+  @override
+  String get adminNoCountryVisits => 'لا توجد إجماليات زيارات للدول بعد.';
+
+  @override
+  String get adminNoPlaceVisits => 'لا توجد إجماليات زيارات للأماكن بعد.';
+
+  @override
+  String get adminUnspecifiedCountry => 'دولة غير محددة';
 
   @override
   String get adminWelcome => 'أهلاً بك';
@@ -2051,6 +2388,144 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminCustomerCount => 'العملاء';
+
+  @override
+  String get adminUserCount => 'المستخدمون';
+
+  @override
+  String get adminPartnerCount => 'الشركاء النشطون';
+
+  @override
+  String get adminPartnerListings => 'القوائم';
+
+  @override
+  String get adminActivePartnerListings => 'القوائم المتاحة';
+
+  @override
+  String get adminPartnerAccounts => 'حسابات الشركاء';
+
+  @override
+  String get adminAddPartner => 'إضافة شريك';
+
+  @override
+  String get adminPartnerName => 'اسم الشريك أو الشركة';
+
+  @override
+  String get adminPartnerEmail => 'بريد مستخدم مسجل';
+
+  @override
+  String get adminPartnerService => 'خدمة الشريك';
+
+  @override
+  String get adminPartnerExistingAccountHint =>
+      'يجب أن يكون لدى الشريك حساب زنتريب مسبقاً. لن يتم إنشاء كلمة مرور أو تغييرها.';
+
+  @override
+  String get adminPartnerStatusActive => 'نشط';
+
+  @override
+  String get adminPartnerStatusInactive => 'غير نشط';
+
+  @override
+  String get adminDisablePartner => 'تعطيل الشريك';
+
+  @override
+  String get adminRestorePartner => 'استعادة الشريك';
+
+  @override
+  String get adminPartnerRestored => 'تمت استعادة صلاحية الشريك.';
+
+  @override
+  String get adminDisablePartnerConfirmation =>
+      'سيتم إلغاء صلاحية الشريك مع الاحتفاظ بالشركة والقوائم وسجل الحجوزات.';
+
+  @override
+  String get adminPartnerDisabled =>
+      'تم تعطيل صلاحية الشريك مع الحفاظ على السجلات.';
+
+  @override
+  String get adminPartnerAdded => 'تمت إضافة الشريك';
+
+  @override
+  String get adminNoPartners => 'لم يتم العثور على شركاء.';
+
+  @override
+  String get adminLegacyAttractionReviewTitle =>
+      'مراجعة شركاء المعالم السابقين';
+
+  @override
+  String get adminLegacyAttractionReviewDescription =>
+      'راجع الحساب والقوائم. لكل معلم، اختر مكاناً موجوداً أو أنشئ مكاناً منسقاً أو اتركه دون ربط. لن تُلغى صلاحية الشريك إلا بعد موافقتك.';
+
+  @override
+  String get adminLegacyAttractionReviewAction => 'مراجعة وإلغاء الوصول';
+
+  @override
+  String get adminLegacyAttractionReviewed => 'تمت المراجعة وإلغاء الوصول';
+
+  @override
+  String get adminLegacyAttractionApproveRetire => 'الموافقة وإلغاء الوصول';
+
+  @override
+  String get adminLegacyAttractionConfirmTitle =>
+      'هل توافق على إلغاء وصول الشريك؟';
+
+  @override
+  String get adminLegacyAttractionConfirmBody =>
+      'ستفقد حسابات الشريك صلاحية الشريك. ستبقى الشركة وسجل القوائم محفوظين، وستضاف الأماكن المحددة إلى الكتالوج المنسق.';
+
+  @override
+  String get adminLegacyAttractionReviewSaved =>
+      'تمت الموافقة على المراجعة وإلغاء وصول الشريك.';
+
+  @override
+  String get adminLegacyAttractionCreatePlace => 'إنشاء مكان منسق';
+
+  @override
+  String get adminLegacyAttractionOmit => 'اتركه دون ربط';
+
+  @override
+  String get adminLegacyAttractionUseExisting => 'استخدم مكاناً موجوداً';
+
+  @override
+  String get adminLegacyAttractionNonPlaceListing =>
+      'لا يمكن إضافة هذا النوع إلى الأماكن. ستبقى القائمة محفوظة.';
+
+  @override
+  String get adminLegacyAttractionNoListings =>
+      'لا توجد قوائم مرتبطة بهذا الحساب.';
+
+  @override
+  String get adminLegacyAttractionReviewPlace => 'ربط المكان';
+
+  @override
+  String adminLegacyAttractionAccountReviewedBy(Object name) {
+    return 'تمت المراجعة بواسطة $name';
+  }
+
+  @override
+  String get adminServiceAirline => 'شركة طيران';
+
+  @override
+  String get adminServiceHotel => 'فندق';
+
+  @override
+  String get adminServiceCar => 'تأجير سيارات';
+
+  @override
+  String get adminServiceTransfer => 'توصيل';
+
+  @override
+  String get adminServiceTravel => 'باقات سياحية';
+
+  @override
+  String get adminServiceAttraction => 'المعالم (حسابات سابقة)';
+
+  @override
+  String get adminRequiredField => 'هذا الحقل مطلوب.';
+
+  @override
+  String get adminInvalidEmail => 'أدخل بريداً إلكترونياً صحيحاً.';
 
   @override
   String get adminNewCustomers => 'عملاء جدد (آخر 30 يوماً)';
@@ -2134,7 +2609,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminAddOffer => 'إضافة عرض';
 
   @override
-  String get adminAddMonument => 'إضافة معلم';
+  String get adminAddMonument => 'إضافة مكان';
 
   @override
   String get adminCatalogEmpty => 'لا توجد عناصر في الكتالوج بعد.';
@@ -2182,6 +2657,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminHotelPriceNight => 'سعر الفندق للليلة';
 
   @override
+  String get adminLinkedFlight => 'الرحلة المضمنة في هذا العرض';
+
+  @override
+  String get adminSelectFlight => 'اختر رحلة موجودة';
+
+  @override
+  String get adminOfferFlightMissing => 'لم يتم ربط رحلة';
+
+  @override
+  String get packageAirline => 'شركة الطيران';
+
+  @override
+  String get packageStayTotal => 'الإقامة الفندقية';
+
+  @override
   String get adminRating => 'التقييم (0–5)';
 
   @override
@@ -2197,7 +2687,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminEditOffer => 'تعديل العرض';
 
   @override
-  String get adminEditMonument => 'تعديل المعلم';
+  String get adminEditMonument => 'تعديل المكان';
 
   @override
   String get adminCategory => 'الفئة';
@@ -2333,9 +2823,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get partnerTypeCar => 'تأجير سيارة';
-
-  @override
-  String get partnerTypeAttraction => 'معلم سياحي';
 
   @override
   String get partnerTypeTransfer => 'توصيل';
@@ -2527,4 +3014,517 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get partnerInvalidServiceField => 'أدخل قيمة صحيحة لهذا الحقل.';
+
+  @override
+  String get airportMajorLabel => 'مطار رئيسي';
+
+  @override
+  String get airportMinorLabel => 'مطار إقليمي';
+
+  @override
+  String get airportNearestLabel => 'أقرب مطار';
+
+  @override
+  String get airportCategoryAddLocation =>
+      'أضف مدينة أو مكاناً، مثل الطبيعة في بالي، إندونيسيا.';
+
+  @override
+  String get compareIn => 'قارن بعملة';
+
+  @override
+  String get lydFixedRate => 'سعر مرجعي ثابت: 1 دولار أمريكي = 6.4 دينار ليبي';
+
+  @override
+  String get refreshRates => 'تحديث الأسعار';
+
+  @override
+  String get retryRates => 'إعادة محاولة الأسعار';
+
+  @override
+  String get frankfurterRatesUnavailable =>
+      'أسعار فرانكفورتر المرجعية اليومية · لا يتوفر تاريخ للأسعار';
+
+  @override
+  String frankfurterRatesDate(Object date) {
+    return 'أسعار فرانكفورتر المرجعية اليومية · حتى $date';
+  }
+
+  @override
+  String get rateRefreshFailed =>
+      'تعذر تحديث أسعار الصرف. قد لا تتوفر الأسعار المحوّلة.';
+
+  @override
+  String get ratesMayBeStale =>
+      'قد تكون الأسعار المرجعية قديمة. حدّث للتحقق من وجود تحديثات.';
+
+  @override
+  String unpricedOffers(int count) {
+    return '$count من العروض بلا سعر قابل للمقارنة، وتُستثنى من تصفية الأسعار.';
+  }
+
+  @override
+  String get priceEstimateDisclaimer =>
+      'المبالغ المحوّلة تقديرية وليست أسعار حجز. قد تختلف الرسوم وأسعار التسوية.';
+
+  @override
+  String get providerPrice => 'سعر المزوّد';
+
+  @override
+  String get comparisonEstimate => 'تقدير للمقارنة';
+
+  @override
+  String get priceUnavailable => 'غير متاح';
+
+  @override
+  String get providerTotal => 'إجمالي المزوّد';
+
+  @override
+  String get providerPerPerson => 'للفرد';
+
+  @override
+  String get flightAllTravelersEstimate => 'إجمالي تقديري لجميع المسافرين';
+
+  @override
+  String get flightPartnerOutboundOnly => 'للذهاب فقط';
+
+  @override
+  String get flightPartnerRoundTripWarning =>
+      'تغطي أسعار الشركاء رحلة الذهاب فقط، ولا يمكن مقارنتها بإجمالي رحلات الذهاب والعودة.';
+
+  @override
+  String get flightMaxBudget => 'الحد الأقصى لإجمالي المسافرين';
+
+  @override
+  String get clearBudget => 'مسح الميزانية';
+
+  @override
+  String get hotelPerRoomNight => 'سعر المزوّد للغرفة / الليلة';
+
+  @override
+  String get hotelEstimatePerRoomNight => 'تقدير للغرفة / الليلة';
+
+  @override
+  String hotelBudgetThreshold(Object currency) {
+    return 'اقتصادي أقل من 100 $currency / الليلة';
+  }
+
+  @override
+  String hotelMidThreshold(Object currency) {
+    return 'متوسط من 100 إلى أقل من 250 $currency / الليلة';
+  }
+
+  @override
+  String hotelLuxuryThreshold(Object currency) {
+    return 'فاخر 250 $currency أو أكثر / الليلة';
+  }
+
+  @override
+  String get offerSourcePartner => 'شريك';
+
+  @override
+  String get offerSourceDuffel => 'دافل';
+
+  @override
+  String get tryAgain => 'حاول مرة أخرى';
+
+  @override
+  String get invalidComparisonBudget => 'أدخل مبلغاً صحيحاً لا يقل عن صفر';
+
+  @override
+  String get referenceRatePolicy =>
+      'تُميّز الأسعار الأقدم من 4 أيام؛ ولا تُستخدم أسعار الصرف الأقدم من 7 أيام.';
+
+  @override
+  String get authInvalidEmail => 'أدخل بريدًا إلكترونيًا صحيحًا';
+
+  @override
+  String get forgotTitleLine1 => 'نسيت كلمة المرور؟';
+
+  @override
+  String get forgotTitleLine2 => 'سنساعدك على استعادة حسابك';
+
+  @override
+  String get forgotSubtitle =>
+      'أدخل البريد الإلكتروني المرتبط بحسابك وسنرسل لك رمزًا لإعادة تعيين كلمة المرور.';
+
+  @override
+  String get authEmailHint => 'أدخل بريدك الإلكتروني';
+
+  @override
+  String get sendResetCode => 'إرسال رمز إعادة التعيين';
+
+  @override
+  String get rememberedIt => 'تذكرتها؟';
+
+  @override
+  String get backToLoginLower => 'العودة لتسجيل الدخول';
+
+  @override
+  String get authPasswordHint => 'أدخل كلمة المرور';
+
+  @override
+  String get loginTitleLine1 => 'سجّل دخولك';
+
+  @override
+  String get loginTitleLine2 => 'وسافر حول العالم';
+
+  @override
+  String get rememberMe => 'تذكرني';
+
+  @override
+  String get forgotPasswordLink => 'نسيت كلمة المرور؟';
+
+  @override
+  String get loginButton => 'تسجيل الدخول';
+
+  @override
+  String get orSignUpWith => 'أو سجّل باستخدام';
+
+  @override
+  String get noAccountPrompt => 'ليس لديك حساب؟ ';
+
+  @override
+  String get createAnAccount => 'أنشئ حسابًا';
+
+  @override
+  String get fullNameHint => 'أدخل اسمك الكامل';
+
+  @override
+  String phoneExactDigits(int count, String country) {
+    return 'أدخل $count أرقام بالضبط لـ $country';
+  }
+
+  @override
+  String phoneDigitRange(int min, int max, String country) {
+    return 'أدخل من $min إلى $max أرقام لـ $country';
+  }
+
+  @override
+  String get passwordMinLength => 'استخدم 8 أحرف على الأقل';
+
+  @override
+  String get passwordsDontMatch => 'كلمتا المرور غير متطابقتين';
+
+  @override
+  String get acceptTermsError => 'يرجى الموافقة على الشروط للمتابعة';
+
+  @override
+  String get phoneHint => 'أدخل رقم هاتفك';
+
+  @override
+  String get addProfilePhotoOptional => 'أضف صورة شخصية (اختياري)';
+
+  @override
+  String get registerTitleLine1 => 'أنشئ حسابك';
+
+  @override
+  String get registerTitleLine2 => 'وابدأ رحلتك';
+
+  @override
+  String get createPasswordHint => 'أنشئ كلمة مرور';
+
+  @override
+  String get confirmPasswordHint => 'أكّد كلمة المرور';
+
+  @override
+  String get agreeToThe => 'أوافق على ';
+
+  @override
+  String get termsOfService => 'شروط الخدمة';
+
+  @override
+  String get createAccountButton => 'إنشاء حساب';
+
+  @override
+  String get enterSixDigitCode => 'أدخل رمز التحقق المكوّن من 6 أرقام';
+
+  @override
+  String get enterAndConfirmPassword => 'أدخل كلمة المرور الجديدة وأكّدها';
+
+  @override
+  String get verifyTitleLine1 => 'تحقّق من';
+
+  @override
+  String get verifyTitleLine2 => 'بريدك الإلكتروني';
+
+  @override
+  String get verifySubtitle =>
+      'أدخل الرمز المكوّن من 6 أرقام المرسل إلى بريدك الإلكتروني.';
+
+  @override
+  String get verificationCodeHint => 'أدخل رمز التحقق';
+
+  @override
+  String get verifyCodeButton => 'تحقّق من الرمز';
+
+  @override
+  String get didntReceiveCode => 'لم يصلك الرمز؟';
+
+  @override
+  String resendInSeconds(int seconds) {
+    return 'إعادة الإرسال بعد $seconds ث';
+  }
+
+  @override
+  String get newPasswordTitleLine1 => 'اختر';
+
+  @override
+  String get newPasswordTitleLine2 => 'كلمة مرور جديدة';
+
+  @override
+  String get newPasswordSubtitle => 'أنشئ كلمة مرور جديدة لحسابك.';
+
+  @override
+  String get newPasswordHint => 'كلمة المرور الجديدة';
+
+  @override
+  String get confirmNewPasswordHint => 'تأكيد كلمة المرور الجديدة';
+
+  @override
+  String get resetPasswordAction => 'إعادة تعيين كلمة المرور';
+
+  @override
+  String get passwordUpdatedSuccess => 'تم تحديث كلمة المرور بنجاح.';
+
+  @override
+  String get backToLoginButton => 'العودة لتسجيل الدخول';
+
+  @override
+  String get photoTooLarge => 'اختر صورة أصغر من 5 ميجابايت.';
+
+  @override
+  String get photoUnreadable => 'تعذّرت قراءة هذه الصورة. جرّب صورة أخرى.';
+
+  @override
+  String get seatListingMissing => 'هذه الرحلة بلا معرّف إدراج.';
+
+  @override
+  String get seatLoadFailed => 'تعذّر تحميل توفر المقاعد.';
+
+  @override
+  String get seatNoLongerAvailable =>
+      'أحد المقاعد التي اخترتها لم يعد متاحًا. يرجى الاختيار مرة أخرى.';
+
+  @override
+  String selectUpToSeats(int count) {
+    return 'اختر حتى $count مقاعد لهذا الحجز.';
+  }
+
+  @override
+  String selectSeatsToContinue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'اختر $count مقاعد للمتابعة.',
+      one: 'اختر مقعدًا واحدًا للمتابعة.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fareNotEnoughSeats => 'لم يعد في هذه الفئة مقاعد كافية.';
+
+  @override
+  String get flightAvailabilityUnverified => 'تعذّر التحقق من توفر الرحلة.';
+
+  @override
+  String get flightConflictsBooking => 'تتعارض هذه الرحلة مع حجز آخر في حسابك.';
+
+  @override
+  String get seatsNoLongerAvailable => 'هذه المقاعد لم تعد متاحة.';
+
+  @override
+  String get paymentNotCompletedNoTrip => 'لم يكتمل الدفع. لم يتم حفظ أي رحلة.';
+
+  @override
+  String paymentHoldNotReleased(String details) {
+    return 'لم يكتمل الدفع وتعذّر إلغاء حجز المقعد المؤقت. $details';
+  }
+
+  @override
+  String get paymentHoldReleased =>
+      'لم يكتمل الدفع. تم إلغاء حجز مقعدك المؤقت.';
+
+  @override
+  String get chooseSeats => 'اختر المقاعد';
+
+  @override
+  String get refreshAvailability => 'تحديث التوفر';
+
+  @override
+  String proceedToPaymentAmount(String amount) {
+    return 'المتابعة إلى الدفع · $amount';
+  }
+
+  @override
+  String get seatAvailabilityUnavailable => 'توفر المقاعد غير متاح حاليًا.';
+
+  @override
+  String get aircraftDetails => 'تفاصيل الطائرة';
+
+  @override
+  String get sharedInventory => 'مخزون مشترك';
+
+  @override
+  String cabinNumber(String number) {
+    return 'المقصورة $number';
+  }
+
+  @override
+  String get optionalExtras => 'إضافات اختيارية';
+
+  @override
+  String get optionalExtrasSubtitle => 'أضف ما تحتاجه فقط';
+
+  @override
+  String get extraLegroomSeats => 'مقاعد بمساحة إضافية للأرجل';
+
+  @override
+  String get taxesAndFees => 'الضرائب والرسوم';
+
+  @override
+  String get estimatedTotal => 'الإجمالي التقديري';
+
+  @override
+  String get retryShort => 'إعادة المحاولة';
+
+  @override
+  String get boardingDirect => 'مباشر';
+
+  @override
+  String get boardingOneStop => 'توقف واحد';
+
+  @override
+  String get clearSearch => 'مسح البحث';
+
+  @override
+  String get passwordResetTitleLine1 => 'تمت إعادة';
+
+  @override
+  String get passwordResetTitleLine2 => 'تعيين كلمة المرور';
+
+  @override
+  String get boardingDate => 'التاريخ';
+
+  @override
+  String get boardingFlight => 'الرحلة';
+
+  @override
+  String get boardingClass => 'الدرجة';
+
+  @override
+  String get boardingRef => 'المرجع';
+
+  @override
+  String get resendCodeLink => 'إعادة إرسال الرمز';
+
+  @override
+  String get attractionLocationUnavailable => 'موقع هذا المكان غير متاح.';
+
+  @override
+  String fareTimesPassengers(String fare, int count) {
+    return 'سعر $fare × $count';
+  }
+
+  @override
+  String get nearbySearching => 'جارٍ البحث عن أماكن قريبة…';
+
+  @override
+  String get nearbyCategoryRestaurant => 'مطعم';
+
+  @override
+  String get nearbyCategoryCafe => 'مقهى';
+
+  @override
+  String get nearbyCategoryHotel => 'فندق';
+
+  @override
+  String get nearbyCategoryMuseum => 'متحف';
+
+  @override
+  String get nearbyCategoryActivity => 'نشاط';
+
+  @override
+  String get nearbyCategoryAttraction => 'معلم سياحي';
+
+  @override
+  String get nearbyCategoryLandmark => 'مَعلَم';
+
+  @override
+  String get cityIstanbul => 'إسطنبول';
+
+  @override
+  String get cityJeddah => 'جدة';
+
+  @override
+  String get cityBali => 'بالي';
+
+  @override
+  String get cityMale => 'ماليه';
+
+  @override
+  String get cityTunis => 'تونس';
+
+  @override
+  String get cityJakarta => 'جاكرتا';
+
+  @override
+  String get cityAlBayda => 'البيضاء';
+
+  @override
+  String get cityTobruk => 'طبرق';
+
+  @override
+  String get citySirte => 'سرت';
+
+  @override
+  String get cityKhoms => 'الخمس';
+
+  @override
+  String get countryLibya => 'ليبيا';
+
+  @override
+  String get countryEgypt => 'مصر';
+
+  @override
+  String get countrySaudiArabia => 'السعودية';
+
+  @override
+  String get countryTurkey => 'تركيا';
+
+  @override
+  String get countryIndonesia => 'إندونيسيا';
+
+  @override
+  String get countryUnitedArabEmirates => 'الإمارات العربية المتحدة';
+
+  @override
+  String get countryMaldives => 'المالديف';
+
+  @override
+  String get countryTunisia => 'تونس';
+
+  @override
+  String get countryFrance => 'فرنسا';
+
+  @override
+  String get countryJapan => 'اليابان';
+
+  @override
+  String get adminOfferTitleArabic => 'عنوان العرض بالعربية';
+
+  @override
+  String get adminOfferCityArabic => 'المدينة بالعربية';
+
+  @override
+  String get adminOfferCountryArabic => 'الدولة بالعربية';
+
+  @override
+  String get adminOfferDescriptionArabic => 'وصف العرض بالعربية';
+
+  @override
+  String get adminOfferHighlightsArabic => 'أبرز معالم العرض بالعربية';
+
+  @override
+  String get adminOfferHighlightsArabicHint => 'أدخل معالم مفصولة بفواصل';
 }

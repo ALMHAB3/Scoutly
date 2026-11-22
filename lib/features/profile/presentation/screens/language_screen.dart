@@ -12,8 +12,8 @@ class LanguageScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final langs = [
-      (const Locale('ar'), '🇸🇦', l10n.arabic, 'العربية'),
-      (const Locale('en'), '🇺🇸', l10n.english, 'English'),
+      (const Locale('ar'), '🇱🇾', 'العربية'),
+      (const Locale('en'), '🇺🇸', 'English'),
     ];
 
     return Scaffold(
@@ -26,7 +26,7 @@ class LanguageScreen extends StatelessWidget {
             final current = LocaleController.instance.locale;
             return Column(
               children: langs.map((opt) {
-                final (locale, flag, label, nativeLabel) = opt;
+                final (locale, flag, label) = opt;
                 final isSelected = current.languageCode == locale.languageCode;
                 return GestureDetector(
                   onTap: () => LocaleController.instance.setLocale(locale),
@@ -35,9 +35,19 @@ class LanguageScreen extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primarySurface : (isDark ? AppColors.darkSurface : AppColors.surface),
+                      color: isSelected
+                          ? AppColors.primarySurface
+                          : (isDark
+                              ? AppColors.darkSurface
+                              : AppColors.surface),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: isSelected ? AppColors.primary : (isDark ? AppColors.darkBorder : AppColors.border), width: isSelected ? 2 : 1),
+                      border: Border.all(
+                          color: isSelected
+                              ? AppColors.primary
+                              : (isDark
+                                  ? AppColors.darkBorder
+                                  : AppColors.border),
+                          width: isSelected ? 2 : 1),
                     ),
                     child: Row(
                       children: [
@@ -46,12 +56,18 @@ class LanguageScreen extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500, fontSize: 15)),
-                            Text(nativeLabel, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                            Text(label,
+                                style: TextStyle(
+                                    fontWeight: isSelected
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    fontSize: 15)),
                           ],
                         ),
                         const Spacer(),
-                        if (isSelected) const Icon(Icons.check_circle_rounded, color: AppColors.primary),
+                        if (isSelected)
+                          const Icon(Icons.check_circle_rounded,
+                              color: AppColors.primary),
                       ],
                     ),
                   ),

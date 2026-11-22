@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @navChatbot.
   ///
   /// In ar, this message translates to:
-  /// **'زن AI'**
+  /// **'Zen AI'**
   String get navChatbot;
 
   /// No description provided for @navNearby.
@@ -305,7 +305,7 @@ abstract class AppLocalizations {
   /// No description provided for @startPlanningWithZen.
   ///
   /// In ar, this message translates to:
-  /// **'ابدأ التخطيط مع زن AI'**
+  /// **'ابدأ التخطيط مع Zen AI'**
   String get startPlanningWithZen;
 
   /// No description provided for @inspiredDestinations.
@@ -614,6 +614,90 @@ abstract class AppLocalizations {
   /// **'اختر كلمة مرور قوية لحماية حسابك'**
   String get resetPasswordSubtitle;
 
+  /// No description provided for @resetPasswordTitleLine1.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تعيين'**
+  String get resetPasswordTitleLine1;
+
+  /// No description provided for @resetPasswordTitleLine2.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور'**
+  String get resetPasswordTitleLine2;
+
+  /// No description provided for @resetCodeInputHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رمز إعادة التعيين المكوّن من 6 أرقام'**
+  String get resetCodeInputHint;
+
+  /// No description provided for @demoPasswordResetNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'للعرض التجريبي فقط: استخدم الرمز 123456. لن تتغير كلمة مرور أي حساب حقيقي.'**
+  String get demoPasswordResetNotice;
+
+  /// No description provided for @resetCodeInvalid.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رمز إعادة تعيين صحيحًا مكوّنًا من 6 أرقام'**
+  String get resetCodeInvalid;
+
+  /// No description provided for @resetPasswordFieldsRequired.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل كلمة المرور الجديدة وأكدها'**
+  String get resetPasswordFieldsRequired;
+
+  /// No description provided for @resetPasswordMinLength.
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم 8 أحرف على الأقل'**
+  String get resetPasswordMinLength;
+
+  /// No description provided for @resetPasswordMismatch.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمتا المرور غير متطابقتين'**
+  String get resetPasswordMismatch;
+
+  /// No description provided for @resetPasswordButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تعيين كلمة المرور'**
+  String get resetPasswordButton;
+
+  /// No description provided for @passwordResetSuccessTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتملت إعادة تعيين كلمة المرور'**
+  String get passwordResetSuccessTitle;
+
+  /// No description provided for @demoPasswordResetComplete.
+  ///
+  /// In ar, this message translates to:
+  /// **'اكتمل العرض التجريبي. لم تتغير كلمة مرور أي حساب حقيقي.'**
+  String get demoPasswordResetComplete;
+
+  /// No description provided for @backToLogin.
+  ///
+  /// In ar, this message translates to:
+  /// **'العودة إلى تسجيل الدخول'**
+  String get backToLogin;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'إظهار كلمة المرور'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'إخفاء كلمة المرور'**
+  String get hidePassword;
+
   /// No description provided for @saveNewPassword.
   ///
   /// In ar, this message translates to:
@@ -875,8 +959,50 @@ abstract class AppLocalizations {
   /// No description provided for @notifEmptyTitle.
   ///
   /// In ar, this message translates to:
-  /// **'مفيش إشعارات لسه'**
+  /// **'لا توجد إشعارات حتى الآن'**
   String get notifEmptyTitle;
+
+  /// No description provided for @notifEmptyHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستظهر هنا تحديثات الحجوزات والرحلات.'**
+  String get notifEmptyHint;
+
+  /// No description provided for @notifMarkAllRead.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديد الكل كمقروء'**
+  String get notifMarkAllRead;
+
+  /// No description provided for @notifNewSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'الجديد'**
+  String get notifNewSection;
+
+  /// No description provided for @notifEarlierSection.
+  ///
+  /// In ar, this message translates to:
+  /// **'السابق'**
+  String get notifEarlierSection;
+
+  /// No description provided for @notifTimeAgoNow.
+  ///
+  /// In ar, this message translates to:
+  /// **'الآن'**
+  String get notifTimeAgoNow;
+
+  /// No description provided for @notifTimeAgoMinutes.
+  ///
+  /// In ar, this message translates to:
+  /// **'منذ {minutes} دقيقة'**
+  String notifTimeAgoMinutes(Object minutes);
+
+  /// No description provided for @notifUnreadCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'عدد الإشعارات غير المقروءة: {count}'**
+  String notifUnreadCount(Object count);
 
   /// No description provided for @notifTimeAgoHours.
   ///
@@ -917,7 +1043,7 @@ abstract class AppLocalizations {
   /// No description provided for @zenMessages.
   ///
   /// In ar, this message translates to:
-  /// **'رسائل زن AI'**
+  /// **'رسائل Zen AI'**
   String get zenMessages;
 
   /// No description provided for @zenMessagesDesc.
@@ -1155,6 +1281,24 @@ abstract class AppLocalizations {
   /// **'تأشيرة مطلوبة'**
   String get visaRequired;
 
+  /// No description provided for @sampleDataLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'بيانات تجريبية'**
+  String get sampleDataLabel;
+
+  /// No description provided for @destinationInfoUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'معلومات الطقس والتأشيرة غير متاحة حاليًا.'**
+  String get destinationInfoUnavailable;
+
+  /// No description provided for @destinationInfoPartial.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعض معلومات الوجهة غير متاحة.'**
+  String get destinationInfoPartial;
+
   /// No description provided for @offlineBannerText.
   ///
   /// In ar, this message translates to:
@@ -1230,7 +1374,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingDesc1.
   ///
   /// In ar, this message translates to:
-  /// **'يساعدك زن AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.'**
+  /// **'يساعدك Zen AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.'**
   String get onboardingDesc1;
 
   /// No description provided for @onboardingTitle2.
@@ -1278,7 +1422,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatbotTitle.
   ///
   /// In ar, this message translates to:
-  /// **'مساعد زن الذكي'**
+  /// **'Zen AI'**
   String get chatbotTitle;
 
   /// No description provided for @chatbotSubtitle.
@@ -1290,13 +1434,13 @@ abstract class AppLocalizations {
   /// No description provided for @chatbotWelcome.
   ///
   /// In ar, this message translates to:
-  /// **'أهلاً! أنا زن، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨'**
+  /// **'أهلاً! أنا Zen AI، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨'**
   String get chatbotWelcome;
 
   /// No description provided for @chatbotInputHint.
   ///
   /// In ar, this message translates to:
-  /// **'اسأل زن أي شيء...'**
+  /// **'اسأل Zen AI أي شيء...'**
   String get chatbotInputHint;
 
   /// No description provided for @chatbotSend.
@@ -1326,7 +1470,7 @@ abstract class AppLocalizations {
   /// No description provided for @noChatHistorySubtitle.
   ///
   /// In ar, this message translates to:
-  /// **'ستظهر محادثاتك مع زن هنا'**
+  /// **'ستظهر محادثاتك مع Zen AI هنا'**
   String get noChatHistorySubtitle;
 
   /// No description provided for @clearChatTitle.
@@ -1350,7 +1494,7 @@ abstract class AppLocalizations {
   /// No description provided for @zenTyping.
   ///
   /// In ar, this message translates to:
-  /// **'زن يفكر...'**
+  /// **'يفكر Zen AI...'**
   String get zenTyping;
 
   /// No description provided for @quickPrompt1.
@@ -1809,6 +1953,54 @@ abstract class AppLocalizations {
   /// **'الرحلات المتاحة'**
   String get flightResults;
 
+  /// No description provided for @flightSelectTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر الرحلة'**
+  String get flightSelectTitle;
+
+  /// No description provided for @flightDateLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'تاريخ الرحلة'**
+  String get flightDateLabel;
+
+  /// No description provided for @flightCalendar.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقويم'**
+  String get flightCalendar;
+
+  /// No description provided for @flightAirlinesCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{لا توجد شركات طيران} =1{شركة طيران واحدة} =2{شركتا طيران} few{{count} شركات طيران} many{{count} شركة طيران} other{{count} شركة طيران}}'**
+  String flightAirlinesCount(int count);
+
+  /// No description provided for @flightFare.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأجرة'**
+  String get flightFare;
+
+  /// No description provided for @flightSeatsLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المقاعد'**
+  String get flightSeatsLabel;
+
+  /// No description provided for @flightPerPerson.
+  ///
+  /// In ar, this message translates to:
+  /// **'لكل شخص'**
+  String get flightPerPerson;
+
+  /// No description provided for @flightDurationShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'{hours} س {minutes} د'**
+  String flightDurationShort(int hours, int minutes);
+
   /// No description provided for @cheapest.
   ///
   /// In ar, this message translates to:
@@ -2247,6 +2439,12 @@ abstract class AppLocalizations {
   /// **'ابحث عن سيارة'**
   String get carSearchButton;
 
+  /// No description provided for @carSearchFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر البحث عن السيارات حاليًا. يرجى المحاولة مرة أخرى.'**
+  String get carSearchFailed;
+
   /// No description provided for @carResults.
   ///
   /// In ar, this message translates to:
@@ -2256,7 +2454,7 @@ abstract class AppLocalizations {
   /// No description provided for @carNoResults.
   ///
   /// In ar, this message translates to:
-  /// **'لا توجد سيارات متاحة'**
+  /// **'لا توجد سيارات من الشركاء تطابق الموقع والتواريخ المحددة.'**
   String get carNoResults;
 
   /// No description provided for @carSeatsCount.
@@ -2490,7 +2688,7 @@ abstract class AppLocalizations {
   /// No description provided for @transferNoSuitableRides.
   ///
   /// In ar, this message translates to:
-  /// **'لا توجد سيارة تناسب عدد الركاب. جرّب تقليل العدد.'**
+  /// **'لا توجد خدمات نقل من الشركاء تطابق المواقع وعدد الركاب.'**
   String get transferNoSuitableRides;
 
   /// No description provided for @transferLocationRequired.
@@ -2562,8 +2760,26 @@ abstract class AppLocalizations {
   /// No description provided for @attractionSearchHint.
   ///
   /// In ar, this message translates to:
-  /// **'ابحث عن وجهة أو معلم...'**
+  /// **'ابحث عن مدينة أو دولة أو معلم...'**
   String get attractionSearchHint;
+
+  /// No description provided for @attractionCountryFilter.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابحث عن الأماكن حسب الدولة'**
+  String get attractionCountryFilter;
+
+  /// No description provided for @attractionCountryLoadError.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذر تحميل الأماكن. تحقق من الاتصال وحاول مرة أخرى.'**
+  String get attractionCountryLoadError;
+
+  /// No description provided for @attractionCityNotFound.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم نعثر على هذا المكان. تحقق من كتابة الاسم وحاول مرة أخرى.'**
+  String get attractionCityNotFound;
 
   /// No description provided for @attractionCategoryAll.
   ///
@@ -2619,16 +2835,10 @@ abstract class AppLocalizations {
   /// **'افتح على الخريطة'**
   String get attractionOpenOnMap;
 
-  /// No description provided for @attractionMapComingSoon.
-  ///
-  /// In ar, this message translates to:
-  /// **'عرض الخريطة قيد التطوير قريباً'**
-  String get attractionMapComingSoon;
-
   /// No description provided for @chatOnlineStatus.
   ///
   /// In ar, this message translates to:
-  /// **'متصل بالذكاء الاصطناعي'**
+  /// **'متصل'**
   String get chatOnlineStatus;
 
   /// No description provided for @chatHistoryTooltip.
@@ -2676,8 +2886,8 @@ abstract class AppLocalizations {
   /// No description provided for @chatQuickPromptBudget.
   ///
   /// In ar, this message translates to:
-  /// **'ميزانية \$1000 💰'**
-  String get chatQuickPromptBudget;
+  /// **'ميزانية {budget} 💰'**
+  String chatQuickPromptBudget(String budget);
 
   /// No description provided for @chatQuickPromptIstanbulText.
   ///
@@ -2694,8 +2904,8 @@ abstract class AppLocalizations {
   /// No description provided for @chatQuickPromptBudgetText.
   ///
   /// In ar, this message translates to:
-  /// **'رحلة مميزة بميزانية 1000 دولار — اقترح لي وجهات'**
-  String get chatQuickPromptBudgetText;
+  /// **'رحلة مميزة بميزانية {budget} — اقترح لي وجهات'**
+  String chatQuickPromptBudgetText(String budget);
 
   /// No description provided for @chatConnectionError.
   ///
@@ -2742,8 +2952,14 @@ abstract class AppLocalizations {
   /// No description provided for @chatItinerarySavedSuccess.
   ///
   /// In ar, this message translates to:
-  /// **'تم حفظ البرنامج في رحلاتك'**
+  /// **'تم حفظ البرنامج في سجل المحادثة على هذا الجهاز'**
   String get chatItinerarySavedSuccess;
+
+  /// No description provided for @chatItinerarySaveFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذر حفظ البرنامج. حاول مرة أخرى.'**
+  String get chatItinerarySaveFailed;
 
   /// No description provided for @chatItineraryFullRequest.
   ///
@@ -2798,6 +3014,90 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'لا توجد رحلات متاحة'**
   String get flightNoResults;
+
+  /// No description provided for @flightProviderWarning.
+  ///
+  /// In ar, this message translates to:
+  /// **'بعض مزودي الرحلات غير متاحين مؤقتًا. نعرض الرحلات المتوفرة.'**
+  String get flightProviderWarning;
+
+  /// No description provided for @flightFlexibleButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'تواريخ مرنة'**
+  String get flightFlexibleButton;
+
+  /// No description provided for @flightSelectDates.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر التواريخ'**
+  String get flightSelectDates;
+
+  /// No description provided for @flightTripLength.
+  ///
+  /// In ar, this message translates to:
+  /// **'كم مدة رحلتك؟'**
+  String get flightTripLength;
+
+  /// No description provided for @flightWeekend.
+  ///
+  /// In ar, this message translates to:
+  /// **'عطلة نهاية الأسبوع'**
+  String get flightWeekend;
+
+  /// No description provided for @flightWeekendHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'المغادرة يوم الجمعة، والعودة يوم الأحد للرحلات ذهابًا وإيابًا.'**
+  String get flightWeekendHint;
+
+  /// No description provided for @flightWeek.
+  ///
+  /// In ar, this message translates to:
+  /// **'أسبوع'**
+  String get flightWeek;
+
+  /// No description provided for @flightMonth.
+  ///
+  /// In ar, this message translates to:
+  /// **'شهر'**
+  String get flightMonth;
+
+  /// No description provided for @flightOther.
+  ///
+  /// In ar, this message translates to:
+  /// **'مدة أخرى'**
+  String get flightOther;
+
+  /// No description provided for @flightDuration.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدة'**
+  String get flightDuration;
+
+  /// No description provided for @flightDays.
+  ///
+  /// In ar, this message translates to:
+  /// **'أيام'**
+  String get flightDays;
+
+  /// No description provided for @flightWhenToGo.
+  ///
+  /// In ar, this message translates to:
+  /// **'متى تريد السفر؟'**
+  String get flightWhenToGo;
+
+  /// No description provided for @flightSelectUpToMonths.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر حتى 3 أشهر'**
+  String get flightSelectUpToMonths;
+
+  /// No description provided for @flightFlexibleSearchLoading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ البحث عن الرحلات خلال الأشهر المحددة…'**
+  String get flightFlexibleSearchLoading;
 
   /// No description provided for @flightNoResultsForSearch.
   ///
@@ -2877,12 +3177,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'المقاعد المختارة'**
   String get flightSelectedSeats;
-
-  /// No description provided for @flightDuration.
-  ///
-  /// In ar, this message translates to:
-  /// **'المدة'**
-  String get flightDuration;
 
   /// No description provided for @flightBookingConfirmed.
   ///
@@ -2980,6 +3274,54 @@ abstract class AppLocalizations {
   /// **'الإجمالي'**
   String get flightTotal;
 
+  /// No description provided for @flightDuffelOffer.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض Duffel'**
+  String get flightDuffelOffer;
+
+  /// No description provided for @flightDuffelBookingUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز عبر Duffel غير متصل بعد'**
+  String get flightDuffelBookingUnavailable;
+
+  /// No description provided for @flightContinueToPayment.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتابعة إلى الدفع'**
+  String get flightContinueToPayment;
+
+  /// No description provided for @flightSimulationBadge.
+  ///
+  /// In ar, this message translates to:
+  /// **'محاكاة'**
+  String get flightSimulationBadge;
+
+  /// No description provided for @flightSimulatedSeatMapNotice.
+  ///
+  /// In ar, this message translates to:
+  /// **'خريطة المقاعد تجريبية — أرقام المقاعد للعرض التوضيحي فقط.'**
+  String get flightSimulatedSeatMapNotice;
+
+  /// No description provided for @flightChooseSeatsAndContinue.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر المقاعد وتابع'**
+  String get flightChooseSeatsAndContinue;
+
+  /// No description provided for @flightProviderUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث المباشر عن الرحلات غير متاح مؤقتًا. حاول مرة أخرى.'**
+  String get flightProviderUnavailable;
+
+  /// No description provided for @flightDuffelTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي Duffel لعدد {count} من المسافرين'**
+  String flightDuffelTotal(int count);
+
   /// No description provided for @flightTermsNotice.
   ///
   /// In ar, this message translates to:
@@ -3010,11 +3352,41 @@ abstract class AppLocalizations {
   /// **'أدخل وجهة أو اسمح بالوصول إلى موقعك لتحديد مدينتك.'**
   String get hotelDestinationRequired;
 
+  /// No description provided for @hotelSelectDestination.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر وجهة من قائمة الاقتراحات.'**
+  String get hotelSelectDestination;
+
+  /// No description provided for @hotelLoadingDestinations.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ البحث عن الوجهات...'**
+  String get hotelLoadingDestinations;
+
+  /// No description provided for @hotelNoDestinationSuggestions.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم العثور على وجهات لهذا البحث.'**
+  String get hotelNoDestinationSuggestions;
+
+  /// No description provided for @hotelDestinationSuggestionsError.
+  ///
+  /// In ar, this message translates to:
+  /// **'اقتراحات الوجهات غير متاحة مؤقتًا.'**
+  String get hotelDestinationSuggestionsError;
+
   /// No description provided for @hotelSearchNearby.
   ///
   /// In ar, this message translates to:
   /// **'البحث بالقرب مني'**
   String get hotelSearchNearby;
+
+  /// No description provided for @openLocationSettings.
+  ///
+  /// In ar, this message translates to:
+  /// **'فتح الإعدادات'**
+  String get openLocationSettings;
 
   /// No description provided for @hotelNearbyTitle.
   ///
@@ -3058,6 +3430,24 @@ abstract class AppLocalizations {
   /// **'{nights} ليال · {rooms} غرفة · {guests} ضيوف'**
   String hotelStaySummary(Object guests, Object nights, Object rooms);
 
+  /// No description provided for @hotelNightsSummary.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{0 ليلة} one{{count} ليلة} two{ليلتان} few{{count} ليالٍ} many{{count} ليلة} other{{count} ليلة}}'**
+  String hotelNightsSummary(int count);
+
+  /// No description provided for @hotelRoomsSummary.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{0 غرفة} one{{count} غرفة} two{غرفتان} few{{count} غرف} many{{count} غرفة} other{{count} غرفة}}'**
+  String hotelRoomsSummary(int count);
+
+  /// No description provided for @hotelGuestsSummary.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =0{0 ضيف} one{{count} ضيف} two{ضيفان} few{{count} ضيوف} many{{count} ضيف} other{{count} ضيف}}'**
+  String hotelGuestsSummary(int count);
+
   /// No description provided for @hotelResultsTitle.
   ///
   /// In ar, this message translates to:
@@ -3067,8 +3457,14 @@ abstract class AppLocalizations {
   /// No description provided for @hotelNoResults.
   ///
   /// In ar, this message translates to:
-  /// **'لا توجد فنادق'**
+  /// **'لا توجد فنادق لهذه التواريخ.'**
   String get hotelNoResults;
+
+  /// No description provided for @hotelSearchUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'البحث غير متاح مؤقتًا. حاول مرة أخرى.'**
+  String get hotelSearchUnavailable;
 
   /// No description provided for @hotelFilterAll.
   ///
@@ -3154,6 +3550,18 @@ abstract class AppLocalizations {
   /// **'احجز الآن'**
   String get hotelBookNow;
 
+  /// No description provided for @hotelDuffelBookingUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'حجز فنادق Duffel غير متاح بعد'**
+  String get hotelDuffelBookingUnavailable;
+
+  /// No description provided for @hotelExternalBookingUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحجز داخل التطبيق لهذا الفندق غير متاح حاليًا'**
+  String get hotelExternalBookingUnavailable;
+
   /// No description provided for @hotelSoldOut.
   ///
   /// In ar, this message translates to:
@@ -3172,6 +3580,24 @@ abstract class AppLocalizations {
   /// **'المرافق'**
   String get hotelAmenities;
 
+  /// No description provided for @hotelRoomRatesTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أسعار الغرف المتاحة'**
+  String get hotelRoomRatesTitle;
+
+  /// No description provided for @hotelRoomRatesLoading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ تحميل الأسعار الحالية…'**
+  String get hotelRoomRatesLoading;
+
+  /// No description provided for @hotelRoomRatesUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'أسعار الغرف غير متاحة مؤقتًا.'**
+  String get hotelRoomRatesUnavailable;
+
   /// No description provided for @hotelDefaultDescription.
   ///
   /// In ar, this message translates to:
@@ -3183,6 +3609,12 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'سعر الليلة'**
   String get hotelNightPrice;
+
+  /// No description provided for @hotelXoteloEstimateLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقدير Xotelo (غير مؤكد)'**
+  String get hotelXoteloEstimateLabel;
 
   /// No description provided for @hotelNightsCount.
   ///
@@ -3775,7 +4207,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeMonuments.
   ///
   /// In ar, this message translates to:
-  /// **'المعالم السياحية'**
+  /// **'أماكن شهيرة في البلدان'**
   String get homeMonuments;
 
   /// No description provided for @carTypeElectric.
@@ -3837,6 +4269,36 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'جولات ومعالم'**
   String get tripsFilterTours;
+
+  /// No description provided for @tripsFilterTransfers.
+  ///
+  /// In ar, this message translates to:
+  /// **'التوصيلات'**
+  String get tripsFilterTransfers;
+
+  /// No description provided for @tripsKindTransfer.
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيلة'**
+  String get tripsKindTransfer;
+
+  /// No description provided for @transferVehicleLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'السيارة'**
+  String get transferVehicleLabel;
+
+  /// No description provided for @tripSeatsLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المقاعد'**
+  String get tripSeatsLabel;
+
+  /// No description provided for @tripExtrasLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإضافات'**
+  String get tripExtrasLabel;
 
   /// No description provided for @tripsKindFlight.
   ///
@@ -3904,6 +4366,30 @@ abstract class AppLocalizations {
   /// **'نظرة عامة'**
   String get adminOverview;
 
+  /// No description provided for @adminPartners.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشركاء'**
+  String get adminPartners;
+
+  /// No description provided for @adminOffers.
+  ///
+  /// In ar, this message translates to:
+  /// **'العروض'**
+  String get adminOffers;
+
+  /// No description provided for @adminCatalog.
+  ///
+  /// In ar, this message translates to:
+  /// **'الكتالوج'**
+  String get adminCatalog;
+
+  /// No description provided for @adminPlaces.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأماكن'**
+  String get adminPlaces;
+
   /// No description provided for @adminReservations.
   ///
   /// In ar, this message translates to:
@@ -3915,6 +4401,42 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'العملاء'**
   String get adminCustomers;
+
+  /// No description provided for @adminPopularity.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشعبية'**
+  String get adminPopularity;
+
+  /// No description provided for @adminCountryVisits.
+  ///
+  /// In ar, this message translates to:
+  /// **'الزيارات حسب الدولة'**
+  String get adminCountryVisits;
+
+  /// No description provided for @adminPlaceVisits.
+  ///
+  /// In ar, this message translates to:
+  /// **'الزيارات حسب المكان'**
+  String get adminPlaceVisits;
+
+  /// No description provided for @adminNoCountryVisits.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إجماليات زيارات للدول بعد.'**
+  String get adminNoCountryVisits;
+
+  /// No description provided for @adminNoPlaceVisits.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إجماليات زيارات للأماكن بعد.'**
+  String get adminNoPlaceVisits;
+
+  /// No description provided for @adminUnspecifiedCountry.
+  ///
+  /// In ar, this message translates to:
+  /// **'دولة غير محددة'**
+  String get adminUnspecifiedCountry;
 
   /// No description provided for @adminWelcome.
   ///
@@ -3945,6 +4467,258 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'العملاء'**
   String get adminCustomerCount;
+
+  /// No description provided for @adminUserCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'المستخدمون'**
+  String get adminUserCount;
+
+  /// No description provided for @adminPartnerCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشركاء النشطون'**
+  String get adminPartnerCount;
+
+  /// No description provided for @adminPartnerListings.
+  ///
+  /// In ar, this message translates to:
+  /// **'القوائم'**
+  String get adminPartnerListings;
+
+  /// No description provided for @adminActivePartnerListings.
+  ///
+  /// In ar, this message translates to:
+  /// **'القوائم المتاحة'**
+  String get adminActivePartnerListings;
+
+  /// No description provided for @adminPartnerAccounts.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسابات الشركاء'**
+  String get adminPartnerAccounts;
+
+  /// No description provided for @adminAddPartner.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة شريك'**
+  String get adminAddPartner;
+
+  /// No description provided for @adminPartnerName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم الشريك أو الشركة'**
+  String get adminPartnerName;
+
+  /// No description provided for @adminPartnerEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'بريد مستخدم مسجل'**
+  String get adminPartnerEmail;
+
+  /// No description provided for @adminPartnerService.
+  ///
+  /// In ar, this message translates to:
+  /// **'خدمة الشريك'**
+  String get adminPartnerService;
+
+  /// No description provided for @adminPartnerExistingAccountHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'يجب أن يكون لدى الشريك حساب زنتريب مسبقاً. لن يتم إنشاء كلمة مرور أو تغييرها.'**
+  String get adminPartnerExistingAccountHint;
+
+  /// No description provided for @adminPartnerStatusActive.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشط'**
+  String get adminPartnerStatusActive;
+
+  /// No description provided for @adminPartnerStatusInactive.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير نشط'**
+  String get adminPartnerStatusInactive;
+
+  /// No description provided for @adminDisablePartner.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعطيل الشريك'**
+  String get adminDisablePartner;
+
+  /// No description provided for @adminRestorePartner.
+  ///
+  /// In ar, this message translates to:
+  /// **'استعادة الشريك'**
+  String get adminRestorePartner;
+
+  /// No description provided for @adminPartnerRestored.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت استعادة صلاحية الشريك.'**
+  String get adminPartnerRestored;
+
+  /// No description provided for @adminDisablePartnerConfirmation.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيتم إلغاء صلاحية الشريك مع الاحتفاظ بالشركة والقوائم وسجل الحجوزات.'**
+  String get adminDisablePartnerConfirmation;
+
+  /// No description provided for @adminPartnerDisabled.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تعطيل صلاحية الشريك مع الحفاظ على السجلات.'**
+  String get adminPartnerDisabled;
+
+  /// No description provided for @adminPartnerAdded.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت إضافة الشريك'**
+  String get adminPartnerAdded;
+
+  /// No description provided for @adminNoPartners.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم العثور على شركاء.'**
+  String get adminNoPartners;
+
+  /// No description provided for @adminLegacyAttractionReviewTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'مراجعة شركاء المعالم السابقين'**
+  String get adminLegacyAttractionReviewTitle;
+
+  /// No description provided for @adminLegacyAttractionReviewDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'راجع الحساب والقوائم. لكل معلم، اختر مكاناً موجوداً أو أنشئ مكاناً منسقاً أو اتركه دون ربط. لن تُلغى صلاحية الشريك إلا بعد موافقتك.'**
+  String get adminLegacyAttractionReviewDescription;
+
+  /// No description provided for @adminLegacyAttractionReviewAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'مراجعة وإلغاء الوصول'**
+  String get adminLegacyAttractionReviewAction;
+
+  /// No description provided for @adminLegacyAttractionReviewed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت المراجعة وإلغاء الوصول'**
+  String get adminLegacyAttractionReviewed;
+
+  /// No description provided for @adminLegacyAttractionApproveRetire.
+  ///
+  /// In ar, this message translates to:
+  /// **'الموافقة وإلغاء الوصول'**
+  String get adminLegacyAttractionApproveRetire;
+
+  /// No description provided for @adminLegacyAttractionConfirmTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'هل توافق على إلغاء وصول الشريك؟'**
+  String get adminLegacyAttractionConfirmTitle;
+
+  /// No description provided for @adminLegacyAttractionConfirmBody.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستفقد حسابات الشريك صلاحية الشريك. ستبقى الشركة وسجل القوائم محفوظين، وستضاف الأماكن المحددة إلى الكتالوج المنسق.'**
+  String get adminLegacyAttractionConfirmBody;
+
+  /// No description provided for @adminLegacyAttractionReviewSaved.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت الموافقة على المراجعة وإلغاء وصول الشريك.'**
+  String get adminLegacyAttractionReviewSaved;
+
+  /// No description provided for @adminLegacyAttractionCreatePlace.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء مكان منسق'**
+  String get adminLegacyAttractionCreatePlace;
+
+  /// No description provided for @adminLegacyAttractionOmit.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتركه دون ربط'**
+  String get adminLegacyAttractionOmit;
+
+  /// No description provided for @adminLegacyAttractionUseExisting.
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم مكاناً موجوداً'**
+  String get adminLegacyAttractionUseExisting;
+
+  /// No description provided for @adminLegacyAttractionNonPlaceListing.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يمكن إضافة هذا النوع إلى الأماكن. ستبقى القائمة محفوظة.'**
+  String get adminLegacyAttractionNonPlaceListing;
+
+  /// No description provided for @adminLegacyAttractionNoListings.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد قوائم مرتبطة بهذا الحساب.'**
+  String get adminLegacyAttractionNoListings;
+
+  /// No description provided for @adminLegacyAttractionReviewPlace.
+  ///
+  /// In ar, this message translates to:
+  /// **'ربط المكان'**
+  String get adminLegacyAttractionReviewPlace;
+
+  /// No description provided for @adminLegacyAttractionAccountReviewedBy.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت المراجعة بواسطة {name}'**
+  String adminLegacyAttractionAccountReviewedBy(Object name);
+
+  /// No description provided for @adminServiceAirline.
+  ///
+  /// In ar, this message translates to:
+  /// **'شركة طيران'**
+  String get adminServiceAirline;
+
+  /// No description provided for @adminServiceHotel.
+  ///
+  /// In ar, this message translates to:
+  /// **'فندق'**
+  String get adminServiceHotel;
+
+  /// No description provided for @adminServiceCar.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأجير سيارات'**
+  String get adminServiceCar;
+
+  /// No description provided for @adminServiceTransfer.
+  ///
+  /// In ar, this message translates to:
+  /// **'توصيل'**
+  String get adminServiceTransfer;
+
+  /// No description provided for @adminServiceTravel.
+  ///
+  /// In ar, this message translates to:
+  /// **'باقات سياحية'**
+  String get adminServiceTravel;
+
+  /// No description provided for @adminServiceAttraction.
+  ///
+  /// In ar, this message translates to:
+  /// **'المعالم (حسابات سابقة)'**
+  String get adminServiceAttraction;
+
+  /// No description provided for @adminRequiredField.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الحقل مطلوب.'**
+  String get adminRequiredField;
+
+  /// No description provided for @adminInvalidEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل بريداً إلكترونياً صحيحاً.'**
+  String get adminInvalidEmail;
 
   /// No description provided for @adminNewCustomers.
   ///
@@ -4111,7 +4885,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminAddMonument.
   ///
   /// In ar, this message translates to:
-  /// **'إضافة معلم'**
+  /// **'إضافة مكان'**
   String get adminAddMonument;
 
   /// No description provided for @adminCatalogEmpty.
@@ -4204,6 +4978,36 @@ abstract class AppLocalizations {
   /// **'سعر الفندق للليلة'**
   String get adminHotelPriceNight;
 
+  /// No description provided for @adminLinkedFlight.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرحلة المضمنة في هذا العرض'**
+  String get adminLinkedFlight;
+
+  /// No description provided for @adminSelectFlight.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر رحلة موجودة'**
+  String get adminSelectFlight;
+
+  /// No description provided for @adminOfferFlightMissing.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يتم ربط رحلة'**
+  String get adminOfferFlightMissing;
+
+  /// No description provided for @packageAirline.
+  ///
+  /// In ar, this message translates to:
+  /// **'شركة الطيران'**
+  String get packageAirline;
+
+  /// No description provided for @packageStayTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإقامة الفندقية'**
+  String get packageStayTotal;
+
   /// No description provided for @adminRating.
   ///
   /// In ar, this message translates to:
@@ -4237,7 +5041,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminEditMonument.
   ///
   /// In ar, this message translates to:
-  /// **'تعديل المعلم'**
+  /// **'تعديل المكان'**
   String get adminEditMonument;
 
   /// No description provided for @adminCategory.
@@ -4509,12 +5313,6 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'تأجير سيارة'**
   String get partnerTypeCar;
-
-  /// No description provided for @partnerTypeAttraction.
-  ///
-  /// In ar, this message translates to:
-  /// **'معلم سياحي'**
-  String get partnerTypeAttraction;
 
   /// No description provided for @partnerTypeTransfer.
   ///
@@ -4887,6 +5685,942 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أدخل قيمة صحيحة لهذا الحقل.'**
   String get partnerInvalidServiceField;
+
+  /// No description provided for @airportMajorLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطار رئيسي'**
+  String get airportMajorLabel;
+
+  /// No description provided for @airportMinorLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطار إقليمي'**
+  String get airportMinorLabel;
+
+  /// No description provided for @airportNearestLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'أقرب مطار'**
+  String get airportNearestLabel;
+
+  /// No description provided for @airportCategoryAddLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف مدينة أو مكاناً، مثل الطبيعة في بالي، إندونيسيا.'**
+  String get airportCategoryAddLocation;
+
+  /// No description provided for @compareIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'قارن بعملة'**
+  String get compareIn;
+
+  /// No description provided for @lydFixedRate.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر مرجعي ثابت: 1 دولار أمريكي = 6.4 دينار ليبي'**
+  String get lydFixedRate;
+
+  /// No description provided for @refreshRates.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث الأسعار'**
+  String get refreshRates;
+
+  /// No description provided for @retryRates.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة محاولة الأسعار'**
+  String get retryRates;
+
+  /// No description provided for @frankfurterRatesUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'أسعار فرانكفورتر المرجعية اليومية · لا يتوفر تاريخ للأسعار'**
+  String get frankfurterRatesUnavailable;
+
+  /// No description provided for @frankfurterRatesDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'أسعار فرانكفورتر المرجعية اليومية · حتى {date}'**
+  String frankfurterRatesDate(Object date);
+
+  /// No description provided for @rateRefreshFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذر تحديث أسعار الصرف. قد لا تتوفر الأسعار المحوّلة.'**
+  String get rateRefreshFailed;
+
+  /// No description provided for @ratesMayBeStale.
+  ///
+  /// In ar, this message translates to:
+  /// **'قد تكون الأسعار المرجعية قديمة. حدّث للتحقق من وجود تحديثات.'**
+  String get ratesMayBeStale;
+
+  /// No description provided for @unpricedOffers.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} من العروض بلا سعر قابل للمقارنة، وتُستثنى من تصفية الأسعار.'**
+  String unpricedOffers(int count);
+
+  /// No description provided for @priceEstimateDisclaimer.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبالغ المحوّلة تقديرية وليست أسعار حجز. قد تختلف الرسوم وأسعار التسوية.'**
+  String get priceEstimateDisclaimer;
+
+  /// No description provided for @providerPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر المزوّد'**
+  String get providerPrice;
+
+  /// No description provided for @comparisonEstimate.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقدير للمقارنة'**
+  String get comparisonEstimate;
+
+  /// No description provided for @priceUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'غير متاح'**
+  String get priceUnavailable;
+
+  /// No description provided for @providerTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي المزوّد'**
+  String get providerTotal;
+
+  /// No description provided for @providerPerPerson.
+  ///
+  /// In ar, this message translates to:
+  /// **'للفرد'**
+  String get providerPerPerson;
+
+  /// No description provided for @flightAllTravelersEstimate.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي تقديري لجميع المسافرين'**
+  String get flightAllTravelersEstimate;
+
+  /// No description provided for @flightPartnerOutboundOnly.
+  ///
+  /// In ar, this message translates to:
+  /// **'للذهاب فقط'**
+  String get flightPartnerOutboundOnly;
+
+  /// No description provided for @flightPartnerRoundTripWarning.
+  ///
+  /// In ar, this message translates to:
+  /// **'تغطي أسعار الشركاء رحلة الذهاب فقط، ولا يمكن مقارنتها بإجمالي رحلات الذهاب والعودة.'**
+  String get flightPartnerRoundTripWarning;
+
+  /// No description provided for @flightMaxBudget.
+  ///
+  /// In ar, this message translates to:
+  /// **'الحد الأقصى لإجمالي المسافرين'**
+  String get flightMaxBudget;
+
+  /// No description provided for @clearBudget.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح الميزانية'**
+  String get clearBudget;
+
+  /// No description provided for @hotelPerRoomNight.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر المزوّد للغرفة / الليلة'**
+  String get hotelPerRoomNight;
+
+  /// No description provided for @hotelEstimatePerRoomNight.
+  ///
+  /// In ar, this message translates to:
+  /// **'تقدير للغرفة / الليلة'**
+  String get hotelEstimatePerRoomNight;
+
+  /// No description provided for @hotelBudgetThreshold.
+  ///
+  /// In ar, this message translates to:
+  /// **'اقتصادي أقل من 100 {currency} / الليلة'**
+  String hotelBudgetThreshold(Object currency);
+
+  /// No description provided for @hotelMidThreshold.
+  ///
+  /// In ar, this message translates to:
+  /// **'متوسط من 100 إلى أقل من 250 {currency} / الليلة'**
+  String hotelMidThreshold(Object currency);
+
+  /// No description provided for @hotelLuxuryThreshold.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاخر 250 {currency} أو أكثر / الليلة'**
+  String hotelLuxuryThreshold(Object currency);
+
+  /// No description provided for @offerSourcePartner.
+  ///
+  /// In ar, this message translates to:
+  /// **'شريك'**
+  String get offerSourcePartner;
+
+  /// No description provided for @offerSourceDuffel.
+  ///
+  /// In ar, this message translates to:
+  /// **'دافل'**
+  String get offerSourceDuffel;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In ar, this message translates to:
+  /// **'حاول مرة أخرى'**
+  String get tryAgain;
+
+  /// No description provided for @invalidComparisonBudget.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل مبلغاً صحيحاً لا يقل عن صفر'**
+  String get invalidComparisonBudget;
+
+  /// No description provided for @referenceRatePolicy.
+  ///
+  /// In ar, this message translates to:
+  /// **'تُميّز الأسعار الأقدم من 4 أيام؛ ولا تُستخدم أسعار الصرف الأقدم من 7 أيام.'**
+  String get referenceRatePolicy;
+
+  /// No description provided for @authInvalidEmail.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل بريدًا إلكترونيًا صحيحًا'**
+  String get authInvalidEmail;
+
+  /// No description provided for @forgotTitleLine1.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسيت كلمة المرور؟'**
+  String get forgotTitleLine1;
+
+  /// No description provided for @forgotTitleLine2.
+  ///
+  /// In ar, this message translates to:
+  /// **'سنساعدك على استعادة حسابك'**
+  String get forgotTitleLine2;
+
+  /// No description provided for @forgotSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل البريد الإلكتروني المرتبط بحسابك وسنرسل لك رمزًا لإعادة تعيين كلمة المرور.'**
+  String get forgotSubtitle;
+
+  /// No description provided for @authEmailHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل بريدك الإلكتروني'**
+  String get authEmailHint;
+
+  /// No description provided for @sendResetCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال رمز إعادة التعيين'**
+  String get sendResetCode;
+
+  /// No description provided for @rememberedIt.
+  ///
+  /// In ar, this message translates to:
+  /// **'تذكرتها؟'**
+  String get rememberedIt;
+
+  /// No description provided for @backToLoginLower.
+  ///
+  /// In ar, this message translates to:
+  /// **'العودة لتسجيل الدخول'**
+  String get backToLoginLower;
+
+  /// No description provided for @authPasswordHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل كلمة المرور'**
+  String get authPasswordHint;
+
+  /// No description provided for @loginTitleLine1.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجّل دخولك'**
+  String get loginTitleLine1;
+
+  /// No description provided for @loginTitleLine2.
+  ///
+  /// In ar, this message translates to:
+  /// **'وسافر حول العالم'**
+  String get loginTitleLine2;
+
+  /// No description provided for @rememberMe.
+  ///
+  /// In ar, this message translates to:
+  /// **'تذكرني'**
+  String get rememberMe;
+
+  /// No description provided for @forgotPasswordLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسيت كلمة المرور؟'**
+  String get forgotPasswordLink;
+
+  /// No description provided for @loginButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الدخول'**
+  String get loginButton;
+
+  /// No description provided for @orSignUpWith.
+  ///
+  /// In ar, this message translates to:
+  /// **'أو سجّل باستخدام'**
+  String get orSignUpWith;
+
+  /// No description provided for @noAccountPrompt.
+  ///
+  /// In ar, this message translates to:
+  /// **'ليس لديك حساب؟ '**
+  String get noAccountPrompt;
+
+  /// No description provided for @createAnAccount.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشئ حسابًا'**
+  String get createAnAccount;
+
+  /// No description provided for @fullNameHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل اسمك الكامل'**
+  String get fullNameHint;
+
+  /// No description provided for @phoneExactDigits.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل {count} أرقام بالضبط لـ {country}'**
+  String phoneExactDigits(int count, String country);
+
+  /// No description provided for @phoneDigitRange.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل من {min} إلى {max} أرقام لـ {country}'**
+  String phoneDigitRange(int min, int max, String country);
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In ar, this message translates to:
+  /// **'استخدم 8 أحرف على الأقل'**
+  String get passwordMinLength;
+
+  /// No description provided for @passwordsDontMatch.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمتا المرور غير متطابقتين'**
+  String get passwordsDontMatch;
+
+  /// No description provided for @acceptTermsError.
+  ///
+  /// In ar, this message translates to:
+  /// **'يرجى الموافقة على الشروط للمتابعة'**
+  String get acceptTermsError;
+
+  /// No description provided for @phoneHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رقم هاتفك'**
+  String get phoneHint;
+
+  /// No description provided for @addProfilePhotoOptional.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف صورة شخصية (اختياري)'**
+  String get addProfilePhotoOptional;
+
+  /// No description provided for @registerTitleLine1.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشئ حسابك'**
+  String get registerTitleLine1;
+
+  /// No description provided for @registerTitleLine2.
+  ///
+  /// In ar, this message translates to:
+  /// **'وابدأ رحلتك'**
+  String get registerTitleLine2;
+
+  /// No description provided for @createPasswordHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشئ كلمة مرور'**
+  String get createPasswordHint;
+
+  /// No description provided for @confirmPasswordHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أكّد كلمة المرور'**
+  String get confirmPasswordHint;
+
+  /// No description provided for @agreeToThe.
+  ///
+  /// In ar, this message translates to:
+  /// **'أوافق على '**
+  String get agreeToThe;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In ar, this message translates to:
+  /// **'شروط الخدمة'**
+  String get termsOfService;
+
+  /// No description provided for @createAccountButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء حساب'**
+  String get createAccountButton;
+
+  /// No description provided for @enterSixDigitCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رمز التحقق المكوّن من 6 أرقام'**
+  String get enterSixDigitCode;
+
+  /// No description provided for @enterAndConfirmPassword.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل كلمة المرور الجديدة وأكّدها'**
+  String get enterAndConfirmPassword;
+
+  /// No description provided for @verifyTitleLine1.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقّق من'**
+  String get verifyTitleLine1;
+
+  /// No description provided for @verifyTitleLine2.
+  ///
+  /// In ar, this message translates to:
+  /// **'بريدك الإلكتروني'**
+  String get verifyTitleLine2;
+
+  /// No description provided for @verifySubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل الرمز المكوّن من 6 أرقام المرسل إلى بريدك الإلكتروني.'**
+  String get verifySubtitle;
+
+  /// No description provided for @verificationCodeHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل رمز التحقق'**
+  String get verificationCodeHint;
+
+  /// No description provided for @verifyCodeButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحقّق من الرمز'**
+  String get verifyCodeButton;
+
+  /// No description provided for @didntReceiveCode.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يصلك الرمز؟'**
+  String get didntReceiveCode;
+
+  /// No description provided for @resendInSeconds.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة الإرسال بعد {seconds} ث'**
+  String resendInSeconds(int seconds);
+
+  /// No description provided for @newPasswordTitleLine1.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر'**
+  String get newPasswordTitleLine1;
+
+  /// No description provided for @newPasswordTitleLine2.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة مرور جديدة'**
+  String get newPasswordTitleLine2;
+
+  /// No description provided for @newPasswordSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أنشئ كلمة مرور جديدة لحسابك.'**
+  String get newPasswordSubtitle;
+
+  /// No description provided for @newPasswordHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'كلمة المرور الجديدة'**
+  String get newPasswordHint;
+
+  /// No description provided for @confirmNewPasswordHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد كلمة المرور الجديدة'**
+  String get confirmNewPasswordHint;
+
+  /// No description provided for @resetPasswordAction.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تعيين كلمة المرور'**
+  String get resetPasswordAction;
+
+  /// No description provided for @passwordUpdatedSuccess.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم تحديث كلمة المرور بنجاح.'**
+  String get passwordUpdatedSuccess;
+
+  /// No description provided for @backToLoginButton.
+  ///
+  /// In ar, this message translates to:
+  /// **'العودة لتسجيل الدخول'**
+  String get backToLoginButton;
+
+  /// No description provided for @photoTooLarge.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر صورة أصغر من 5 ميجابايت.'**
+  String get photoTooLarge;
+
+  /// No description provided for @photoUnreadable.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّرت قراءة هذه الصورة. جرّب صورة أخرى.'**
+  String get photoUnreadable;
+
+  /// No description provided for @seatListingMissing.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه الرحلة بلا معرّف إدراج.'**
+  String get seatListingMissing;
+
+  /// No description provided for @seatLoadFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحميل توفر المقاعد.'**
+  String get seatLoadFailed;
+
+  /// No description provided for @seatNoLongerAvailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'أحد المقاعد التي اخترتها لم يعد متاحًا. يرجى الاختيار مرة أخرى.'**
+  String get seatNoLongerAvailable;
+
+  /// No description provided for @selectUpToSeats.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر حتى {count} مقاعد لهذا الحجز.'**
+  String selectUpToSeats(int count);
+
+  /// No description provided for @selectSeatsToContinue.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count, plural, =1{اختر مقعدًا واحدًا للمتابعة.} other{اختر {count} مقاعد للمتابعة.}}'**
+  String selectSeatsToContinue(int count);
+
+  /// No description provided for @fareNotEnoughSeats.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يعد في هذه الفئة مقاعد كافية.'**
+  String get fareNotEnoughSeats;
+
+  /// No description provided for @flightAvailabilityUnverified.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر التحقق من توفر الرحلة.'**
+  String get flightAvailabilityUnverified;
+
+  /// No description provided for @flightConflictsBooking.
+  ///
+  /// In ar, this message translates to:
+  /// **'تتعارض هذه الرحلة مع حجز آخر في حسابك.'**
+  String get flightConflictsBooking;
+
+  /// No description provided for @seatsNoLongerAvailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذه المقاعد لم تعد متاحة.'**
+  String get seatsNoLongerAvailable;
+
+  /// No description provided for @paymentNotCompletedNoTrip.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل الدفع. لم يتم حفظ أي رحلة.'**
+  String get paymentNotCompletedNoTrip;
+
+  /// No description provided for @paymentHoldNotReleased.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل الدفع وتعذّر إلغاء حجز المقعد المؤقت. {details}'**
+  String paymentHoldNotReleased(String details);
+
+  /// No description provided for @paymentHoldReleased.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يكتمل الدفع. تم إلغاء حجز مقعدك المؤقت.'**
+  String get paymentHoldReleased;
+
+  /// No description provided for @chooseSeats.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر المقاعد'**
+  String get chooseSeats;
+
+  /// No description provided for @refreshAvailability.
+  ///
+  /// In ar, this message translates to:
+  /// **'تحديث التوفر'**
+  String get refreshAvailability;
+
+  /// No description provided for @proceedToPaymentAmount.
+  ///
+  /// In ar, this message translates to:
+  /// **'المتابعة إلى الدفع · {amount}'**
+  String proceedToPaymentAmount(String amount);
+
+  /// No description provided for @seatAvailabilityUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'توفر المقاعد غير متاح حاليًا.'**
+  String get seatAvailabilityUnavailable;
+
+  /// No description provided for @aircraftDetails.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل الطائرة'**
+  String get aircraftDetails;
+
+  /// No description provided for @sharedInventory.
+  ///
+  /// In ar, this message translates to:
+  /// **'مخزون مشترك'**
+  String get sharedInventory;
+
+  /// No description provided for @cabinNumber.
+  ///
+  /// In ar, this message translates to:
+  /// **'المقصورة {number}'**
+  String cabinNumber(String number);
+
+  /// No description provided for @optionalExtras.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافات اختيارية'**
+  String get optionalExtras;
+
+  /// No description provided for @optionalExtrasSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'أضف ما تحتاجه فقط'**
+  String get optionalExtrasSubtitle;
+
+  /// No description provided for @extraLegroomSeats.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقاعد بمساحة إضافية للأرجل'**
+  String get extraLegroomSeats;
+
+  /// No description provided for @taxesAndFees.
+  ///
+  /// In ar, this message translates to:
+  /// **'الضرائب والرسوم'**
+  String get taxesAndFees;
+
+  /// No description provided for @estimatedTotal.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإجمالي التقديري'**
+  String get estimatedTotal;
+
+  /// No description provided for @retryShort.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة المحاولة'**
+  String get retryShort;
+
+  /// No description provided for @boardingDirect.
+  ///
+  /// In ar, this message translates to:
+  /// **'مباشر'**
+  String get boardingDirect;
+
+  /// No description provided for @boardingOneStop.
+  ///
+  /// In ar, this message translates to:
+  /// **'توقف واحد'**
+  String get boardingOneStop;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In ar, this message translates to:
+  /// **'مسح البحث'**
+  String get clearSearch;
+
+  /// No description provided for @passwordResetTitleLine1.
+  ///
+  /// In ar, this message translates to:
+  /// **'تمت إعادة'**
+  String get passwordResetTitleLine1;
+
+  /// No description provided for @passwordResetTitleLine2.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعيين كلمة المرور'**
+  String get passwordResetTitleLine2;
+
+  /// No description provided for @boardingDate.
+  ///
+  /// In ar, this message translates to:
+  /// **'التاريخ'**
+  String get boardingDate;
+
+  /// No description provided for @boardingFlight.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرحلة'**
+  String get boardingFlight;
+
+  /// No description provided for @boardingClass.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدرجة'**
+  String get boardingClass;
+
+  /// No description provided for @boardingRef.
+  ///
+  /// In ar, this message translates to:
+  /// **'المرجع'**
+  String get boardingRef;
+
+  /// No description provided for @resendCodeLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة إرسال الرمز'**
+  String get resendCodeLink;
+
+  /// No description provided for @attractionLocationUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'موقع هذا المكان غير متاح.'**
+  String get attractionLocationUnavailable;
+
+  /// No description provided for @fareTimesPassengers.
+  ///
+  /// In ar, this message translates to:
+  /// **'سعر {fare} × {count}'**
+  String fareTimesPassengers(String fare, int count);
+
+  /// No description provided for @nearbySearching.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ البحث عن أماكن قريبة…'**
+  String get nearbySearching;
+
+  /// No description provided for @nearbyCategoryRestaurant.
+  ///
+  /// In ar, this message translates to:
+  /// **'مطعم'**
+  String get nearbyCategoryRestaurant;
+
+  /// No description provided for @nearbyCategoryCafe.
+  ///
+  /// In ar, this message translates to:
+  /// **'مقهى'**
+  String get nearbyCategoryCafe;
+
+  /// No description provided for @nearbyCategoryHotel.
+  ///
+  /// In ar, this message translates to:
+  /// **'فندق'**
+  String get nearbyCategoryHotel;
+
+  /// No description provided for @nearbyCategoryMuseum.
+  ///
+  /// In ar, this message translates to:
+  /// **'متحف'**
+  String get nearbyCategoryMuseum;
+
+  /// No description provided for @nearbyCategoryActivity.
+  ///
+  /// In ar, this message translates to:
+  /// **'نشاط'**
+  String get nearbyCategoryActivity;
+
+  /// No description provided for @nearbyCategoryAttraction.
+  ///
+  /// In ar, this message translates to:
+  /// **'معلم سياحي'**
+  String get nearbyCategoryAttraction;
+
+  /// No description provided for @nearbyCategoryLandmark.
+  ///
+  /// In ar, this message translates to:
+  /// **'مَعلَم'**
+  String get nearbyCategoryLandmark;
+
+  /// No description provided for @cityIstanbul.
+  ///
+  /// In ar, this message translates to:
+  /// **'إسطنبول'**
+  String get cityIstanbul;
+
+  /// No description provided for @cityJeddah.
+  ///
+  /// In ar, this message translates to:
+  /// **'جدة'**
+  String get cityJeddah;
+
+  /// No description provided for @cityBali.
+  ///
+  /// In ar, this message translates to:
+  /// **'بالي'**
+  String get cityBali;
+
+  /// No description provided for @cityMale.
+  ///
+  /// In ar, this message translates to:
+  /// **'ماليه'**
+  String get cityMale;
+
+  /// No description provided for @cityTunis.
+  ///
+  /// In ar, this message translates to:
+  /// **'تونس'**
+  String get cityTunis;
+
+  /// No description provided for @cityJakarta.
+  ///
+  /// In ar, this message translates to:
+  /// **'جاكرتا'**
+  String get cityJakarta;
+
+  /// No description provided for @cityAlBayda.
+  ///
+  /// In ar, this message translates to:
+  /// **'البيضاء'**
+  String get cityAlBayda;
+
+  /// No description provided for @cityTobruk.
+  ///
+  /// In ar, this message translates to:
+  /// **'طبرق'**
+  String get cityTobruk;
+
+  /// No description provided for @citySirte.
+  ///
+  /// In ar, this message translates to:
+  /// **'سرت'**
+  String get citySirte;
+
+  /// No description provided for @cityKhoms.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخمس'**
+  String get cityKhoms;
+
+  /// No description provided for @countryLibya.
+  ///
+  /// In ar, this message translates to:
+  /// **'ليبيا'**
+  String get countryLibya;
+
+  /// No description provided for @countryEgypt.
+  ///
+  /// In ar, this message translates to:
+  /// **'مصر'**
+  String get countryEgypt;
+
+  /// No description provided for @countrySaudiArabia.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعودية'**
+  String get countrySaudiArabia;
+
+  /// No description provided for @countryTurkey.
+  ///
+  /// In ar, this message translates to:
+  /// **'تركيا'**
+  String get countryTurkey;
+
+  /// No description provided for @countryIndonesia.
+  ///
+  /// In ar, this message translates to:
+  /// **'إندونيسيا'**
+  String get countryIndonesia;
+
+  /// No description provided for @countryUnitedArabEmirates.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإمارات العربية المتحدة'**
+  String get countryUnitedArabEmirates;
+
+  /// No description provided for @countryMaldives.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالديف'**
+  String get countryMaldives;
+
+  /// No description provided for @countryTunisia.
+  ///
+  /// In ar, this message translates to:
+  /// **'تونس'**
+  String get countryTunisia;
+
+  /// No description provided for @countryFrance.
+  ///
+  /// In ar, this message translates to:
+  /// **'فرنسا'**
+  String get countryFrance;
+
+  /// No description provided for @countryJapan.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليابان'**
+  String get countryJapan;
+
+  /// No description provided for @adminOfferTitleArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان العرض بالعربية'**
+  String get adminOfferTitleArabic;
+
+  /// No description provided for @adminOfferCityArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدينة بالعربية'**
+  String get adminOfferCityArabic;
+
+  /// No description provided for @adminOfferCountryArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدولة بالعربية'**
+  String get adminOfferCountryArabic;
+
+  /// No description provided for @adminOfferDescriptionArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصف العرض بالعربية'**
+  String get adminOfferDescriptionArabic;
+
+  /// No description provided for @adminOfferHighlightsArabic.
+  ///
+  /// In ar, this message translates to:
+  /// **'أبرز معالم العرض بالعربية'**
+  String get adminOfferHighlightsArabic;
+
+  /// No description provided for @adminOfferHighlightsArabicHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل معالم مفصولة بفواصل'**
+  String get adminOfferHighlightsArabicHint;
 }
 
 class _AppLocalizationsDelegate

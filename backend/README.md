@@ -86,17 +86,46 @@ mvn spring-boot:run
 
 The API runs at `http://127.0.0.1:8080/api`. Start the copied Flutter app from the `zentrip_java` root using `flutter run`.
 
-Zen AI uses the authenticated `POST /api/ai/chat` endpoint. The Java backend streams Requesty's OpenAI-compatible chat-completions response to the app as server-sent events, so text appears as soon as the provider generates it. The app sends up to 10 recent messages per user and chat session and allows up to 512 generated tokens. Replies follow the latest user message's language, with the app language as a fallback. Set `REQUESTY_API_KEY` and `REQUESTY_MODEL` in `backend/.env`; a lower-latency model available to your Requesty account may improve the time to the first token and total response time. Restart the backend after changing these settings. Never place the key in Flutter code or commit it to Git.
+## Backend tests
 
-For example, if this model is available in your Requesty account:
+The normal `scripts/test-backend.sh` run first checks the Flutter/Spring API contract and then runs mock-backed Java tests. PostgreSQL integration tests are skipped by their loopback-only environment guard. Run the full suite, including real PostgreSQL migration and HTTP/JDBC checks, with:
 
-```dotenv
-AI_PROVIDER=requesty
-REQUESTY_API_KEY=your_requesty_key
-REQUESTY_MODEL=google/gemma-4-31b-it
+```bash
+bash scripts/test-postgres.sh
 ```
 
-Requesty chat completions are sent to `https://router.requesty.ai/v1/chat/completions`. Confirm the exact model identifier in the Requesty model library. Restart Spring Boot after changing these settings.
+The script creates a fresh disposable PostgreSQL cluster on loopback, loads `schema.sql`, installs local Supabase-compatible role/function stubs, and applies the migrations in the same order documented in the root README before running all backend tests. It reapplies the new RLS and push-token migrations to verify idempotency, and grants the test login membership in the non-login `zentrip_api_runtime` role. It unsets configured Supabase connection variables and never connects to the application database. The GitHub Actions workflow `.github/workflows/backend-postgres.yml` runs this same script for pushes and pull requests.
+
+For Supabase, apply the migration files manually and in order using a database owner; the backend does not migrate production automatically. Back up first. If the configured JDBC login is not `postgres`, grant `zentrip_api_runtime` to that login. Confirm the runtime role is `NOLOGIN NOBYPASSRLS` and that request connections can switch to it.
+
+Zen AI uses the authenticated `POST /api/ai/chat` endpoint. The Java backend
+streams Google's Gemini `streamGenerateContent` response to the app as
+server-sent events, so text appears as it is generated. Conversation turns are
+translated to Gemini's `contents` format, while the travel-assistant guidance
+and saved preferences are sent as `systemInstruction`. The app sends up to 10
+recent messages per user and chat session and allows up to 512 generated tokens.
+Replies follow the latest user message's language, with the app language as a
+fallback. Configure `GEMINI_API_KEY` in Replit Secrets or `backend/.env`;
+`GEMINI_MODEL` defaults to `gemini-flash-lite-latest`, with
+`GEMINI_FALLBACK_MODEL` set to `gemini-3.5-flash-lite` for temporary provider
+overload. Both model IDs were checked against this Google AI Studio project and
+returned successful streaming responses. A provider read timeout of 35 seconds
+prevents unbounded waiting before error handling or fallback. The key is sent from the backend
+in Google's `x-goog-api-key` header and is never included in the Flutter app or
+URL. A missing key returns a configuration error instead of a simulated AI reply.
+Restart Spring Boot after changing settings.
+
+```dotenv
+GEMINI_API_KEY=your_google_ai_studio_api_key
+GEMINI_MODEL=gemini-flash-lite-latest
+GEMINI_FALLBACK_MODEL=gemini-3.5-flash-lite
+GEMINI_READ_TIMEOUT_SECONDS=35
+```
+
+Gemini streaming requests use
+`https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse`.
+Confirm the chosen model is available to the Google AI Studio project associated
+with the key.
 
 Users can edit their personalization profile under **Profile → Travel Preferences**. The authenticated `GET` and `PUT /api/preferences/travel` endpoints store budget level, travel pace, trip length, party size, interests, and preferred destination per account. Zen loads that profile for each chat response; users can still override it in their latest message.
 
@@ -107,3 +136,51 @@ While Zen is generating, the chat input becomes a Stop button; quick prompts and
 Authenticated profile updates use `POST /api/profile` with multipart `name`, `phone`, and an optional `photo` (JPEG, PNG, or WebP; maximum 5 MB). The photo is served from `/uploads/` and stored in `UPLOAD_DIR` (defaults to `backend/uploads`). `PUT /api/profile/password` accepts `current_password`, `password`, and `password_confirmation` as JSON. Keep the upload directory writable and persistent; use private object storage and HTTPS for production deployments.
 
 The payment endpoints intentionally retain the existing mock checkout behavior; connect a real payment provider before production use. Saved places remain local to the Flutter app, as in the original project.
+
+## LiteAPI hotel search
+
+Hotel search combines local partner listings with read-only LiteAPI hotel rate
+results from `POST /hotels/rates`. The API key stays server-side in
+`LITEAPI_API_KEY`. Set `LITEAPI_BASE_URL` only when using a different LiteAPI
+environment. The guest nationality defaults to `LY` and can be changed with
+`LITEAPI_GUEST_NATIONALITY`.
+
+LiteAPI rate identifiers are not returned to the app, and Zentrip does not call
+LiteAPI prebook, booking, or cancellation endpoints. Checkout continues to use
+Zentrip's existing simulated payment and booking-record flow. Provider errors,
+including denied account access, are logged without credentials and do not hide
+partner inventory. Duffel remains enabled only for flight search; RapidAPI and
+Xotelo are not used for hotel search.
+
+## OpenTripMap landmark search
+
+Landmark discovery, suggestions, and all place records use OpenTripMap only. Configure `OPENTRIPMAP_API_KEY` as a backend environment variable/Replit Secret; it is never included in Flutter or browser requests. Search calls use OpenTripMap geoname, autosuggest, radius/bbox, and xid endpoints. Only when OpenTripMap has no image, the backend may request the linked Wikipedia page's image as an image-only fallback. A missing key or provider outage returns an explicit service error; landmark searches do not substitute Geoapify or database/mock listings. Geoapify remains in its existing airport lookup/geocoding paths.
+
+The app currently supports historic/archaeological places, architecture, museums, parks/gardens, natural attractions, and beaches. Candidates are filtered by provider kinds, commercial/business signals, historical-event names, identity, coordinates, and duplicate nearby names (including diacritic and bridge-suffix variants). Wikimedia file-page URLs are converted to image redirects, and disallowed 400px thumbnail URLs are changed to 500px thumbnails. Search results and details are cached for 24 hours and seven days respectively; details use a bounded worker pool and requests are spaced to the documented 10 requests/second free-tier limit. Arabic requests use English responses because OpenTripMap documents English and Russian; a card uses a consistent language rather than mixing fields.
+
+OpenTripMap's free plan is non-commercial and limited to 5,000 requests/day. This app is configured as commercial by default, so the backend logs a warning when `OPENTRIPMAP_FREE_PLAN=true`. Use an appropriate commercial plan before production traffic. Review the source/image attribution fields before publishing user-facing images.
+
+### Canonical place records and deduplication
+
+The existing `landmark_places`, `landmark_place_aliases`, and `landmark_merge_candidates` tables provide the unified place catalog; they are the Zentrip equivalents of a golden-record table, source identities, aliases, and a review queue. Do not create parallel `places` or `place_sources` tables. OpenTripMap is the only supported landmark ingestion provider. Wikidata identifiers may be used as cross-reference metadata, and Wikipedia remains an image-only fallback; Google Maps, OSM, and Wikipedia are not independent POI ingestion sources.
+
+Identity resolution checks the provider ID and Wikidata ID first. It then blocks candidates using indexed coordinate bounds and verifies actual distance with Haversine. A nearby place is automatically merged only when it is under 50 meters and its normalized name similarity is at least 0.85; uncertain candidates within 300 meters remain separate and are queued for review. This avoids merging adjacent attractions solely because their coordinates are close.
+
+`GET /api/places?query=...&city=...&country=...&category=...&language=en&limit=40&offset=0` returns paginated canonical roots with aliases and source metadata; raw source duplicates are not listed. `POST /api/places/ingest` is admin-only and accepts a batch of 1–200 OpenTripMap records:
+
+```json
+{
+  "source": "opentripmap",
+  "places": [
+    {
+      "xid": "N12345",
+      "name": "Example Place",
+      "latitude": 32.64,
+      "longitude": 14.29,
+      "category": "historical"
+    }
+  ]
+}
+```
+
+The endpoint rejects unsupported providers, missing names or IDs, invalid coordinates, and oversized batches. It uses the existing additive landmark catalog migration and does not alter curated `tourist_monuments` records.

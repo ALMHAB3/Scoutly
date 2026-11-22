@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/attraction_model.dart';
+import '../../../../models/flight_model.dart';
 import '../../../../models/travel_package_model.dart';
 
 enum AdminCatalogKind { monuments, offers }
@@ -22,6 +24,7 @@ class AdminCatalogManagement extends StatefulWidget {
 class AdminCatalogManagementState extends State<AdminCatalogManagement> {
   List<AttractionModel> _monuments = [];
   List<TravelPackage> _offers = [];
+  List<FlightModel> _flights = [];
   bool _loading = true;
   String? _error;
 
@@ -35,6 +38,12 @@ class AdminCatalogManagementState extends State<AdminCatalogManagement> {
     _load();
   }
 
+  @override
+  void didUpdateWidget(covariant AdminCatalogManagement oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.kind != widget.kind) _load();
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -42,6 +51,7 @@ class AdminCatalogManagementState extends State<AdminCatalogManagement> {
     });
     if (_isOffer) {
       final result = await ApiService.instance.getAdminOffers();
+      final flightsResult = await ApiService.instance.getAdminFlightListings();
       if (!mounted) return;
       setState(() {
         _loading = false;
@@ -49,6 +59,11 @@ class AdminCatalogManagementState extends State<AdminCatalogManagement> {
           _offers = result.data!;
         } else {
           _error = result.errorMessage;
+        }
+        if (flightsResult.isSuccess && flightsResult.data != null) {
+          _flights = flightsResult.data!;
+        } else {
+          _error ??= flightsResult.errorMessage;
         }
       });
     } else {
@@ -73,6 +88,7 @@ class AdminCatalogManagementState extends State<AdminCatalogManagement> {
         kind: widget.kind,
         monument: monument,
         offer: offer,
+        flights: _flights,
       ),
     );
     if (value == null || !mounted) return;
@@ -255,17 +271,30 @@ class _OfferCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final languageCode = Localizations.localeOf(context).languageCode;
     return _CatalogCard(
-      title: offer.title,
-      subtitle: '${offer.location}, ${offer.country}',
+      title: offer.displayTitle(languageCode),
+      subtitle:
+          '${offer.displayLocation(languageCode)}${languageCode == 'ar' ? '، ' : ', '}${offer.displayCountry(languageCode)}',
       imageUrl: offer.imageUrl,
       fallbackIcon: offer.icon,
       rating: offer.rating,
       reviewCount: offer.reviewCount,
-      price: offer.pricePerPerson,
+      price: offer.totalPricePerPerson,
       onEdit: onEdit,
       onDelete: onDelete,
       children: [
+        if (offer.flight != null)
+          _CatalogBadge(
+            label: '${offer.flight!.airline}'
+                '${offer.flight!.flightNumber.isEmpty ? '' : ' · ${offer.flight!.flightNumber}'}'
+                ' · ${offer.flight!.originCode} → ${offer.flight!.destinationCode}',
+            color: AppColors.primary,
+          ),
+        if (offer.flight == null)
+          _CatalogBadge(
+              label: l10n.adminOfferFlightMissing,
+              color: AppColors.accentOrange),
         if (offer.badge.isNotEmpty || offer.isFeatured)
           _CatalogBadge(
               label: offer.badge.isEmpty ||
@@ -278,8 +307,8 @@ class _OfferCard extends StatelessWidget {
             label: '${offer.durationNights} ${l10n.adminNights}',
             color: AppColors.accentTeal),
         _CatalogBadge(
-            label:
-                '${l10n.adminCalculatedOfferTotal}: \$${offer.totalPricePerPerson.toStringAsFixed(0)}',
+            label: l10n.adminCalculatedOfferTotal,
+            amount: offer.totalPricePerPerson,
             color: AppColors.accentGreen),
         for (final highlight in offer.highlights.take(4))
           _CatalogBadge(label: highlight, color: AppColors.primary),
@@ -363,11 +392,14 @@ class _CatalogCard extends StatelessWidget {
                         children: [
                           const Icon(Icons.star_rounded,
                               color: AppColors.accentYellow, size: 16),
-                          Text(' ${rating.toStringAsFixed(1)} ($reviewCount)',
+                          Text('${rating.toStringAsFixed(1)} ($reviewCount)',
+                              textDirection: TextDirection.ltr,
                               style: Theme.of(context).textTheme.bodySmall),
                           if (price != null) ...[
                             const Spacer(),
-                            Text('\$${price!.toStringAsFixed(0)}',
+                            CurrencyAmountText(
+                                amount: price!,
+                                decimalDigits: 0,
                                 style: const TextStyle(
                                     color: AppColors.primary,
                                     fontWeight: FontWeight.w800)),
@@ -410,8 +442,13 @@ class _CatalogCard extends StatelessWidget {
 class _CatalogBadge extends StatelessWidget {
   final String label;
   final Color color;
+  final double? amount;
 
-  const _CatalogBadge({required this.label, required this.color});
+  const _CatalogBadge({
+    required this.label,
+    required this.color,
+    this.amount,
+  });
 
   @override
   Widget build(BuildContext context) => Container(
@@ -421,11 +458,19 @@ class _CatalogBadge extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: color.withValues(alpha: .22)),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-              color: color, fontSize: 12, fontWeight: FontWeight.w600),
-        ),
+        child: amount == null
+            ? Text(
+                label,
+                style: TextStyle(
+                    color: color, fontSize: 12, fontWeight: FontWeight.w600),
+              )
+            : CurrencyAmountText(
+                amount: amount!,
+                prefix: '$label: ',
+                decimalDigits: 0,
+                style: TextStyle(
+                    color: color, fontSize: 12, fontWeight: FontWeight.w600),
+              ),
       );
 }
 
@@ -452,11 +497,13 @@ class _CatalogEditor extends StatefulWidget {
   final AdminCatalogKind kind;
   final AttractionModel? monument;
   final TravelPackage? offer;
+  final List<FlightModel> flights;
 
   const _CatalogEditor({
     required this.kind,
     this.monument,
     this.offer,
+    this.flights = const [],
   });
 
   @override
@@ -466,9 +513,12 @@ class _CatalogEditor extends StatefulWidget {
 class _CatalogEditorState extends State<_CatalogEditor> {
   final _formKey = GlobalKey<FormState>();
   final _tagInput = TextEditingController();
+  final _tagInputAr = TextEditingController();
   late final Map<String, TextEditingController> _fields;
   late final List<String> _tags;
+  late final List<String> _tagsAr;
   late bool _featured;
+  FlightModel? _selectedFlight;
 
   bool get _isOffer => widget.kind == AdminCatalogKind.offers;
   dynamic get _current => _isOffer ? widget.offer : widget.monument;
@@ -478,21 +528,28 @@ class _CatalogEditorState extends State<_CatalogEditor> {
     super.initState();
     final monument = widget.monument;
     final offer = widget.offer;
+    for (final flight in widget.flights) {
+      if (flight.partnerListingId == offer?.flightListingId) {
+        _selectedFlight = flight;
+        break;
+      }
+    }
     _fields = _isOffer
         ? {
             'title': TextEditingController(text: offer?.title ?? ''),
+            'title_ar': TextEditingController(text: offer?.titleAr ?? ''),
             'location': TextEditingController(text: offer?.location ?? ''),
+            'location_ar': TextEditingController(text: offer?.locationAr ?? ''),
             'country': TextEditingController(text: offer?.country ?? ''),
+            'country_ar': TextEditingController(text: offer?.countryAr ?? ''),
             'destination_code':
                 TextEditingController(text: offer?.destinationCode ?? ''),
             'description':
                 TextEditingController(text: offer?.description ?? ''),
+            'description_ar':
+                TextEditingController(text: offer?.descriptionAr ?? ''),
             'image_url': TextEditingController(text: offer?.imageUrl ?? ''),
             'badge': TextEditingController(text: offer?.badge ?? ''),
-            'price_per_person': TextEditingController(
-                text: offer == null ? '' : '${offer.pricePerPerson}'),
-            'flight_price_per_person': TextEditingController(
-                text: offer == null ? '' : '${offer.flightPricePerPerson}'),
             'hotel_price_per_night': TextEditingController(
                 text: offer == null ? '' : '${offer.hotelPricePerNight}'),
             'duration_nights':
@@ -524,6 +581,7 @@ class _CatalogEditorState extends State<_CatalogEditor> {
           };
     _tags = List<String>.of(
         _isOffer ? offer?.highlights ?? [] : monument?.tags ?? []);
+    _tagsAr = List<String>.of(_isOffer ? offer?.highlightsAr ?? [] : const []);
     _featured = offer?.isFeatured ?? false;
   }
 
@@ -533,6 +591,7 @@ class _CatalogEditorState extends State<_CatalogEditor> {
       controller.dispose();
     }
     _tagInput.dispose();
+    _tagInputAr.dispose();
     super.dispose();
   }
 
@@ -546,6 +605,18 @@ class _CatalogEditorState extends State<_CatalogEditor> {
         .toList();
     if (additions.isNotEmpty) setState(() => _tags.addAll(additions));
     _tagInput.clear();
+  }
+
+  void _addArabicTags(String value) {
+    final additions = value
+        .split(',')
+        .map((item) => item.trim())
+        .where((item) =>
+            item.isNotEmpty &&
+            !_tagsAr.any((tag) => tag.toLowerCase() == item.toLowerCase()))
+        .toList();
+    if (additions.isNotEmpty) setState(() => _tagsAr.addAll(additions));
+    _tagInputAr.clear();
   }
 
   String? _validateRequired(String? value) =>
@@ -629,6 +700,58 @@ class _CatalogEditorState extends State<_CatalogEditor> {
   int _int(String key, [int fallback = 0]) =>
       int.tryParse(_fields[key]!.text.trim()) ?? fallback;
 
+  Widget _flightPicker(AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: DropdownButtonFormField<FlightModel>(
+        initialValue: _selectedFlight,
+        isExpanded: true,
+        decoration: InputDecoration(
+          labelText: l10n.adminLinkedFlight,
+          hintText: l10n.adminSelectFlight,
+          filled: true,
+          fillColor: isDark
+              ? AppColors.darkSurfaceSecondary
+              : AppColors.surfaceSecondary,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+                color: isDark ? AppColors.darkBorder : AppColors.border),
+          ),
+        ),
+        items: widget.flights
+            .map((flight) => DropdownMenuItem(
+                  value: flight,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${flight.airline} · ${flight.flightNumber} · '
+                          '${flight.originCode} → ${flight.destinationCode}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      CurrencyAmountText(
+                        amount: flight.economyPrice,
+                        sourceCurrencyCode: flight.priceCurrencyCode,
+                        decimalDigits: 0,
+                      ),
+                    ],
+                  ),
+                ))
+            .toList(),
+        validator: (value) => value == null ? l10n.adminSelectFlight : null,
+        onChanged: widget.flights.isEmpty
+            ? null
+            : (flight) => setState(() => _selectedFlight = flight),
+      ),
+    );
+  }
+
   void _save() {
     if (!_formKey.currentState!.validate()) return;
     final id = (_current?.id ?? '').toString();
@@ -641,13 +764,18 @@ class _CatalogEditorState extends State<_CatalogEditor> {
         TravelPackage(
           id: id,
           title: _fields['title']!.text.trim(),
+          titleAr: _fields['title_ar']!.text.trim(),
           location: _fields['location']!.text.trim(),
+          locationAr: _fields['location_ar']!.text.trim(),
           country: _fields['country']!.text.trim(),
+          countryAr: _fields['country_ar']!.text.trim(),
           destinationCode: _fields['destination_code']!.text.trim(),
           description: _fields['description']!.text.trim(),
+          descriptionAr: _fields['description_ar']!.text.trim(),
           imageUrl: _fields['image_url']!.text.trim(),
-          pricePerPerson: _number('price_per_person'),
-          flightPricePerPerson: _number('flight_price_per_person'),
+          pricePerPerson: (_selectedFlight?.economyPrice ?? 0) +
+              _number('hotel_price_per_night') * _int('duration_nights', 7),
+          flightPricePerPerson: _selectedFlight?.economyPrice ?? 0,
           hotelPricePerNight: _number('hotel_price_per_night'),
           durationNights: _int('duration_nights', 7),
           rating: _number('rating'),
@@ -656,9 +784,12 @@ class _CatalogEditorState extends State<_CatalogEditor> {
               id.hashCode.abs() % AppColors.destinationGradients.length],
           icon: TravelPackage.iconForCategory(category),
           highlights: List.unmodifiable(_tags),
+          highlightsAr: List.unmodifiable(_tagsAr),
           isFeatured: _featured,
           badge: _fields['badge']!.text.trim(),
           category: category,
+          flightListingId: _selectedFlight?.partnerListingId,
+          flight: _selectedFlight,
         ),
       );
     } else {
@@ -697,14 +828,22 @@ class _CatalogEditorState extends State<_CatalogEditor> {
     final labels = _isOffer
         ? <(String, String, bool, bool, int)>[
             ('title', l10n.adminTitle, true, false, 1),
+            ('title_ar', l10n.adminOfferTitleArabic, false, false, 1),
             ('location', l10n.adminLocation, true, false, 1),
+            ('location_ar', l10n.adminOfferCityArabic, false, false, 1),
             ('country', l10n.adminCountry, true, false, 1),
+            ('country_ar', l10n.adminOfferCountryArabic, false, false, 1),
             ('destination_code', l10n.adminDestinationCode, false, false, 1),
             ('description', l10n.adminDescription, true, false, 4),
+            (
+              'description_ar',
+              l10n.adminOfferDescriptionArabic,
+              false,
+              false,
+              4
+            ),
             ('image_url', l10n.adminImageUrl, false, false, 1),
             ('badge', l10n.adminBadge, false, false, 1),
-            ('price_per_person', l10n.adminStartingPrice, true, true, 1),
-            ('flight_price_per_person', l10n.adminFlightPrice, true, true, 1),
             ('hotel_price_per_night', l10n.adminHotelPriceNight, true, true, 1),
             ('duration_nights', l10n.adminNights, true, true, 1),
             ('rating', l10n.adminRating, true, true, 1),
@@ -764,6 +903,7 @@ class _CatalogEditorState extends State<_CatalogEditor> {
                         lines: lines,
                       ),
                     if (_isOffer) ...[
+                      _flightPicker(l10n),
                       _field('category', l10n.adminCategory),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
@@ -771,12 +911,16 @@ class _CatalogEditorState extends State<_CatalogEditor> {
                         value: _featured,
                         onChanged: (value) => setState(() => _featured = value),
                       ),
-                      if (_fields['flight_price_per_person']!.text.isNotEmpty ||
+                      if (_selectedFlight != null ||
                           _fields['hotel_price_per_night']!.text.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            '${l10n.adminCalculatedOfferTotal}: \$${(_number('flight_price_per_person') + _number('hotel_price_per_night') * _int('duration_nights', 7)).toStringAsFixed(0)}',
+                          child: CurrencyAmountText(
+                            amount: (_selectedFlight?.economyPrice ?? 0) +
+                                _number('hotel_price_per_night') *
+                                    _int('duration_nights', 7),
+                            prefix: '${l10n.adminCalculatedOfferTotal}: ',
+                            decimalDigits: 0,
                             style: const TextStyle(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w800),
@@ -827,6 +971,55 @@ class _CatalogEditorState extends State<_CatalogEditor> {
                                 ))
                             .toList(),
                       ),
+                    ],
+                    if (_isOffer) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        l10n.adminOfferHighlightsArabic,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _tagInputAr,
+                              textDirection: TextDirection.rtl,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: _addArabicTags,
+                              decoration: InputDecoration(
+                                hintText: l10n.adminOfferHighlightsArabicHint,
+                                filled: true,
+                                fillColor: isDark
+                                    ? AppColors.darkSurfaceSecondary
+                                    : AppColors.surfaceSecondary,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => _addArabicTags(_tagInputAr.text),
+                            icon: const Icon(Icons.add_circle_outline_rounded),
+                            color: AppColors.primary,
+                          ),
+                        ],
+                      ),
+                      if (_tagsAr.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: _tagsAr
+                              .map((tag) => InputChip(
+                                    label: Text(tag),
+                                    onDeleted: () =>
+                                        setState(() => _tagsAr.remove(tag)),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
                     ],
                   ],
                 ),

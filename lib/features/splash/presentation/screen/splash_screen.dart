@@ -3,7 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/utils/auth_fonts.dart'
+    as GoogleFonts; // ignore: library_prefixes
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
@@ -12,6 +13,7 @@ import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../features/price_alerts/logic/price_alerts_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../core/services/user_settings_sync.dart';
 import '../../../onboarding/presentation/screens/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -36,19 +38,22 @@ class _SplashScreenState extends State<SplashScreen> {
         AppRoutes.register,
         AppRoutes.forgotPassword,
         AppRoutes.verifyCode,
+        AppRoutes.resetPassword,
       }.contains(requestedRoute)) {
-        Navigator.pushReplacementNamed(context, requestedRoute);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, requestedRoute);
+        });
         return;
       }
     }
 
     // مدة عرض شاشة الـ Splash قبل الانتقال التلقائي.
-    const splashDuration = Duration(seconds: 4);
-    final results = await Future.wait([
-      Future.delayed(splashDuration),
-      ApiService.instance.restoreSession(),
-      SharedPreferences.getInstance()
-          .then((p) => p.getBool(OnboardingScreen.seenKey) ?? false),
+    const splashDuration = kIsWeb ? Duration.zero : Duration(seconds: 4);
+    final results = await Future.wait<Object>([
+      Future.delayed(splashDuration, () => true),
+      _restoreSessionSafely(),
+      _readOnboardingSafely(),
     ]);
 
     if (!mounted) return;
@@ -59,9 +64,7 @@ class _SplashScreenState extends State<SplashScreen> {
       // في main() حمّلنا المفضلة قبل ما نعرف مين المستخدم (كانت لسه
       // 'guest'). دلوقتي عرفنا هويته بعد استعادة الجلسة، فنعيد التحميل
       // ببيانات حسابه هو بالذات.
-      await FavoritesController.instance.load();
-      await NotificationsStore.instance.load();
-      await PriceAlertsStore.instance.load();
+      await _loadUserScopedStoresSafely();
       if (!mounted) return;
       final user = ApiService.instance.currentUser;
       final destination = user?.isAdmin == true
@@ -74,6 +77,48 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.auth);
+    }
+  }
+
+  Future<bool> _restoreSessionSafely() async {
+    try {
+      return await ApiService.instance
+          .restoreSession()
+          .timeout(const Duration(seconds: 8), onTimeout: () => false);
+    } catch (error) {
+      debugPrint('Session restoration was skipped: $error');
+      return false;
+    }
+  }
+
+  Future<bool> _readOnboardingSafely() async {
+    try {
+      return await SharedPreferences.getInstance()
+          .then((prefs) => prefs.getBool(OnboardingScreen.seenKey) ?? false)
+          .timeout(const Duration(seconds: 4), onTimeout: () => false);
+    } catch (error) {
+      debugPrint('Onboarding state was unavailable: $error');
+      return false;
+    }
+  }
+
+  Future<void> _loadUserScopedStoresSafely() async {
+    await Future.wait([
+      _runOptionalLoad('favorites', FavoritesController.instance.load),
+      _runOptionalLoad('notifications', NotificationsStore.instance.load),
+      _runOptionalLoad('price alerts', PriceAlertsStore.instance.load),
+      _runOptionalLoad('settings', UserSettingsSync.instance.pullAndApply),
+    ]);
+  }
+
+  Future<void> _runOptionalLoad(
+    String service,
+    Future<void> Function() load,
+  ) async {
+    try {
+      await load().timeout(const Duration(seconds: 5));
+    } catch (error) {
+      debugPrint('Loading $service was skipped during startup: $error');
     }
   }
 
@@ -172,7 +217,7 @@ class _OrbitalGlobeState extends State<_OrbitalGlobe>
             child: Align(
               alignment: Alignment.topCenter,
               child: Padding(
-                padding: EdgeInsets.only(top: 12),
+                padding: const EdgeInsets.only(top: 12),
                 child: Transform.rotate(
                   angle: math.pi / 2,
                   child: const Icon(

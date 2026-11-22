@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/location_settings_service.dart';
 import '../../../../core/services/current_location_service.dart';
+import '../../../../core/services/currency_service.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/booking_loading_overlay.dart';
 import '../../../../global_widgets/booking_confirmation_screen.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/transfer_model.dart';
 import '../../logic/transfers_controller.dart';
@@ -416,8 +418,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                   final availability = await ApiService.instance
                                       .checkTransferAvailability(
                                     pickupTime: transfer.pickupTime,
-                                    durationMinutes:
-                                        transfer.durationMinutes,
+                                    durationMinutes: transfer.durationMinutes,
                                   );
                                   if (!context.mounted) return;
                                   if (availability.isFailure ||
@@ -427,12 +428,13 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                       availability.isFailure
                                           ? availability.errorMessage ??
                                               bookingL10n.genericError
-                                          : bookingL10n.transferScheduleConflict,
+                                          : bookingL10n
+                                              .transferScheduleConflict,
                                     );
                                     return;
                                   }
 
-                                  final paid =
+                                  final payment =
                                       await PaymentCheckoutScreen.start(
                                     context,
                                     amountUsd: total,
@@ -442,7 +444,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                   );
 
                                   if (!context.mounted) return;
-                                  if (!paid) {
+                                  if (payment?.paid != true) {
                                     AppSnackbar.error(context,
                                         bookingL10n.paymentFailedMessage);
                                     return;
@@ -460,6 +462,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                       transfer,
                                       passengers: _passengers,
                                       referenceId: ref,
+                                      paymentAttemptId: payment?.attemptId,
                                     ),
                                   );
 
@@ -482,13 +485,11 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) =>
-                                          BookingConfirmationScreen(
-                                        serviceName: bookingL10n
-                                            .quickActionTransfers,
+                                      builder: (_) => BookingConfirmationScreen(
+                                        serviceName:
+                                            bookingL10n.quickActionTransfers,
                                         primaryText: transfer.pickupLocation,
-                                        secondaryText:
-                                            transfer.dropoffLocation,
+                                        secondaryText: transfer.dropoffLocation,
                                         reference: ref,
                                         dateLabel:
                                             MaterialLocalizations.of(context)
@@ -496,9 +497,13 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                           transfer.pickupTime,
                                         ),
                                         priceLabel:
-                                            '\$${total.toStringAsFixed(2)}',
-                                        serviceIcon:
-                                            Icons.local_taxi_rounded,
+                                            CurrencyService.instance.format(
+                                          total,
+                                          locale:
+                                              Localizations.localeOf(context)
+                                                  .languageCode,
+                                        ),
+                                        serviceIcon: Icons.local_taxi_rounded,
                                       ),
                                     ),
                                   );
@@ -643,8 +648,7 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
       if (!mounted) return;
       setState(() {
         _locationError = switch (error.reason) {
-          CurrentLocationError.serviceDisabled =>
-            widget.serviceDisabledMessage,
+          CurrentLocationError.serviceDisabled => widget.serviceDisabledMessage,
           CurrentLocationError.permissionDenied =>
             widget.permissionDeniedMessage,
           CurrentLocationError.permissionDeniedForever =>
@@ -719,7 +723,11 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
                                   if (_locationError ==
                                       widget.permissionDeniedForeverMessage)
                                     OutlinedButton.icon(
-                                      onPressed: Geolocator.openAppSettings,
+                                      onPressed:
+                                          LocationSettingsService.isSupported
+                                              ? LocationSettingsService
+                                                  .openAppSettings
+                                              : null,
                                       icon: const Icon(Icons.settings_rounded),
                                       label: FittedBox(
                                         fit: BoxFit.scaleDown,
@@ -734,7 +742,10 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
                                       widget.serviceDisabledMessage)
                                     OutlinedButton.icon(
                                       onPressed:
-                                          Geolocator.openLocationSettings,
+                                          LocationSettingsService.isSupported
+                                              ? LocationSettingsService
+                                                  .openLocationSettings
+                                              : null,
                                       icon: const Icon(Icons.settings_rounded),
                                       label: FittedBox(
                                         fit: BoxFit.scaleDown,
@@ -1133,7 +1144,9 @@ class _TransferCard extends StatelessWidget {
                         style: const TextStyle(
                             color: AppColors.textSecondary, fontSize: 11)),
                     const SizedBox(height: 2),
-                    Text('\$${transfer.priceUSD.toStringAsFixed(0)}',
+                    CurrencyAmountText(
+                        amount: transfer.priceUSD,
+                        decimalDigits: 0,
                         style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 22,

@@ -1,0 +1,646 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "XPtCnreD_w1VG1fOCjgJt"
+uri = "file://generated-artifacts/zentrip-activity-diagram.html"
+type = "html"
+title = "ZenTrip activity diagram — interactive viewer"
+description = "Standalone viewer with eight tabs, zoom and pan, editable Mermaid source, clickable master modules, SVG/PNG downloads, and a Word download."
+logical_id = "2ee3e27b-496c-4482-95c1-743fde39c49c"
+content_hash = "sha256:3c73a096e54c88fc9ad943ba418b59e53f873228ba32f73faf87bbe94deae67a"
+size = 5584562
+mtime_ms = 1793897368194
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/2ee3e27b-496c-4482-95c1-743fde39c49c/10880acd-7832-49a9-9224-e5214a2e0559"
+storage_version_token = "1793897543639037"
+content_type = "text/html"
+
+[[outputs]]
+id = "-dC7D5Z1R8Mc_8d8GkGb6"
+uri = "file://attached_assets/ZenTrip-Activity-Diagram-aligned.docx"
+type = "word_document"
+title = "Updated ZenTrip Activity Diagram"
+description = "Editable Word document aligned with the current app's sign-in, roles, flight and hotel search, simulated checkout, places, Zen AI, and My Trips flows."
+logical_id = "6708dfdd-f393-42fa-b53a-5bc6b62a3222"
+content_hash = "sha256:9524d81b33cdf1f5e331688456afea9dfdd73afdd1052fe93c996105bd2fdc39"
+size = 500577
+mtime_ms = 1793821296801
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/6708dfdd-f393-42fa-b53a-5bc6b62a3222/e4a38a9d-7a1f-45e4-80b2-7850574767c6"
+storage_version_token = "1793821329690632"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "2uhpjDQxza4L6ozYfnH22"
+uri = "file://attached_assets/ZenTrip-Activity-Diagram-aligned.png"
+type = "image"
+title = "Activity Diagram Preview"
+description = "PNG preview of the updated flow diagram embedded in the Word document."
+logical_id = "38be274a-75f3-49fe-9bc2-3b7294d4ef27"
+content_hash = "sha256:460e9bca9633da2af7d2d25115a149d6653e60213697e505b955ebd85b0246c2"
+size = 514682
+mtime_ms = 1793821296569
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/38be274a-75f3-49fe-9bc2-3b7294d4ef27/b8aac4ae-e01d-4c34-80b9-5f0d33f6a1df"
+storage_version_token = "1793821330309664"
+content_type = "image/png"
+
+[[outputs]]
+id = "9VXX4xRSz_raa_hF1BHgw"
+uri = "file://generated-artifacts/ZenTrip-Activity-Diagram-Integrated.docx"
+type = "word_document"
+title = "Replacement Word document — corrected landscape format"
+description = "Rebuilt after correcting the page dimensions. The DOCX package, XML parts, eight inline diagrams, and landscape dimensions were validated."
+logical_id = "80895dc6-c9a8-48ad-80f3-a9fbf898fe4d"
+content_hash = "sha256:0972c9820a452855d02407ecec910fca5b9ed32c831f8517ee8bdc66a08ff971"
+size = 3652769
+mtime_ms = 1793897796418
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/80895dc6-c9a8-48ad-80f3-a9fbf898fe4d/c49daf8e-86ed-423b-a755-f59ec30481ae"
+storage_version_token = "1793897858290843"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "QZJYi7W_bIDZJfchwoNQw"
+uri = "file://generated-artifacts/ZenTrip-Activity-Diagram-Source.zip"
+type = "unspecified"
+title = "Updated diagram source bundle"
+description = "Includes the latest filename and landscape fixes in the Word generator, plus the editable flow model and Mermaid sources."
+logical_id = "77fcc724-28f3-4c6a-a8aa-3c67af7bb785"
+content_hash = "sha256:8e5b2b13605fa06c6562eca012d98cd276f862328fec30de386bec1058173fb7"
+size = 41672
+mtime_ms = 1793898161814
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/77fcc724-28f3-4c6a-a8aa-3c67af7bb785/08dcfb99-e12a-4be4-bc08-6b980cf2c57d"
+storage_version_token = "1793898170909887"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "Bkv_7PiLyV4Xnz248Cm3B"
+uri = "file://generated-artifacts/ZenTrip-Activity-Diagram-Updated.docx"
+type = "word_document"
+title = "ZenTrip Word document — new filename"
+description = "Fresh DOCX export with landscape page dimensions corrected and eight inline diagrams. Download this file rather than either earlier Integrated copy."
+logical_id = "0cbae7ae-4096-49b4-bf99-286bafe6f3a3"
+content_hash = "sha256:fa9141d4818c4afb967a487d286bedd6c75b8becbd6716222f642d8c3b07daee"
+size = 3652769
+mtime_ms = 1793898160894
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/0cbae7ae-4096-49b4-bf99-286bafe6f3a3/07d48543-fba3-443a-9de3-289a1d728170"
+storage_version_token = "1793898170312775"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "1mVcVjHHXslK5eiDPCxAV"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture.html"
+type = "html"
+title = "Zentrip System Architecture — zoomable viewer"
+description = "Standalone HTML viewer for the restyled diagram."
+logical_id = "52804f1c-6260-4c32-bb13-bd7b861490cc"
+content_hash = "sha256:6e9db7af84fd9aacd4e10826c184352f0f4686ba319a67f30a6a6ecd467379f7"
+size = 16341
+mtime_ms = 1793901913263
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/52804f1c-6260-4c32-bb13-bd7b861490cc/0ccf788c-08dd-49c9-92d1-27ca76b70997"
+storage_version_token = "1793901943144180"
+content_type = "text/html"
+
+[[outputs]]
+id = "XRCJ1Dx1sEtk6RILxYsY3"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture-preview.png"
+type = "image"
+title = "Zentrip System Architecture — modern blueprint"
+description = "Restyled architecture diagram with color-coded lanes, consistent travel/data icons, concise labels, and the same verified project flows."
+logical_id = "6d18e4b3-c6a5-495d-b855-87e3b59e788d"
+content_hash = "sha256:3d0a274d32c9235f917b944a0f6bedb3be4e70415456bebdf17c1d57341a78ad"
+size = 161301
+mtime_ms = 1793901917275
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/6d18e4b3-c6a5-495d-b855-87e3b59e788d/d22f2c6a-10d9-4b0b-ba85-4d9335386137"
+storage_version_token = "1793901941960320"
+content_type = "image/png"
+
+[[outputs]]
+id = "77jkEAreX96rCAp_pffx3"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture.svg"
+type = "image"
+title = "Zentrip System Architecture — vector file"
+description = "Scalable SVG version of the updated diagram."
+logical_id = "b925eeaa-612b-4648-8e4a-24a8196b7ba9"
+content_hash = "sha256:dd2741b1b20621f19663f705197abf33a12a3a27c758b3162f2ec2f31e6f2ced"
+size = 15491
+mtime_ms = 1793901910946
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/b925eeaa-612b-4648-8e4a-24a8196b7ba9/e995dfb2-b310-4bf2-bf58-bf236591c0cc"
+storage_version_token = "1793901942581000"
+content_type = "image/svg+xml"
+
+[[outputs]]
+id = "4_-Uqbcqau_Jsb9EKREPV"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture-corrected.docx"
+type = "word_document"
+title = "Corrected ZenTrip system architecture — Word"
+description = "One-page landscape Word document with the architecture embedded as an SVG image and a PNG compatibility fallback."
+logical_id = "b43db13d-9738-427a-a0a7-4693c89872d7"
+content_hash = "sha256:6e161c27cd6a1edd6b24a6ac070bb70121901d282764a26d8bb8471cd2f13b5a"
+size = 633262
+mtime_ms = 1793977367718
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/b43db13d-9738-427a-a0a7-4693c89872d7/d832d436-f1fb-4ad6-a1dc-638fa3905b78"
+storage_version_token = "1793977392542186"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "yzqQdJXzv8WdDvyz-ZOSL"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture-corrected.svg"
+type = "image"
+title = "Corrected ZenTrip system architecture — SVG"
+description = "Vector diagram with only the two misleading provider labels corrected; layout, colors, and icons are unchanged."
+logical_id = "9466259f-e805-4975-b52d-7027b0a9c2e2"
+content_hash = "sha256:fb37c1530163d45ee72106ffc7ceb0088009740ad3f3b5087bfa9944fd8d4531"
+size = 14312
+mtime_ms = 1793977307010
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/9466259f-e805-4975-b52d-7027b0a9c2e2/0691910f-50e3-4e01-8546-bdf3a07cfe11"
+storage_version_token = "1793977393271480"
+content_type = "image/svg+xml"
+
+[[outputs]]
+id = "WYaE__THBFeaVFX5VrODs"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture-corrected.png"
+type = "image"
+title = "Corrected ZenTrip system architecture — preview"
+description = "PNG preview of the corrected diagram."
+logical_id = "694e1b64-290a-4032-b71b-cf6c8ae730cd"
+content_hash = "sha256:5c94ab90ae90b4b441b2697eb3e5f8fd637b38d303e1cc85d3691dc9ce8b4caf"
+size = 654822
+mtime_ms = 1793977323462
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/694e1b64-290a-4032-b71b-cf6c8ae730cd/7285e8e2-66b1-47f9-be6d-f56246a54aae"
+storage_version_token = "1793977393880350"
+content_type = "image/png"
+
+[[outputs]]
+id = "9MV4Av-6mEtIY0SFzZup9"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture-Editable.docx"
+type = "word_document"
+title = "ZenTrip System Architecture — fully editable Word file"
+description = "Word-native drawing with 103 individual editable objects: 41 text objects plus separate vector shapes for the icons, boxes, and connectors. It contains no flattened image."
+logical_id = "5b5c7e5f-9137-4e16-acca-9edf0d8f558b"
+content_hash = "sha256:feb7e0e3e9f88099962fd45c781fe2a268877e46e2e666e5a7844406de37c795"
+size = 29137
+mtime_ms = 1793978354174
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/5b5c7e5f-9137-4e16-acca-9edf0d8f558b/ee7b9543-5b87-4218-88a8-f24d103f9273"
+storage_version_token = "1793978401318077"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "EbwC4lq3xb2zr1hL6eXjJ"
+uri = "file://generated-artifacts/ZenTrip-System-Architecture-Editable-Aligned.docx"
+type = "word_document"
+title = "ZenTrip architecture — aligned editable Word file"
+description = "Replacement with corrected freeform curve/arc bounds and baseline-aligned text. It contains separate Word-native editable shapes and text, with no flattened image."
+logical_id = "d2815043-6eac-4b34-a569-2ac1c56d2e27"
+content_hash = "sha256:c261cd40cfffa32a2c8b5af4c1cb1d2b5753eeee144553493518943112695ba8"
+size = 28543
+mtime_ms = 1793978730769
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/d2815043-6eac-4b34-a569-2ac1c56d2e27/947f55eb-4889-48de-8c6d-b6472bda4f26"
+storage_version_token = "1793978737979671"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "N9LkvcFq0cD-PXoZoKQeg"
+uri = "file://generated-artifacts/Zentrip-1.3-introduction-ar.docx"
+type = "word_document"
+title = "مقدمة الفصل الثالث لمشروع Zentrip"
+description = "ملف Word قابل للتحرير يتضمن المقدمة الأكاديمية والتقنيات والأدوات المستخدمة في المشروع، مع تنسيق عربي من اليمين إلى اليسار."
+logical_id = "633dfaeb-2a82-4a4e-9a85-558f82a58e43"
+content_hash = "sha256:2b3e3b8fece2283d3e396473b9782a0e206a42c245ca2bc5feb6a9f2c338de19"
+size = 11662
+mtime_ms = 1794064086037
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/633dfaeb-2a82-4a4e-9a85-558f82a58e43/3ebadae4-8105-4b61-9e7d-f588cea36aff"
+storage_version_token = "1794064092218256"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "OBOIsDScon5vpytWHOwTd"
+uri = "file://generated-artifacts/%D8%A8%D8%AD%D8%AB_Zentrip_%D9%85%D9%86%D9%82%D8%AD.docx"
+type = "word_document"
+title = "بحث Zentrip المنقح"
+description = "نسخة Word منقحة مع الحفاظ على الجداول والصور والتنسيق قدر الإمكان، وتصحيح وصف المعمارية والتكاملات والادعاءات غير المدعومة."
+logical_id = "c8a3677d-fd23-481f-855a-9cc611edd7ba"
+content_hash = "sha256:4055cc5df9909fb0935172b949729a44dcfd65132910d4e6b3983ca173c263d9"
+size = 1820054
+mtime_ms = 1794159500598
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/c8a3677d-fd23-481f-855a-9cc611edd7ba/7cd3e174-4507-40c9-8386-55d718b2c5f8"
+storage_version_token = "1794159531096661"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "CRxtJ9T3WeJH_bu96QGSM"
+uri = "file://generated-artifacts/%D8%A8%D8%AD%D8%AB_Zentrip_%D9%85%D8%B1%D8%A7%D8%AC%D8%B9_%D9%88%D9%85%D9%88%D8%AB%D9%82.docx"
+type = "word_document"
+title = "بحث Zentrip بعد المراجعة"
+description = "نسخة Word محدثة وفق تعليمات المراجعة، مع تمييز التعديلات بالأصفر، وتوثيق نقاط المشروع التي تحتاج أدلة أو مراجع إضافية."
+logical_id = "c1564d44-84e4-4882-9e7d-435d17dcaf98"
+content_hash = "sha256:13dcb99539010abfb44ddb0c7ac2c229b2e0fd9fb6ff858b2b8b5b89929eb219"
+size = 1823344
+mtime_ms = 1794162421506
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/c1564d44-84e4-4882-9e7d-435d17dcaf98/1cc1ea62-7cd0-43ae-a858-0e4004d57fa4"
+storage_version_token = "1794162430809084"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "hOaM2ymhELHNo8MYHUSjY"
+uri = "file://generated-artifacts/%D8%A8%D8%AD%D8%AB_Zentrip_%D8%B5%D9%8A%D8%A7%D8%BA%D8%A9_%D8%A3%D9%83%D8%A7%D8%AF%D9%8A%D9%85%D9%8A%D8%A9.docx"
+type = "word_document"
+title = "بحث Zentrip بصياغة أكاديمية"
+description = "نسخة Word منقحة، مع إزالة الملاحظات التحريرية وتحديث وصف المعمارية والتكاملات والمراجع."
+logical_id = "067fb943-31ca-4b4d-8ace-516088251ae2"
+content_hash = "sha256:864c6a3cf272d7aa86738eef630994f1e26a58fc34a043511d926f3b8c79a307"
+size = 1818398
+mtime_ms = 1794163411475
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/067fb943-31ca-4b4d-8ace-516088251ae2/97befe32-463d-41a7-a331-b1606b8220c6"
+storage_version_token = "1794163428676259"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "NZM_fQxZps8pPCI9_XqFW"
+uri = "file://generated-artifacts/%D8%A8%D8%AD%D8%AB_Zentrip_%D8%AA%D8%B9%D8%AF%D9%8A%D9%84%D8%A7%D8%AA_%D8%AC%D8%B1%D8%A7%D8%AD%D9%8A%D8%A9.docx"
+type = "word_document"
+title = "البحث الأكاديمي بعد التعديلات المحدودة"
+description = "نسخة Word قابلة للتحرير مبنية على المستند الأصلي، مع تعديلات أكاديمية محددة والحفاظ على التنسيق والصور والجداول."
+logical_id = "feeb6fc4-1c80-4f18-8618-4ca7ac021ee3"
+content_hash = "sha256:978134f5dc167a5de0d68a94be13f94f6ab7e35b4df7c323a4a3da38b00616cb"
+size = 1828837
+mtime_ms = 1794164835710
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/feeb6fc4-1c80-4f18-8618-4ca7ac021ee3/d9ca542e-6bc5-4882-98bc-53df8773b931"
+storage_version_token = "1794164856821139"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "IGupkimRjMXfv9nWfzL0I"
+uri = "file://generated-artifacts/Zen_AI_%D8%AA%D8%AD%D9%84%D9%8A%D9%84_%D8%A7%D9%84%D9%85%D9%86%D8%A7%D9%81%D8%B3%D9%8A%D9%86.html"
+type = "html"
+title = "تحليل المنافسين وتميّز Zen AI"
+description = "عرض عربي تفاعلي من 8 شرائح، يعرض قدرات Zen المثبتة في الكود، مقارنة المنافسين، الفجوات الحالية، وخارطة طريق مقترحة مع روابط المصادر."
+logical_id = "855ca2d6-0615-47c6-8176-cfcecdfa0573"
+content_hash = "sha256:57cd46289a1306036b685411e6b08653e4c924daa4242bcd98edb35d38da15f1"
+size = 29926
+mtime_ms = 1794227007931
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/855ca2d6-0615-47c6-8176-cfcecdfa0573/b9c46988-7aaf-4d6c-bf6a-536eaf824511"
+storage_version_token = "1794227030760385"
+content_type = "text/html"
+
+[[outputs]]
+id = "rA7p48bx26vuqoDNo926S"
+uri = "file://generated-artifacts/Zentrip_Chapter_Development_Environment_AR.docx"
+type = "word_document"
+title = "Supabase وPostgreSQL في فقرة موحدة"
+description = "تم دمج شرح المنصة وقاعدة البيانات في عنوان وفقرة واحدة، مع توضيح صلتهما وتحديث ترقيم الأقسام التالية."
+logical_id = "99df0b0f-7724-41e5-b930-50f8ff7c268d"
+content_hash = "sha256:f05e75a7e1ebd190b240625f604792475e1ff72c9346c7cbf5c95793eeb25592"
+size = 6348
+mtime_ms = 1794333789475
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/99df0b0f-7724-41e5-b930-50f8ff7c268d/2d9b1c58-ef65-4300-84d8-0c997029e2ce"
+storage_version_token = "1794333796358929"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "o_Q1DDsxUrM1_xe9u1xGI"
+uri = "file://generated-artifacts/Zentrip_System_Architecture_Corrected.docx"
+type = "word_document"
+title = "مخطط معمارية Zentrip المصحح"
+description = "ملف Word قابل لتحرير عناصره؛ صُححت التسميات مع الحفاظ على مواضع الأشكال وألوانها وتنسيقاتها."
+logical_id = "147aa8fe-cab1-4400-8921-4d5a636f07f3"
+content_hash = "sha256:3d6ebf8053e7edf4e310167f73a2dba7808aead6570a4db89f4f3b0f45de7bf6"
+size = 71707
+mtime_ms = 1794338281931
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/147aa8fe-cab1-4400-8921-4d5a636f07f3/cdd63a6b-4aa2-4d09-a36f-50156d8dfef4"
+storage_version_token = "1794338337100906"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "PHUUht-s5xUxVqJmaa0D8"
+uri = "file://generated-artifacts/ZenTrip-Supabase-Database-Diagram.docx"
+type = "word_document"
+title = "Zentrip Supabase ERD — Editable Word"
+description = "Word document with native editable diagram objects, based on the public Supabase schema snapshot from 11 November 2026."
+logical_id = "aeded4bd-ace6-4157-bbf5-f959c288a813"
+content_hash = "sha256:6b8758b7d4d225f8682987dd25782625aa2541b82d7497c78612a78f8f559367"
+size = 34355
+mtime_ms = 1794423306165
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/aeded4bd-ace6-4157-bbf5-f959c288a813/781f9e70-4447-4406-a094-ed00953807c6"
+storage_version_token = "1794575402452874"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "MrnNvp7mAU6BLDu9_xvEH"
+uri = "file://outputs/zentrip-landmark-data-quality-ar.docx"
+type = "word_document"
+title = "معالجة تكرار بيانات المعالم السياحية"
+description = "ملف Word عربي منسق يشرح المشكلة وآلية المعالجة والتحقق والحدود."
+logical_id = "325d6c73-2774-4620-afcd-7231113a933c"
+content_hash = "sha256:44e302215826bfb89108bc9aef71a70552e59c6799e43f11f6658f7110544e4b"
+size = 4141
+mtime_ms = 1794500024651
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/325d6c73-2774-4620-afcd-7231113a933c/ee955c72-c76a-443c-8217-f7c225a817f1"
+storage_version_token = "1794500035072997"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "9niMi5zLXZP-DELhKB-FV"
+uri = "file://outputs/zentrip-supabase-erd.svg"
+type = "image"
+title = "Zentrip Supabase ERD"
+description = "Live Supabase public schema diagram; aligned groups, field types, primary keys, foreign-key targets, and nullable fields."
+logical_id = "08d75241-5449-410b-81de-5d76244696a2"
+content_hash = "sha256:7219b7dd5ccb6c6ac9c06e67e81c5402e59511d3ee1717bc81336fabd1151627"
+size = 63208
+mtime_ms = 1794502435916
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/08d75241-5449-410b-81de-5d76244696a2/6b4a7f20-0944-4d42-8488-b74b7569b7ad"
+storage_version_token = "1794502555009094"
+content_type = "image/svg+xml"
+
+[[outputs]]
+id = "Zj9NyqRjIQ3MRf-ezfjxR"
+uri = "file://outputs/zentrip-supabase-erd.drawio"
+type = "unspecified"
+title = "Editable Zentrip ERD source"
+description = "Editable diagrams.net source with all 24 foreign-key connectors."
+logical_id = "bfbd5389-1608-4e4d-8135-67db9f20acdc"
+content_hash = "sha256:b19d63a75906c784ba1905fddf157d29d2e3e799c4412bb5c59330cf484e935d"
+size = 77472
+mtime_ms = 1794502435922
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/bfbd5389-1608-4e4d-8135-67db9f20acdc/75f1f4e3-722b-4f42-abed-3880c7be2ba6"
+storage_version_token = "1794502555612856"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "7J2KVdFinI3aU5Wbyuwfk"
+uri = "file://outputs/zentrip-supabase-chen-attributes.svg"
+type = "image"
+title = "Zentrip ERD — SVG preview"
+description = "High-resolution preview of the all-attributes Chen ERD."
+logical_id = "25d85d38-751f-4124-a58d-9f16149054bc"
+content_hash = "sha256:b85ea2e32ca11d0f10f7060215611b9ae58069dadb235af152b0a32f89e93644"
+size = 88630
+mtime_ms = 1794503259376
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/25d85d38-751f-4124-a58d-9f16149054bc/5dc5ab34-c1aa-4d97-a53e-cada350b73ca"
+storage_version_token = "1794575403734921"
+content_type = "image/svg+xml"
+
+[[outputs]]
+id = "SnWLGRySMR4cBso3ydH1K"
+uri = "file://outputs/zentrip-supabase-chen-relationships.svg"
+type = "image"
+title = "Chen ERD — relationships"
+description = "All 24 enforced Supabase foreign keys shown with entity rectangles, relationship diamonds, key ovals, and cardinalities."
+logical_id = "49c498f8-9128-46ac-9cd7-501c2e0e27d1"
+content_hash = "sha256:6dd404e96ed0ccc0be12f055c9854ed12dde496797d6b556b13c5885029da5ce"
+size = 44294
+mtime_ms = 1794503259465
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/49c498f8-9128-46ac-9cd7-501c2e0e27d1/dfef5652-db1a-4746-9484-5ecb82bb82ea"
+storage_version_token = "1794503343363327"
+content_type = "image/svg+xml"
+
+[[outputs]]
+id = "QBOE0O-HwgvBrSRvDPfBk"
+uri = "file://outputs/zentrip-supabase-chen-erd.drawio"
+type = "unspecified"
+title = "Zentrip ERD — Editable Draw.io source"
+description = "Editable Chen-style ERD source. Open in diagrams.net / draw.io."
+logical_id = "25f43416-1fb3-4202-a407-e98247a56f19"
+content_hash = "sha256:33e965c62a4e5271c471fd666cc22ee34612da32a28229a672c45e360ca21802"
+size = 212202
+mtime_ms = 1794503259475
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/25f43416-1fb3-4202-a407-e98247a56f19/3eb91914-3796-41e5-9c51-768dac6be114"
+storage_version_token = "1794575403095389"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "O-uaAgddQEeqh2ECrwRq8"
+uri = "file://generated-artifacts/Zentrip-MySQL-to-PostgreSQL-Ar.docx"
+type = "word_document"
+title = "تقرير انتقال Zentrip إلى PostgreSQL"
+description = "ملف Word عربي منسق باتجاه RTL يشرح نطاق التغيير والعقبات التقنية والمزايا، مع توضيح ما تم اختباره وما لا تثبته السجلات عن نقل بيانات الإنتاج."
+logical_id = "1a8deff8-fc36-4035-95ea-b41bb4c678d9"
+content_hash = "sha256:c38b6b65ac8774e090c91e2a9ea907bf8db24b404147ddc5cd52673009713e8d"
+size = 16544
+mtime_ms = 1794504179427
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/1a8deff8-fc36-4035-95ea-b41bb4c678d9/e0fef678-98e5-4476-b6c9-1c3910e7ab6d"
+storage_version_token = "1794504228342801"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "5twzxcPtwsj6hrxd0pKhY"
+uri = "file://generated-artifacts/app-screenshots/onboarding.jpg"
+type = "image"
+title = "Zentrip — Onboarding"
+description = "Mobile screenshot from the clean preview."
+logical_id = "60eb3a02-0a4b-4534-ab76-88d4732120bc"
+content_hash = "sha256:993a350573a58286e3781add90d5c33c463d34bb13f58b2d24c1113496bc7aff"
+size = 9781
+mtime_ms = 1794506681111
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/60eb3a02-0a4b-4534-ab76-88d4732120bc/4bb69494-d277-4e43-9748-adf8b664023d"
+storage_version_token = "1794507078717782"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "TE7HtMYeGwjDSe3OK8enN"
+uri = "file://generated-artifacts/app-screenshots/login.jpg"
+type = "image"
+title = "Zentrip — Login"
+description = "Mobile screenshot from the clean preview."
+logical_id = "e67e5a49-774a-4add-8f18-d73d53ed6d9b"
+content_hash = "sha256:b3a82115016eee2449ae17398c01072f7633aa7680e442dc22970cf2ec6a6cd1"
+size = 24858
+mtime_ms = 1794506690651
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/e67e5a49-774a-4add-8f18-d73d53ed6d9b/77f722c2-a33c-4a97-8e3f-5209b80a2e75"
+storage_version_token = "1794507079530458"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "RI2qxJ-1170IIN1NL2wp6"
+uri = "file://generated-artifacts/app-screenshots/register.jpg"
+type = "image"
+title = "Zentrip — Create account"
+description = "Mobile screenshot from the clean preview."
+logical_id = "17328276-9e9d-4f08-9038-8600fc674b31"
+content_hash = "sha256:6803308fa66fd4a2aa091f48a102306c7a199a1074d3dad719158f83c2f34629"
+size = 32343
+mtime_ms = 1794506700415
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/17328276-9e9d-4f08-9038-8600fc674b31/14193f9f-e275-425d-a590-2cf15bf204d7"
+storage_version_token = "1794507080272011"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "eguj2Xjfh9ondHzpN4IZE"
+uri = "file://generated-artifacts/app-screenshots/forgot-password.jpg"
+type = "image"
+title = "Zentrip — Forgot password"
+description = "Mobile screenshot from the clean preview."
+logical_id = "e9304888-cddd-4559-99ae-ae1b06464e97"
+content_hash = "sha256:0af3841f75e48a1827b8545c5c499659f5154970d98911c1e355d0a225263849"
+size = 28508
+mtime_ms = 1794506709451
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/e9304888-cddd-4559-99ae-ae1b06464e97/44e8fd9d-b77d-4f2a-b4eb-c58016d1fd5a"
+storage_version_token = "1794507080848460"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "qCtTeX_cO0BXmAIDiHSL2"
+uri = "file://generated-artifacts/zentrip-app-screenshots/Zentrip-Screenshots.pdf"
+type = "pdf"
+title = "Zentrip app screenshots"
+description = "Refreshed 33-page PDF with all 32 registered screens; reset-password shows the current preview-only demo flow."
+logical_id = "13bb4d33-1b03-48aa-931f-abe5f5170586"
+content_hash = "sha256:393aaf6523df07ef805e1cfae4f002f421084516b148fce7d19ad6679bed3989"
+size = 1219374
+mtime_ms = 1794532243062
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/13bb4d33-1b03-48aa-931f-abe5f5170586/fac07927-0dd6-4cf8-bf9a-da18086b2a51"
+storage_version_token = "1794532280768747"
+content_type = "application/pdf"
+
+[[outputs]]
+id = "Z5g5DhB8xNxjDoNPWSSkP"
+uri = "file://generated-artifacts/zentrip-app-screenshots/gallery.html"
+type = "html"
+title = "Zentrip screenshot gallery"
+description = "Self-contained HTML gallery of all 32 screens with the refreshed reset-password screenshot."
+logical_id = "d7a2b5c6-c31f-4ad3-ad4f-761c0eec17c7"
+content_hash = "sha256:1589d1d0fb090c318700a568dec58fd117e124e04ef2291c6173d1c7e417dd04"
+size = 1494933
+mtime_ms = 1794532240938
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/d7a2b5c6-c31f-4ad3-ad4f-761c0eec17c7/2847b549-2c0f-4b94-85d1-d57ea23a6af8"
+storage_version_token = "1794532281490558"
+content_type = "text/html"
+
+[[outputs]]
+id = "vFES0eoWYVH7EaU5AdG6G"
+uri = "file://generated-artifacts/zentrip-app-screenshots/contact-sheet.jpg"
+type = "image"
+title = "Zentrip screen contact sheet"
+description = "Overview of all 32 captured app screens."
+logical_id = "a4235e3b-8bcd-49ff-a63b-66dc178e30d6"
+content_hash = "sha256:2d6dbd28d257cd748cc055202dd09cfadfe3ba2def39024e4326a5d62cc9e0b2"
+size = 215624
+mtime_ms = 1794532240882
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/a4235e3b-8bcd-49ff-a63b-66dc178e30d6/53162bf0-47bb-465b-b78b-6866b1fce778"
+storage_version_token = "1794532282266715"
+content_type = "image/jpeg"
+
+[[outputs]]
+id = "xW_dyNCeto9AjrCHtM7XP"
+uri = "file://generated-artifacts/zentrip-supabase-erd-crowfoot.png"
+type = "image"
+title = "Verified Zentrip ERD — PNG"
+description = "Matches the current live Supabase public schema; excludes Flyway bookkeeping, shows the Supabase Auth link, and distinguishes 1:1 from 1:N relationships."
+logical_id = "e92cd581-346f-4c66-a696-fcfac9e300d9"
+content_hash = "sha256:8def214376e097abe5ec160d5a167d93240ef75d74a4c2ab5a79040912db0954"
+size = 2252194
+mtime_ms = 1794577572229
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/e92cd581-346f-4c66-a696-fcfac9e300d9/33f6a2f9-6ea6-45f4-abbd-7aec7f206b2e"
+storage_version_token = "1794577604990785"
+content_type = "image/png"
+
+[[outputs]]
+id = "HsZa3Hoo-RVzFNqNdCTe8"
+uri = "file://generated-artifacts/zentrip-supabase-erd-crowfoot.drawio"
+type = "unspecified"
+title = "Verified Zentrip ERD — Editable Draw.io"
+description = "Editable table boxes and relationship connectors, including the external Supabase Auth reference and current schema-gap note."
+logical_id = "665718d9-b0e3-477c-a7ea-fe8ace9db1ba"
+content_hash = "sha256:a3b8dae068a54b7388c3d62660bf6bf7173fae2d9a01895225de48123cc0ad9a"
+size = 42656
+mtime_ms = 1794577571821
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/665718d9-b0e3-477c-a7ea-fe8ace9db1ba/444d4a29-0abf-4146-8c70-fb340c9e445a"
+storage_version_token = "1794577605549856"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "r_DLZYFWRV5QnTkDGuMVU"
+uri = "file://generated-artifacts/zentrip-supabase-erd-crowfoot.svg"
+type = "image"
+title = "Verified Zentrip ERD — SVG"
+description = "Scalable version of the verified live-schema ERD."
+logical_id = "4b74c936-138d-47f6-82a4-c9624f197c07"
+content_hash = "sha256:0a147296e87a8fffcbb64170ef70e78312f090512da717cf05f9b21771060367"
+size = 64765
+mtime_ms = 1794577569521
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/4b74c936-138d-47f6-82a4-c9624f197c07/b00cf2d8-4384-449d-9e9b-923c9d44e2a9"
+storage_version_token = "1794577606168211"
+content_type = "image/svg+xml"
+
+[[outputs]]
+id = "44vHHCg9OTzXgb5efbbrD"
+uri = "file://generated-artifacts/zentrip-complete-erd/ZenTrip-Complete-ERD-A4-Landscape.pdf"
+type = "pdf"
+title = "Zentrip Complete ERD — 13-page PDF"
+description = "A4 landscape, all database fields and relationships, including reconciliation of live Supabase metadata with project SQL."
+logical_id = "6dc4d48f-0b8c-4210-b9c2-963283dd3999"
+content_hash = "sha256:1445f701fb9965fac98fc8a8cba5aed33bfc5ccc4a6118f7004c184f9c3f0810"
+size = 5769895
+mtime_ms = 1794579610965
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/6dc4d48f-0b8c-4210-b9c2-963283dd3999/485f8f1b-6f57-4789-bc4e-a3847349321f"
+storage_version_token = "1794579778230003"
+content_type = "application/pdf"
+
+[[outputs]]
+id = "u-cHZ93VStw9xoF5di1jL"
+uri = "file://generated-artifacts/zentrip-complete-erd/Zentrip-Complete-ERD.drawio"
+type = "unspecified"
+title = "Editable Zentrip ERD — Draw.io"
+description = "Editable multi-page diagram with entity shapes, keys, cardinality connectors, and relationship maps. Open in diagrams.net."
+logical_id = "b4b57824-503b-4b53-8052-1d33856b70cb"
+content_hash = "sha256:95797aeb8d59cd3f560219fcf560f239fc2fe35588483d197a5ad9003608878c"
+size = 134251
+mtime_ms = 1794579597871
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/b4b57824-503b-4b53-8052-1d33856b70cb/dcb5e99f-65a2-4f44-a44b-54b07640c099"
+storage_version_token = "1794579779164289"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "DiVyshTYAtrUsu5IzBoOK"
+uri = "file://generated-artifacts/zentrip-complete-erd/ZenTrip-Complete-ERD-SVG-Pages.zip"
+type = "unspecified"
+title = "Zentrip ERD source pages and guide"
+description = "All 13 SVG pages, schema reconciliation, and PDF export instructions."
+logical_id = "045fd331-0b5b-4350-913c-727d56cf78ea"
+content_hash = "sha256:84de58a993d1aba12ec449dd7330649a454f3814783671172245f4b0b73bb2ee"
+size = 27049
+mtime_ms = 1794579720233
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/045fd331-0b5b-4350-913c-727d56cf78ea/2cd35651-9faf-4fe7-8c60-eb4f54167917"
+storage_version_token = "1794579779765374"
+content_type = "application/octet-stream"
+
+[[outputs]]
+id = "792azVlyOKg1mJriBCY_W"
+uri = "file://generated-artifacts/zentrip-complete-erd/Zentrip-Complete-ERD.html"
+type = "html"
+title = "Zentrip Complete ERD — refreshed HTML"
+description = "Verified in a browser: all 13 pages render and navigate. The missing favicon request is fixed; no external files are required."
+logical_id = "7d73f918-58a7-4cea-87a9-e4bb8a2a0088"
+content_hash = "sha256:25be0f846e56e72e32e8d65b76f618975fad8906946a97f8a47561f9ce4ae265"
+size = 174468
+mtime_ms = 1794580762252
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/7d73f918-58a7-4cea-87a9-e4bb8a2a0088/2fe8943d-f010-480e-9b6b-e5a1fee5ab63"
+storage_version_token = "1794580807469275"
+content_type = "text/html"
+
+[[outputs]]
+id = "fj3SvIH7hBEIVppVduiyl"
+uri = "file://generated-artifacts/%D8%A7%D9%84%D8%A8%D8%AD%D8%AB_3_%D9%86%D8%B3%D8%AE%D8%A9_%D9%85%D8%AD%D8%AF%D8%AB%D8%A9_%D8%A8%D8%A7%D9%84%D8%B4%D8%A7%D8%B4%D8%A7%D8%AA.docx"
+type = "word_document"
+title = "نسخة البحث المحدثة بالشاشات"
+description = "ملف Word جديد يحافظ على محتوى ما قبل قسم الشاشات، ويضم 32 لقطة مع أوصاف عربية وتسميات متتابعة."
+logical_id = "f96fcf0c-98d6-4771-b0de-845ce32bd3ed"
+content_hash = "sha256:70ec00408540ad5d1a6e5a51541aef22c46d57cc0eab08e74bfcfa049ec56922"
+size = 2715513
+mtime_ms = 1794581501353
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/f96fcf0c-98d6-4771-b0de-845ce32bd3ed/87b4c8ff-f4da-4b1b-aab7-7fda838893bc"
+storage_version_token = "1794581722136846"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+[[outputs]]
+id = "NDdbgKPyM2pfYtqPpVL2R"
+uri = "file://generated-artifacts/Zentrip-Supabase-Database-Guide-Ar.docx"
+type = "word_document"
+title = "دليل قاعدة بيانات Zentrip بصيغة Word"
+description = "النسخة النهائية بعد التحقق من جميع العلاقات: شرح عربي للمخطط الحي في Supabase، 33 جدولاً، 321 عموداً، 41 مفتاحاً أجنبياً، ووظائف الأمان والحجز مع ستة مخططات وجداول Word قابلة للتحرير."
+logical_id = "8b01a8bd-6859-44cd-9541-cc8c857b3727"
+content_hash = "sha256:407039868ba348719751cac359079a98e932e9e2d0d6422f8db3aac0175afc55"
+size = 60717
+mtime_ms = 1795016344955
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:e6a74485-980a-4506-b274-9fd8e57ff1ee/8b01a8bd-6859-44cd-9541-cc8c857b3727/bf4df3a9-343b-4134-aab9-0077ea3d46ce"
+storage_version_token = "1795016359613839"
+content_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"

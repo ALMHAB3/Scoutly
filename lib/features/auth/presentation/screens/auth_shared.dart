@@ -1,7 +1,9 @@
+import '../../../../l10n/app_localizations.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/utils/auth_fonts.dart'
+    as GoogleFonts; // ignore: library_prefixes
 
 // ───────────────────────── Colors ─────────────────────────
 class AppColors {
@@ -56,7 +58,10 @@ class _AuthScaffoldState extends State<AuthScaffold>
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
-    final heroHeight = mq.size.height * widget.heroFraction;
+    final usableHeight = (mq.size.height - mq.viewInsets.bottom)
+        .clamp(0.0, double.infinity)
+        .toDouble();
+    final heroHeight = usableHeight * widget.heroFraction;
     final topPad = mq.padding.top;
 
     return Scaffold(
@@ -75,39 +80,43 @@ class _AuthScaffoldState extends State<AuthScaffold>
               right: 0,
               height: heroHeight + 40,
               child: Stack(
-              children: [
-                const Positioned.fill(child: _SkyBackground()),
-                Positioned(
-                  top: topPad + 44,
-                  right: 28,
-                  bottom: 0,
-                  child: _SignPost(icon: widget.signIcon),
-                ),
-                Positioned.fill(
-                  child: _AnimatedPlane(
-                    controller: _planeCtrl,
-                    top: topPad + 62,
+                children: [
+                  const Positioned.fill(child: _SkyBackground()),
+                  if (heroHeight >= topPad + 92)
+                    Positioned(
+                      bottom: 40,
+                      right: 28,
+                      child: _SignPost(icon: widget.signIcon),
+                    ),
+                  Positioned.fill(
+                    child: _AnimatedPlane(
+                      controller: _planeCtrl,
+                      top: topPad + 62,
+                    ),
                   ),
-                ),
-              ],
+                ],
               ),
             ),
 
             // ── Back button ──
             if (widget.showBack && Navigator.of(context).canPop())
-              Positioned(
+              PositionedDirectional(
                 top: topPad + 8,
-                left: 16,
+                start: 16,
                 child: Material(
                   color: Colors.white.withValues(alpha: 0.85),
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: () => Navigator.of(context).maybePop(),
-                    child: const Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18, color: AppColors.text),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Icon(
+                          Directionality.of(context) == TextDirection.rtl
+                              ? Icons.arrow_forward_ios_rounded
+                              : Icons.arrow_back_ios_new_rounded,
+                          size: 18,
+                          color: AppColors.text),
                     ),
                   ),
                 ),
@@ -117,13 +126,12 @@ class _AuthScaffoldState extends State<AuthScaffold>
             Positioned(
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: mq.viewInsets.bottom,
               top: heroHeight,
               child: Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(32)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                   boxShadow: [
                     BoxShadow(
                       color: Color(0x1A000000),
@@ -135,26 +143,42 @@ class _AuthScaffoldState extends State<AuthScaffold>
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final bottomPadding =
-                        mq.viewInsets.bottom + mq.padding.bottom + 16;
+                        (mq.viewInsets.bottom == 0 ? mq.padding.bottom : 0.0) +
+                            16.0;
+                    const contentTopPadding = 44.0;
                     final contentHeight = (constraints.maxHeight -
-                            10 -
+                            contentTopPadding -
                             bottomPadding)
-                        .clamp(0.0, double.infinity);
-                    return SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.fromLTRB(
-                        24,
-                        10,
-                        24,
-                        bottomPadding,
-                      ),
-                      child: ConstrainedBox(
-                        constraints:
-                            BoxConstraints(minHeight: contentHeight),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
+                        .clamp(0.0, double.infinity)
+                        .toDouble();
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            padding: EdgeInsets.fromLTRB(
+                              24,
+                              contentTopPadding,
+                              24,
+                              bottomPadding,
+                            ),
+                            child: ConstrainedBox(
+                              constraints:
+                                  BoxConstraints(minHeight: contentHeight),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [widget.child],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 12,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Container(
+                              key: const Key('auth-sheet-handle'),
                               width: 36,
                               height: 4,
                               decoration: BoxDecoration(
@@ -162,11 +186,9 @@ class _AuthScaffoldState extends State<AuthScaffold>
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
-                            const SizedBox(height: 18),
-                            widget.child,
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     );
                   },
                 ),
@@ -271,6 +293,16 @@ class _MountainPainter extends CustomPainter {
       ..lineTo(x1, h)
       ..close();
 
+    final cloud = Paint()..color = Colors.white.withValues(alpha: 0.9);
+    void drawCloud(double cx, double cy, double s) {
+      canvas.drawCircle(Offset(cx, cy), 14 * s, cloud);
+      canvas.drawCircle(Offset(cx + 16 * s, cy + 4 * s), 12 * s, cloud);
+      canvas.drawCircle(Offset(cx - 16 * s, cy + 5 * s), 11 * s, cloud);
+    }
+
+    drawCloud(w * 0.12, h * 0.24, 1.05);
+    drawCloud(w * 0.90, h * 0.16, 0.9);
+
     canvas.drawPath(mountain(-w * 0.1, w * 0.28, h * 0.30, w * 0.75),
         Paint()..color = const Color(0xFF8E9BE0));
     canvas.drawPath(mountain(w * 0.35, w * 0.72, h * 0.42, w * 1.15),
@@ -283,16 +315,6 @@ class _MountainPainter extends CustomPainter {
         ..close(),
       Paint()..color = Colors.white.withValues(alpha: 0.7),
     );
-
-    final cloud = Paint()..color = Colors.white.withValues(alpha: 0.9);
-    void drawCloud(double cx, double cy, double s) {
-      canvas.drawCircle(Offset(cx, cy), 14 * s, cloud);
-      canvas.drawCircle(Offset(cx + 16 * s, cy + 4 * s), 12 * s, cloud);
-      canvas.drawCircle(Offset(cx - 16 * s, cy + 5 * s), 11 * s, cloud);
-    }
-
-    drawCloud(w * 0.12, h * 0.78, 1.1);
-    drawCloud(w * 0.90, h * 0.62, 0.9);
   }
 
   @override
@@ -306,6 +328,7 @@ class _SignPost extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 52,
@@ -317,7 +340,12 @@ class _SignPost extends StatelessWidget {
           ),
           child: Icon(icon, color: Colors.white, size: 28),
         ),
-        Expanded(child: Container(width: 4, color: const Color(0xFF9AA3B5))),
+        Container(
+          key: const ValueKey('bus-stop-sign-pole'),
+          width: 4,
+          height: 34,
+          color: const Color(0xFF9AA3B5),
+        ),
       ],
     );
   }
@@ -438,7 +466,10 @@ class AuthButton extends StatefulWidget {
   final VoidCallback? onTap;
   final bool loading;
   const AuthButton(
-      {super.key, required this.label, required this.onTap, this.loading = false});
+      {super.key,
+      required this.label,
+      required this.onTap,
+      this.loading = false});
 
   @override
   State<AuthButton> createState() => _AuthButtonState();
@@ -505,7 +536,10 @@ class SocialButton extends StatelessWidget {
   final Widget icon;
   final VoidCallback onTap;
   const SocialButton(
-      {super.key, required this.label, required this.icon, required this.onTap});
+      {super.key,
+      required this.label,
+      required this.icon,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -560,8 +594,8 @@ class GoogleG extends StatelessWidget {
 }
 
 class OrDivider extends StatelessWidget {
-  final String text;
-  const OrDivider({super.key, this.text = 'Or sign up with'});
+  final String? text;
+  const OrDivider({super.key, this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -570,7 +604,7 @@ class OrDivider extends StatelessWidget {
         const Expanded(child: Divider(color: AppColors.line)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(text,
+          child: Text(text ?? AppLocalizations.of(context).orSignUpWith,
               style: GoogleFonts.poppins(fontSize: 11, color: AppColors.hint)),
         ),
         const Expanded(child: Divider(color: AppColors.line)),

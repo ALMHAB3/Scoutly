@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
+import '../../../../core/utils/money_format.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/boarding_pass_card.dart';
 import '../../../../global_widgets/confirm_dialog.dart';
@@ -74,6 +75,16 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final locale = Localizations.localeOf(context).languageCode;
     final trip = _trip;
+    final bookedAmount = trip.bookingDisplayAmount ?? trip.price ?? 0;
+    final bookedCurrency = trip.bookingDisplayAmount == null
+        ? trip.priceCurrencyCode
+        : trip.bookingCurrencyCode;
+    final bookedPriceLabel = formatBookingCurrencyAmount(
+      bookedAmount,
+      bookedCurrency,
+      locale: locale,
+      decimalDigits: 2,
+    );
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -133,7 +144,9 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                 locale: locale),
                             Icons.calendar_today_outlined),
                     ]).animate().fade(delay: 280.ms),
-                if (trip.bookingRef != null) ...[
+                if (trip.bookingRef != null ||
+                    trip.selectedSeats.isNotEmpty ||
+                    trip.extras.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   _DetailSection(
                       title: l10n.tripsBookingDetails,
@@ -141,11 +154,21 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                       children: [
                         _DetailRow(l10n.bookingRef, trip.bookingRef!,
                             Icons.confirmation_num_rounded),
-                        if (trip.price != null)
+                        if (trip.bookingDisplayAmount != null ||
+                            trip.price != null)
                           _DetailRow(
-                              l10n.tripsTotalPrice,
-                              '\$${trip.price!.toStringAsFixed(0)}',
-                              Icons.attach_money_rounded),
+                            l10n.tripsTotalPrice,
+                            bookedPriceLabel,
+                            Icons.attach_money_rounded,
+                          ),
+                        if (trip.selectedSeats.isNotEmpty)
+                          _DetailRow(
+                              l10n.tripSeatsLabel,
+                              trip.selectedSeats.join(', '),
+                              Icons.airline_seat_recline_normal_rounded),
+                        if (trip.extras.isNotEmpty)
+                          _DetailRow(l10n.tripExtrasLabel,
+                              trip.extras.join(', '), Icons.luggage_rounded),
                       ]).animate().fade(delay: 360.ms),
                 ],
                 if (trip.refundStatus != null) ...[
@@ -176,7 +199,14 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                                   title:
                                       '${trip.originCode} → ${trip.destinationCode}',
                                   subtitle: trip.flightNumber,
-                                  refCode: trip.bookingRef ?? trip.id.toString(),
+                                  refCode:
+                                      trip.bookingRef ?? trip.id.toString(),
+                                  details: [
+                                    if (trip.selectedSeats.isNotEmpty)
+                                      '${l10n.tripSeatsLabel}: ${trip.selectedSeats.join(', ')}',
+                                    if (trip.extras.isNotEmpty)
+                                      '${l10n.tripExtrasLabel}: ${trip.extras.join(', ')}',
+                                  ],
                                 ))),
                     icon: const Icon(Icons.qr_code_rounded, size: 16),
                     label: FittedBox(

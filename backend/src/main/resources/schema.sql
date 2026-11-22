@@ -74,9 +74,40 @@ CREATE TABLE IF NOT EXISTS airports (
     city VARCHAR(100) NOT NULL,
     airport_name VARCHAR(255) NOT NULL,
     country VARCHAR(100) NOT NULL,
-    region VARCHAR(100) NOT NULL
+    region VARCHAR(100) NOT NULL,
+    icao_code CHAR(4),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    airport_type VARCHAR(32) NOT NULL DEFAULT 'medium_airport',
+    is_major BOOLEAN NOT NULL DEFAULT FALSE,
+    scheduled_service BOOLEAN NOT NULL DEFAULT TRUE,
+    iso_country CHAR(2),
+    keywords TEXT NOT NULL DEFAULT '',
+    wikipedia_link VARCHAR(2048),
+    source_id BIGINT,
+    source_provider VARCHAR(32) NOT NULL DEFAULT 'legacy',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS icao_code CHAR(4);
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS latitude DOUBLE PRECISION;
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS longitude DOUBLE PRECISION;
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS airport_type VARCHAR(32) NOT NULL DEFAULT 'medium_airport';
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS is_major BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS scheduled_service BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS iso_country CHAR(2);
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS keywords TEXT NOT NULL DEFAULT '';
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS wikipedia_link VARCHAR(2048);
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS source_id BIGINT;
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS source_provider VARCHAR(32) NOT NULL DEFAULT 'legacy';
+ALTER TABLE airports ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
 CREATE INDEX IF NOT EXISTS airports_city_index ON airports (city);
+CREATE INDEX IF NOT EXISTS airports_icao_code_index ON airports (icao_code);
+CREATE INDEX IF NOT EXISTS airports_country_city_index ON airports (iso_country, city);
+CREATE INDEX IF NOT EXISTS airports_city_search_index ON airports (LOWER(city));
+CREATE INDEX IF NOT EXISTS airports_country_search_index ON airports (LOWER(country));
+CREATE INDEX IF NOT EXISTS airports_name_search_index ON airports (LOWER(airport_name));
+CREATE INDEX IF NOT EXISTS airports_coordinates_index ON airports (latitude, longitude)
+    WHERE latitude IS NOT NULL AND longitude IS NOT NULL;
 
 INSERT INTO airports (code, city, airport_name, country, region) VALUES
     ('MJI', 'Tripoli', 'Mitiga International Airport', 'Libya', 'Western Libya'),
@@ -91,10 +122,7 @@ INSERT INTO airports (code, city, airport_name, country, region) VALUES
     ('DPS', 'Bali', 'Ngurah Rai International Airport', 'Indonesia', 'Southeast Asia'),
     ('CGK', 'Jakarta', 'Soekarno-Hatta International Airport', 'Indonesia', 'Southeast Asia')
 ON CONFLICT (code) DO UPDATE SET
-    city = EXCLUDED.city,
-    airport_name = EXCLUDED.airport_name,
-    country = EXCLUDED.country,
-    region = EXCLUDED.region;
+    code = EXCLUDED.code;
 
 CREATE TABLE IF NOT EXISTS user_reviews (
     id BIGSERIAL PRIMARY KEY,
@@ -159,6 +187,7 @@ CREATE TABLE IF NOT EXISTS travel_preferences (
 CREATE TABLE IF NOT EXISTS tourist_monuments (
     id VARCHAR(64) NOT NULL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
+    name_ar VARCHAR(255) NOT NULL DEFAULT '',
     location VARCHAR(255) NOT NULL,
     category_tag VARCHAR(100) NOT NULL DEFAULT '',
     category VARCHAR(40) NOT NULL DEFAULT 'landmark',
@@ -175,15 +204,147 @@ CREATE TABLE IF NOT EXISTS tourist_monuments (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE tourist_monuments
+    ADD COLUMN IF NOT EXISTS name_ar VARCHAR(255) NOT NULL DEFAULT '';
 CREATE INDEX IF NOT EXISTS tourist_monuments_active_order_index ON tourist_monuments (is_active, sort_order, title);
+
+-- Additive provider-backed landmark catalog; tourist_monuments remains the
+-- separately managed curated catalog for backward compatibility.
+CREATE TABLE IF NOT EXISTS landmark_places (
+    id UUID PRIMARY KEY,
+    canonical_place_id UUID NULL REFERENCES landmark_places(id) ON DELETE RESTRICT,
+    provider VARCHAR(40) NOT NULL,
+    provider_place_id VARCHAR(100) NOT NULL,
+    wikidata_id VARCHAR(40) NULL,
+    latitude DOUBLE PRECISION NOT NULL CHECK (latitude BETWEEN -90 AND 90),
+    longitude DOUBLE PRECISION NOT NULL CHECK (longitude BETWEEN -180 AND 180),
+    category VARCHAR(100) NOT NULL DEFAULT 'landmark',
+    rate SMALLINT NOT NULL DEFAULT 0 CHECK (rate BETWEEN 0 AND 3),
+    city VARCHAR(255) NOT NULL DEFAULT '',
+    country VARCHAR(255) NOT NULL DEFAULT '',
+    image_url TEXT NOT NULL DEFAULT '',
+    names JSONB NOT NULL DEFAULT '{}'::jsonb,
+    descriptions JSONB NOT NULL DEFAULT '{}'::jsonb,
+    payload JSONB NOT NULL,
+    fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT landmark_places_not_self_canonical
+        CHECK (canonical_place_id IS NULL OR canonical_place_id <> id),
+    CONSTRAINT landmark_places_provider_identity
+        UNIQUE (provider, provider_place_id)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS landmark_places_wikidata_root_unique
+    ON landmark_places (wikidata_id)
+    WHERE wikidata_id IS NOT NULL AND canonical_place_id IS NULL;
+CREATE INDEX IF NOT EXISTS landmark_places_coordinates_index
+    ON landmark_places (latitude, longitude);
+CREATE INDEX IF NOT EXISTS landmark_places_city_country_index
+    ON landmark_places (LOWER(country), LOWER(city));
+CREATE INDEX IF NOT EXISTS landmark_places_category_rate_index
+    ON landmark_places (category, rate DESC);
+CREATE INDEX IF NOT EXISTS landmark_places_canonical_index
+    ON landmark_places (canonical_place_id)
+    WHERE canonical_place_id IS NOT NULL;
+
+CREATE TABLE IF NOT EXISTS landmark_place_aliases (
+    id BIGSERIAL PRIMARY KEY,
+    canonical_place_id UUID NOT NULL
+        REFERENCES landmark_places(id) ON DELETE CASCADE,
+    alias_name VARCHAR(500) NOT NULL,
+    normalized_name VARCHAR(500) NOT NULL,
+    language VARCHAR(16) NOT NULL DEFAULT 'en',
+    source VARCHAR(40) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT landmark_place_alias_unique
+        UNIQUE (canonical_place_id, normalized_name, language, source)
+);
+CREATE INDEX IF NOT EXISTS landmark_place_alias_name_index
+    ON landmark_place_aliases (normalized_name text_pattern_ops);
+
+CREATE TABLE IF NOT EXISTS landmark_search_areas (
+    cache_key VARCHAR(64) PRIMARY KEY,
+    area_kind VARCHAR(40) NOT NULL,
+    query_text VARCHAR(500) NOT NULL DEFAULT '',
+    language VARCHAR(16) NOT NULL DEFAULT 'en',
+    south DOUBLE PRECISION NULL,
+    west DOUBLE PRECISION NULL,
+    north DOUBLE PRECISION NULL,
+    east DOUBLE PRECISION NULL,
+    request_payload JSONB NOT NULL,
+    response_payload JSONB NOT NULL,
+    fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    CONSTRAINT landmark_search_areas_valid_bounds
+        CHECK (south IS NULL OR north IS NULL OR south <= north)
+);
+CREATE INDEX IF NOT EXISTS landmark_search_areas_expiry_index
+    ON landmark_search_areas (expires_at);
+CREATE INDEX IF NOT EXISTS landmark_search_areas_bounds_index
+    ON landmark_search_areas (south, west, north, east);
+
+CREATE TABLE IF NOT EXISTS landmark_merge_candidates (
+    id UUID PRIMARY KEY,
+    left_place_id UUID NOT NULL
+        REFERENCES landmark_places(id) ON DELETE CASCADE,
+    right_place_id UUID NOT NULL
+        REFERENCES landmark_places(id) ON DELETE CASCADE,
+    distance_meters DOUBLE PRECISION NOT NULL CHECK (distance_meters >= 0),
+    confidence NUMERIC(4,3) NULL CHECK (confidence BETWEEN 0 AND 1),
+    evidence JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'merged', 'separate', 'rejected')),
+    reviewed_at TIMESTAMPTZ NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT landmark_merge_pair_order CHECK (left_place_id < right_place_id),
+    CONSTRAINT landmark_merge_pair_unique UNIQUE (left_place_id, right_place_id)
+);
+CREATE INDEX IF NOT EXISTS landmark_merge_candidates_status_index
+    ON landmark_merge_candidates (status, created_at);
+
+CREATE TABLE IF NOT EXISTS legacy_attraction_partner_reviews (
+    id BIGSERIAL PRIMARY KEY,
+    partner_id BIGINT NOT NULL UNIQUE,
+    reviewed_by BIGINT NOT NULL,
+    approved_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    decisions JSONB NOT NULL,
+    mapped_listing_count INTEGER NOT NULL DEFAULT 0 CHECK (mapped_listing_count >= 0),
+    omitted_listing_count INTEGER NOT NULL DEFAULT 0 CHECK (omitted_listing_count >= 0),
+    CONSTRAINT legacy_attraction_reviews_partner_foreign
+        FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE RESTRICT,
+    CONSTRAINT legacy_attraction_reviews_admin_foreign
+        FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS attraction_visit_counts (
+    attraction_id VARCHAR(64) NOT NULL PRIMARY KEY,
+    visit_count BIGINT NOT NULL DEFAULT 0 CHECK (visit_count >= 0),
+    CONSTRAINT attraction_visit_counts_attraction_foreign
+        FOREIGN KEY (attraction_id) REFERENCES tourist_monuments(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS attraction_visit_dedup (
+    attraction_id VARCHAR(64) NOT NULL,
+    visitor_hash CHAR(64) NOT NULL,
+    counted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (attraction_id, visitor_hash),
+    CONSTRAINT attraction_visit_dedup_attraction_foreign
+        FOREIGN KEY (attraction_id) REFERENCES tourist_monuments(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS attraction_visit_dedup_counted_at_index
+    ON attraction_visit_dedup (counted_at);
 
 CREATE TABLE IF NOT EXISTS offers (
     id VARCHAR(64) NOT NULL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
+    title_ar VARCHAR(255) NOT NULL DEFAULT '',
     location VARCHAR(255) NOT NULL,
+    city_ar VARCHAR(255) NOT NULL DEFAULT '',
     country VARCHAR(255) NOT NULL,
+    country_ar VARCHAR(255) NOT NULL DEFAULT '',
     destination_code VARCHAR(10) NOT NULL,
     description TEXT NOT NULL,
+    description_ar TEXT NOT NULL DEFAULT '',
     image_url VARCHAR(2048) NOT NULL,
     price_per_person DECIMAL(10,2) NOT NULL,
     flight_price_per_person DECIMAL(10,2) NOT NULL,
@@ -192,6 +353,9 @@ CREATE TABLE IF NOT EXISTS offers (
     rating DECIMAL(3,2) NOT NULL DEFAULT 0,
     review_count INTEGER NOT NULL DEFAULT 0,
     highlights JSONB NOT NULL,
+    highlights_ar JSONB NOT NULL DEFAULT '[]'::jsonb,
+    flight_listing_id BIGINT NULL
+        REFERENCES partner_listings(id) ON DELETE SET NULL,
     is_featured BOOLEAN NOT NULL DEFAULT FALSE,
     category VARCHAR(40) NOT NULL DEFAULT 'city',
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -199,12 +363,21 @@ CREATE TABLE IF NOT EXISTS offers (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE offers
+    ADD COLUMN IF NOT EXISTS title_ar VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS city_ar VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS country_ar VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS description_ar TEXT NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS highlights_ar JSONB NOT NULL DEFAULT '[]'::jsonb;
 CREATE INDEX IF NOT EXISTS offers_active_order_index ON offers (is_active, is_featured, sort_order);
+CREATE INDEX IF NOT EXISTS offers_flight_listing_index ON offers (flight_listing_id);
 
 CREATE TABLE IF NOT EXISTS offer_catalog_metadata (
     offer_id VARCHAR(64) NOT NULL PRIMARY KEY,
     badge VARCHAR(100) NOT NULL DEFAULT '',
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT offer_catalog_metadata_offer_foreign
+        FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE
 );
 
 INSERT INTO offers (
@@ -266,6 +439,94 @@ INSERT INTO offers (
  420, 180, 60, 4, 4.7, 1230, jsonb_build_array('Siwa Oasis', 'Salt Lakes', 'Desert Sunset'), FALSE, 'desert', 13)
 ON CONFLICT (id) DO NOTHING;
 
+UPDATE offers SET
+    title_ar = CASE id
+        WHEN 'istanbul-dream' THEN 'حلم إسطنبول'
+        WHEN 'bali-serenity' THEN 'هدوء بالي'
+        WHEN 'paris-romance' THEN 'رومانسية باريس'
+        WHEN 'dubai-luxury' THEN 'دبي الفاخرة'
+        WHEN 'maldives-escape' THEN 'هروب المالديف'
+        WHEN 'tokyo-explorer' THEN 'استكشاف طوكيو'
+        WHEN 'cairo-pharaohs' THEN 'القاهرة والأهرامات'
+        WHEN 'tunis-carthage' THEN 'تونس وقرطاج'
+        WHEN 'jeddah-red-sea' THEN 'هروب جدة على البحر الأحمر'
+        WHEN 'tripoli-heritage' THEN 'عطلة تراث طرابلس'
+        WHEN 'leptis-magna-discovery' THEN 'اكتشاف لبدة الكبرى'
+        WHEN 'benghazi-green-mountain' THEN 'بنغازي والجبل الأخضر'
+        WHEN 'siwa-desert-oasis' THEN 'واحة سيوة الصحراوية'
+        ELSE title_ar
+    END,
+    city_ar = CASE id
+        WHEN 'istanbul-dream' THEN 'إسطنبول'
+        WHEN 'bali-serenity' THEN 'بالي'
+        WHEN 'paris-romance' THEN 'باريس'
+        WHEN 'dubai-luxury' THEN 'دبي'
+        WHEN 'maldives-escape' THEN 'ماليه'
+        WHEN 'tokyo-explorer' THEN 'طوكيو'
+        WHEN 'cairo-pharaohs' THEN 'القاهرة'
+        WHEN 'tunis-carthage' THEN 'تونس'
+        WHEN 'jeddah-red-sea' THEN 'جدة'
+        WHEN 'tripoli-heritage' THEN 'طرابلس'
+        WHEN 'leptis-magna-discovery' THEN 'الخمس'
+        WHEN 'benghazi-green-mountain' THEN 'بنغازي'
+        WHEN 'siwa-desert-oasis' THEN 'سيوة'
+        ELSE city_ar
+    END,
+    country_ar = CASE id
+        WHEN 'istanbul-dream' THEN 'تركيا'
+        WHEN 'bali-serenity' THEN 'إندونيسيا'
+        WHEN 'paris-romance' THEN 'فرنسا'
+        WHEN 'dubai-luxury' THEN 'الإمارات'
+        WHEN 'maldives-escape' THEN 'المالديف'
+        WHEN 'tokyo-explorer' THEN 'اليابان'
+        WHEN 'cairo-pharaohs' THEN 'مصر'
+        WHEN 'tunis-carthage' THEN 'تونس'
+        WHEN 'jeddah-red-sea' THEN 'السعودية'
+        WHEN 'tripoli-heritage' THEN 'ليبيا'
+        WHEN 'leptis-magna-discovery' THEN 'ليبيا'
+        WHEN 'benghazi-green-mountain' THEN 'ليبيا'
+        WHEN 'siwa-desert-oasis' THEN 'مصر'
+        ELSE country_ar
+    END,
+    description_ar = CASE id
+        WHEN 'istanbul-dream' THEN 'اكتشف القصور التاريخية والمساجد والأسواق ومضيق البوسفور.'
+        WHEN 'bali-serenity' THEN 'استمتع بالشواطئ الهادئة والمعابد وحقول الأرز وغروب الشمس على الجزيرة.'
+        WHEN 'paris-romance' THEN 'اكتشف المتاحف والتنزه على ضفاف النهر والمقاهي المحلية ومعالم المدينة.'
+        WHEN 'dubai-luxury' THEN 'اجمع بين العمارة الحديثة وتجارب الصحراء والأمسيات على الواجهة البحرية.'
+        WHEN 'maldives-escape' THEN 'استرخِ بين الشعاب المرجانية والمياه الصافية والإقامة الهادئة في الجزر.'
+        WHEN 'tokyo-explorer' THEN 'استكشف المعابد التقليدية والشوارع المضيئة وأسواق الأطعمة المحلية.'
+        WHEN 'cairo-pharaohs' THEN 'قف بجوار أهرامات الجيزة، وتجول في خان الخليلي، واستمتع برحلة نيلية عند الغروب.'
+        WHEN 'tunis-carthage' THEN 'تجول في أزقة المدينة العتيقة والآثار الرومانية وقرية سيدي بوسعيد الزرقاء والبيضاء.'
+        WHEN 'jeddah-red-sea' THEN 'استمتع بالكورنيش التاريخي والبلد والأنشطة البحرية في البحر الأحمر قرب المدينة.'
+        WHEN 'tripoli-heritage' THEN 'تجول في المدينة القديمة ومتحف السرايا الحمراء والقوس الروماني لماركوس أوريليوس.'
+        WHEN 'leptis-magna-discovery' THEN 'استكشف مدينة لبدة الرومانية المحفوظة جيداً على البحر المتوسط، ثم زر صبراتة.'
+        WHEN 'benghazi-green-mountain' THEN 'استمتع بأجواء المدينة الساحلية والرحلات إلى آثار قورينا ومرفأ أبولونيا.'
+        WHEN 'siwa-desert-oasis' THEN 'اكتشف بساتين النخيل والبحيرات المالحة والينابيع الحارة وغروب الصحراء الهادئ.'
+        ELSE description_ar
+    END,
+    highlights_ar = CASE id
+        WHEN 'istanbul-dream' THEN jsonb_build_array('الجامع الأزرق', 'آيا صوفيا', 'البازار الكبير')
+        WHEN 'bali-serenity' THEN jsonb_build_array('أوبود', 'تانا لوت', 'شاطئ سيمينياك')
+        WHEN 'paris-romance' THEN jsonb_build_array('برج إيفل', 'متحف اللوفر', 'نهر السين')
+        WHEN 'dubai-luxury' THEN jsonb_build_array('برج خليفة', 'رحلة سفاري صحراوية', 'نخلة جميرا')
+        WHEN 'maldives-escape' THEN jsonb_build_array('الغطس', 'رحلة بحرية عند الغروب', 'مشاهدة الدلافين')
+        WHEN 'tokyo-explorer' THEN jsonb_build_array('معبر شيبويا', 'معبد سينسو-جي', 'جبل فوجي')
+        WHEN 'cairo-pharaohs' THEN jsonb_build_array('أهرامات الجيزة', 'خان الخليلي', 'رحلة نيلية')
+        WHEN 'tunis-carthage' THEN jsonb_build_array('سيدي بوسعيد', 'قرطاج', 'مدينة تونس العتيقة')
+        WHEN 'jeddah-red-sea' THEN jsonb_build_array('البلد', 'الكورنيش', 'الغوص في البحر الأحمر')
+        WHEN 'tripoli-heritage' THEN jsonb_build_array('متحف السرايا الحمراء', 'المدينة القديمة', 'قوس ماركوس أوريليوس')
+        WHEN 'leptis-magna-discovery' THEN jsonb_build_array('لبدة الكبرى', 'صبراتة', 'ساحل البحر المتوسط')
+        WHEN 'benghazi-green-mountain' THEN jsonb_build_array('قورينا', 'أبولونيا', 'كورنيش بنغازي')
+        WHEN 'siwa-desert-oasis' THEN jsonb_build_array('واحة سيوة', 'البحيرات المالحة', 'غروب الصحراء')
+        ELSE highlights_ar
+    END
+WHERE id IN (
+    'istanbul-dream', 'bali-serenity', 'paris-romance', 'dubai-luxury',
+    'maldives-escape', 'tokyo-explorer', 'cairo-pharaohs', 'tunis-carthage',
+    'jeddah-red-sea', 'tripoli-heritage', 'leptis-magna-discovery',
+    'benghazi-green-mountain', 'siwa-desert-oasis'
+);
+
 CREATE TABLE IF NOT EXISTS trips (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -292,7 +553,11 @@ CREATE TABLE IF NOT EXISTS trips (
     status VARCHAR(30) NOT NULL DEFAULT 'upcoming',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT trips_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT trips_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT trips_partner_id_foreign
+        FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE SET NULL,
+    CONSTRAINT trips_partner_listing_id_foreign
+        FOREIGN KEY (partner_listing_id) REFERENCES partner_listings(id) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS trips_user_id_index ON trips (user_id);
 CREATE INDEX IF NOT EXISTS trips_partner_id_index ON trips (partner_id);
@@ -337,7 +602,11 @@ CREATE TABLE IF NOT EXISTS bookings (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT bookings_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT bookings_partner_listing_id_foreign
-        FOREIGN KEY (partner_listing_id) REFERENCES partner_listings(id) ON DELETE RESTRICT
+        FOREIGN KEY (partner_listing_id) REFERENCES partner_listings(id) ON DELETE RESTRICT,
+    CONSTRAINT bookings_partner_id_foreign
+        FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE SET NULL,
+    CONSTRAINT bookings_trip_id_foreign
+        FOREIGN KEY (trip_id) REFERENCES trips(id) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS bookings_user_id_index ON bookings (user_id);
 CREATE INDEX IF NOT EXISTS bookings_partner_id_index ON bookings (partner_id);
@@ -357,7 +626,11 @@ CREATE TABLE IF NOT EXISTS transfers (
     status VARCHAR(50) NOT NULL DEFAULT 'confirmed',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT transfers_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT transfers_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT transfers_partner_id_foreign
+        FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE SET NULL,
+    CONSTRAINT transfers_partner_listing_id_foreign
+        FOREIGN KEY (partner_listing_id) REFERENCES partner_listings(id) ON DELETE SET NULL
 );
 CREATE INDEX IF NOT EXISTS transfers_user_id_index ON transfers (user_id);
 CREATE INDEX IF NOT EXISTS transfers_partner_id_index ON transfers (partner_id);
@@ -378,3 +651,24 @@ CREATE TABLE IF NOT EXISTS api_tokens (
     CONSTRAINT api_tokens_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS api_tokens_user_id_index ON api_tokens (user_id);
+
+CREATE TABLE IF NOT EXISTS hotel_destinations (
+    destination_type VARCHAR(16) NOT NULL
+        CHECK (destination_type IN ('city', 'zone', 'country')),
+    destination_code VARCHAR(32) NOT NULL,
+    parent_code VARCHAR(32) NOT NULL DEFAULT '',
+    name_en VARCHAR(255) NOT NULL DEFAULT '',
+    name_ar VARCHAR(255) NOT NULL DEFAULT '',
+    country_code VARCHAR(3) NOT NULL DEFAULT '',
+    country_name_en VARCHAR(255) NOT NULL DEFAULT '',
+    country_name_ar VARCHAR(255) NOT NULL DEFAULT '',
+    latitude DOUBLE PRECISION NULL CHECK (latitude BETWEEN -90 AND 90),
+    longitude DOUBLE PRECISION NULL CHECK (longitude BETWEEN -180 AND 180),
+    search_text TEXT NOT NULL DEFAULT '',
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (destination_type, destination_code, parent_code)
+);
+CREATE INDEX IF NOT EXISTS hotel_destinations_search_trgm_index
+    ON hotel_destinations USING GIN (search_text gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS hotel_destinations_type_name_index
+    ON hotel_destinations (destination_type, LOWER(name_en));

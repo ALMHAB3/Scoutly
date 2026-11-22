@@ -34,7 +34,10 @@ import java.util.regex.Pattern;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
@@ -44,7 +47,7 @@ public class PartnerController {
     private static final Logger LOG = LoggerFactory.getLogger(PartnerController.class);
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final List<String> LISTING_TYPES =
-            List.of("flight", "hotel", "car", "attraction", "transfer", "package");
+            List.of("flight", "hotel", "car", "transfer", "package");
     private static final Map<String, LocationMetadata> LOCATIONS = Map.ofEntries(
             Map.entry("Tripoli", new LocationMetadata("MJI", "Libya", "Western Libya")),
             Map.entry("Misrata", new LocationMetadata("MRA", "Libya", "Central Libya")),
@@ -61,14 +64,29 @@ public class PartnerController {
     private final JdbcTemplate jdbc;
     private final ProfilePhotoStorage imageStorage;
     private final GooglePlacesRatingSync googlePlacesRatingSync;
+    private final AirportDirectoryService airportDirectoryService;
+    private final DuffelFlightService duffelFlightService;
+    private final LiteApiHotelService liteApiHotelService;
+    private final HotelDestinationCatalogService hotelDestinationCatalogService;
+    private final UnifiedInventoryService unifiedInventoryService;
 
     public PartnerController(
             JdbcTemplate jdbc,
             ProfilePhotoStorage imageStorage,
-            GooglePlacesRatingSync googlePlacesRatingSync) {
+            GooglePlacesRatingSync googlePlacesRatingSync,
+            AirportDirectoryService airportDirectoryService,
+            DuffelFlightService duffelFlightService,
+            LiteApiHotelService liteApiHotelService,
+            HotelDestinationCatalogService hotelDestinationCatalogService,
+            ExchangeRateService exchangeRateService) {
         this.jdbc = jdbc;
         this.imageStorage = imageStorage;
         this.googlePlacesRatingSync = googlePlacesRatingSync;
+        this.airportDirectoryService = airportDirectoryService;
+        this.duffelFlightService = duffelFlightService;
+        this.liteApiHotelService = liteApiHotelService;
+        this.hotelDestinationCatalogService = hotelDestinationCatalogService;
+        this.unifiedInventoryService = new UnifiedInventoryService(exchangeRateService);
     }
 
     @PostMapping("/partner/hotel-images")
@@ -558,6 +576,7 @@ public class PartnerController {
             @PathVariable String type,
             @RequestParam(required = false) String city) {
         String normalizedType = normalizeListingType(type);
+        String normalizedCity = city == null ? "" : city.trim();
         String hotelReviewJoin = "hotel".equals(normalizedType) ? """
                 LEFT JOIN (
                     SELECT item_id, AVG(rating) AS aggregated_rating,
@@ -578,13 +597,35 @@ public class PartnerController {
                 JOIN partners p ON p.id = l.partner_id AND p.status = 'active'
                 """ + hotelReviewJoin + """
                 WHERE l.type = ? AND l.active = TRUE
-                """ + (city == null || city.isBlank()
+                """ + (normalizedCity.isEmpty()
                         ? " ORDER BY l.updated_at DESC"
-                        : " AND (LOWER(l.city) = LOWER(?) OR l.city = '')"
-                                + " ORDER BY l.updated_at DESC");
-        List<Map<String, Object>> rows = city == null || city.isBlank()
+                        : "car".equals(normalizedType)
+                                ? """
+                                  AND (
+                                      LOWER(l.city) LIKE ?
+                                      OR LOWER(COALESCE(l.attributes ->> 'pickup_location', '')) LIKE ?
+                                      OR LOWER(COALESCE(l.attributes ->> 'district', '')) LIKE ?
+                                      OR LOWER(COALESCE(l.attributes ->> 'neighborhood', '')) LIKE ?
+                                      OR LOWER(COALESCE(l.attributes ->> 'landmark', '')) LIKE ?
+                                  )
+                                  ORDER BY l.updated_at DESC
+                                  """
+                                : " AND (LOWER(l.city) = LOWER(?) OR l.city = '')"
+                                        + " ORDER BY l.updated_at DESC");
+        String locationPattern =
+                "%" + normalizedCity.toLowerCase(Locale.ROOT) + "%";
+        List<Map<String, Object>> rows = normalizedCity.isEmpty()
                 ? jdbc.queryForList(sql, normalizedType)
-                : jdbc.queryForList(sql, normalizedType, city.trim());
+                : "car".equals(normalizedType)
+                        ? jdbc.queryForList(
+                                sql,
+                                normalizedType,
+                                locationPattern,
+                                locationPattern,
+                                locationPattern,
+                                locationPattern,
+                                locationPattern)
+                        : jdbc.queryForList(sql, normalizedType, normalizedCity);
         return Map.of("items", rows.stream()
                 .map(row -> publicListing(row, normalizedType))
                 .toList());
@@ -593,18 +634,99 @@ public class PartnerController {
     @GetMapping("/airports/search")
     public Map<String, Object> searchAirports(
             @RequestParam(defaultValue = "") String query) {
-        String normalizedQuery = query.trim().toLowerCase(Locale.ROOT);
-        String pattern = "%" + normalizedQuery + "%";
-        List<Map<String, Object>> airports = jdbc.queryForList("""
-                SELECT code, city, airport_name, country, region
-                FROM airports
-                WHERE ? = '' OR LOWER(code) LIKE ? OR LOWER(city) LIKE ?
-                      OR LOWER(airport_name) LIKE ? OR LOWER(country) LIKE ?
-                      OR LOWER(region) LIKE ?
-                ORDER BY city, code
-                LIMIT 50
-                """, normalizedQuery, pattern, pattern, pattern, pattern, pattern);
-        return Map.of("airports", airports);
+        return airportDirectoryService.search(query);
+    }
+
+    @GetMapping("/flights/search/flexible")
+    public Map<String, Object> searchFlexibleFlights(
+            @RequestParam String origin,
+            @RequestParam String destination,
+            @RequestParam String months,
+            @RequestParam(name = "trip_type", defaultValue = "one_way") String tripType,
+            @RequestParam(name = "trip_duration_days", defaultValue = "7") int tripDurationDays,
+            @RequestParam(defaultValue = "1") int adults,
+            @RequestParam(name = "seat_class", defaultValue = "economy") String seatClass,
+            @RequestParam(name = "weekends_only", defaultValue = "false") boolean weekendsOnly) {
+        String originCode = origin.trim().toUpperCase(Locale.ROOT);
+        String destinationCode = destination.trim().toUpperCase(Locale.ROOT);
+        if (!originCode.matches("[A-Z0-9]{3}")
+                || !destinationCode.matches("[A-Z0-9]{3}")
+                || originCode.equals(destinationCode)
+                || adults < 1 || adults > 9) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Invalid flight search parameters");
+        }
+        if (!Set.of("one_way", "round_trip").contains(tripType)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid trip_type");
+        }
+        boolean roundTrip = "round_trip".equals(tripType);
+        if (tripDurationDays < 1 || tripDurationDays > 60) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "trip_duration_days must be between 1 and 60");
+        }
+        if (weekendsOnly && tripDurationDays != 2) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Weekend trips must use a 2-day duration");
+        }
+        String normalizedClass = seatClass.trim().toLowerCase(Locale.ROOT);
+        if (!Set.of("economy", "business", "first").contains(normalizedClass)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported seat_class");
+        }
+
+        List<YearMonth> selectedMonths = parseFlexibleFlightMonths(months);
+        LocalDate today = LocalDate.now();
+        List<LocalDate> departureDates = new ArrayList<>();
+        for (YearMonth month : selectedMonths) {
+            for (int day = 1; day <= month.lengthOfMonth(); day++) {
+                LocalDate departure = month.atDay(day);
+                if (!departure.isBefore(today)
+                        && (!weekendsOnly
+                            || departure.getDayOfWeek() == java.time.DayOfWeek.FRIDAY)) {
+                    departureDates.add(departure);
+                }
+            }
+        }
+        if (departureDates.isEmpty()) {
+            return Map.of(
+                    "flights", List.of(),
+                    "months", selectedMonths.stream().map(YearMonth::toString).toList(),
+                    "warnings", List.of(),
+                    "sources", Map.of("partner", 0L, "duffel", 0L));
+        }
+
+        UnifiedInventoryService.SearchOutcome merged = unifiedInventoryService.merge(
+                "flight",
+                () -> partnerFlightListings(
+                        originCode,
+                        destinationCode,
+                        Set.copyOf(departureDates),
+                        adults,
+                        normalizedClass),
+                () -> {
+                    if (!duffelFlightService.isConfigured()) {
+                        return new UnifiedInventoryService.SourceOutcome(
+                                List.of(), List.of("Duffel flight search is not configured."));
+                    }
+                    DuffelFlightService.SearchOutcome provider =
+                            duffelFlightService.searchFlightsForDatesWithWarnings(
+                                    originCode,
+                                    destinationCode,
+                                    departureDates,
+                                    roundTrip ? tripDurationDays : null,
+                                    adults,
+                                    normalizedClass);
+                    return new UnifiedInventoryService.SourceOutcome(
+                            provider.flights(), provider.warnings());
+                },
+                "Partner flight inventory is temporarily unavailable.",
+                "Duffel flight results are temporarily unavailable.");
+        List<Map<String, Object>> flights = new ArrayList<>(merged.items());
+        flights.sort(Comparator.comparing(flight -> text(flight.get("departure_time"))));
+        return Map.of(
+                "flights", flights,
+                "months", selectedMonths.stream().map(YearMonth::toString).toList(),
+                "warnings", merged.warnings(),
+                "sources", flightSourceCounts(flights));
     }
 
     @GetMapping("/flights/search")
@@ -625,8 +747,10 @@ public class PartnerController {
                     HttpStatus.BAD_REQUEST, "Invalid flight search parameters");
         }
         LocalDate requestedDeparture = parseFlightDate(departureDate, "departure_date");
-        if (returnDate != null && !returnDate.isBlank()
-                && parseFlightDate(returnDate, "return_date").isBefore(requestedDeparture)) {
+        LocalDate requestedReturn = returnDate == null || returnDate.isBlank()
+                ? null
+                : parseFlightDate(returnDate, "return_date");
+        if (requestedReturn != null && requestedReturn.isBefore(requestedDeparture)) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "return_date must not precede departure_date");
         }
@@ -634,6 +758,54 @@ public class PartnerController {
         if (!Set.of("economy", "business", "first").contains(normalizedClass)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported seat_class");
         }
+        UnifiedInventoryService.SearchOutcome merged = unifiedInventoryService.merge(
+                "flight",
+                () -> partnerFlightListings(
+                        originCode,
+                        destinationCode,
+                        Set.of(requestedDeparture),
+                        adults,
+                        normalizedClass),
+                () -> {
+                    if (!duffelFlightService.isConfigured()) {
+                        return new UnifiedInventoryService.SourceOutcome(
+                                List.of(), List.of("Duffel flight search is not configured."));
+                    }
+                    return UnifiedInventoryService.SourceOutcome.of(
+                            duffelFlightService.searchFlights(
+                                    originCode,
+                                    destinationCode,
+                                    requestedDeparture,
+                                    requestedReturn,
+                                    adults,
+                                    normalizedClass));
+                },
+                "Partner flight inventory is temporarily unavailable.",
+                "Duffel flight results are temporarily unavailable.");
+        List<Map<String, Object>> flights = merged.items();
+        return Map.of(
+                "flights", flights,
+                "warnings", merged.warnings(),
+                "sources", flightSourceCounts(flights));
+    }
+
+    private static Map<String, Long> flightSourceCounts(
+            List<Map<String, Object>> flights) {
+        long partner = flights.stream()
+                .filter(flight -> "partner".equals(flight.get("source")))
+                .count();
+        long duffel = flights.stream()
+                .filter(flight -> "duffel".equals(flight.get("source")))
+                .count();
+        return Map.of("partner", partner, "duffel", duffel);
+    }
+
+    private List<Map<String, Object>> partnerFlightListings(
+            String originCode,
+            String destinationCode,
+            Set<LocalDate> departureDates,
+            int adults,
+            String normalizedClass) {
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT l.*, p.name AS partner_name, p.slug AS partner_slug
                 FROM partner_listings l
@@ -650,11 +822,8 @@ public class PartnerController {
                 continue;
             }
             String departureTime = text(details.get("departure_time"));
-            if (departureTime.length() < 10
-                    || !requestedDeparture.equals(
-                            parseFlightDate(departureTime.substring(0, 10), "departure_time"))) {
-                continue;
-            }
+            LocalDate listingDeparture = listingDepartureDate(departureTime);
+            if (listingDeparture == null || !departureDates.contains(listingDeparture)) continue;
             Object rawSeats = details.get("seats_available");
             if (rawSeats != null && intValue(rawSeats) < adults) continue;
             String priceKey = switch (normalizedClass) {
@@ -667,7 +836,48 @@ public class PartnerController {
             if (priceKey != null) flight.put("economy_price", details.get(priceKey));
             flights.add(flight);
         }
-        return Map.of("flights", flights);
+        return flights;
+    }
+
+    private static List<YearMonth> parseFlexibleFlightMonths(String rawMonths) {
+        if (rawMonths == null || rawMonths.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "months is required");
+        }
+        String[] values = rawMonths.split(",");
+        if (values.length > 3) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Select no more than 3 departure months");
+        }
+
+        YearMonth currentMonth = YearMonth.now();
+        YearMonth latestAllowedMonth = currentMonth.plusMonths(12);
+        LinkedHashSet<YearMonth> selected = new LinkedHashSet<>();
+        try {
+            for (String value : values) {
+                YearMonth month = YearMonth.parse(value.trim());
+                if (month.isBefore(currentMonth) || month.isAfter(latestAllowedMonth)) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST, "Departure month is outside the search window");
+                }
+                selected.add(month);
+            }
+        } catch (DateTimeParseException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "months must use YYYY-MM format");
+        }
+        if (selected.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "months is required");
+        }
+        return selected.stream().sorted().toList();
+    }
+
+    private static LocalDate listingDepartureDate(String value) {
+        if (value == null || value.length() < 10) return null;
+        try {
+            return LocalDate.parse(value.substring(0, 10));
+        } catch (DateTimeParseException exception) {
+            return null;
+        }
     }
 
     private static LocalDate parseFlightDate(String value, String field) {
@@ -688,46 +898,183 @@ public class PartnerController {
         }
     }
 
-    @GetMapping("/hotels/locations")
-    public Map<String, Object> hotelLocations(
-            @RequestParam String query) {
-        String normalizedQuery = query.trim().toLowerCase(Locale.ROOT);
-        if (normalizedQuery.length() < 2) return Map.of("suggestions", List.of());
-        String pattern = "%" + normalizedQuery + "%";
-        List<Map<String, Object>> rows = jdbc.queryForList("""
-                SELECT l.city, l.title, l.attributes
-                FROM partner_listings l
-                JOIN partners p ON p.id = l.partner_id AND p.status = 'active'
-                WHERE l.type = 'hotel' AND l.active = TRUE
-                  AND (LOWER(l.city) LIKE ? OR LOWER(l.title) LIKE ?
-                       OR LOWER(COALESCE(l.attributes ->> 'address', '')) LIKE ?
-                       OR LOWER(COALESCE(l.attributes ->> 'district', '')) LIKE ?
-                       OR LOWER(COALESCE(l.attributes ->> 'neighborhood', '')) LIKE ?
-                       OR LOWER(COALESCE(l.attributes ->> 'landmark', '')) LIKE ?)
-                ORDER BY l.city, l.title
-                LIMIT 50
-                """, pattern, pattern, pattern, pattern, pattern, pattern);
-        Set<String> suggestions = new java.util.LinkedHashSet<>();
-        for (Map<String, Object> row : rows) {
-            String city = text(row.get("city")).trim();
-            Map<String, Object> listingAttributes = attributes(row.get("attributes"));
-            addLocationSuggestion(suggestions, city, normalizedQuery);
-            for (String key : List.of("district", "neighborhood", "landmark", "address")) {
-                addLocationSuggestion(
-                        suggestions, text(listingAttributes.get(key)), normalizedQuery);
-            }
-            addLocationSuggestion(suggestions, text(row.get("title")), normalizedQuery);
-        }
-        return Map.of("suggestions", suggestions.stream().limit(12).toList());
+    @GetMapping("/hotels/destinations/suggest")
+    public Map<String, Object> suggestHotelDestinations(
+            @RequestParam(name = "q", defaultValue = "") String query,
+            @RequestParam(defaultValue = "en") String language) {
+        return Map.of(
+                "suggestions",
+                hotelDestinationCatalogService.suggest(query, language));
+    }
+
+    public Map<String, Object> searchHotels(
+            String city,
+            String checkIn,
+            String checkOut,
+            int rooms,
+            int guests,
+            String currency,
+            BigDecimal priceMin,
+            BigDecimal priceMax,
+            BigDecimal ratingMin,
+            String amenities,
+            String roomType,
+            String preferences) {
+        return searchHotelsEndpoint(
+                city, checkIn, checkOut, rooms, guests, currency, priceMin,
+                priceMax, ratingMin, amenities, roomType, preferences,
+                null, null, null, null, null);
     }
 
     @GetMapping("/hotels/search")
-    public Map<String, Object> searchHotels(
-            @RequestParam(defaultValue = "") String city) {
-        List<Map<String, Object>> rows = hotelSearchRows(city.trim());
-        return Map.of("hotels", rows.stream()
-                .map(row -> publicListing(row, "hotel"))
-                .toList());
+    public Map<String, Object> searchHotelsEndpoint(
+            @RequestParam(defaultValue = "") String city,
+            @RequestParam(name = "check_in", required = false) String checkIn,
+            @RequestParam(name = "check_out", required = false) String checkOut,
+            @RequestParam(defaultValue = "1") int rooms,
+            @RequestParam(defaultValue = "2") int guests,
+            @RequestParam(defaultValue = "USD") String currency,
+            @RequestParam(name = "price_min", required = false) BigDecimal priceMin,
+            @RequestParam(name = "price_max", required = false) BigDecimal priceMax,
+            @RequestParam(name = "rating_min", required = false) BigDecimal ratingMin,
+            @RequestParam(required = false) String amenities,
+            @RequestParam(name = "room_type", required = false) String roomType,
+            @RequestParam(required = false) String preferences,
+            @RequestParam(name = "destination_code", required = false)
+                    String destinationCode,
+            @RequestParam(name = "lat", required = false) Double latitude,
+            @RequestParam(name = "lon", required = false) Double longitude,
+            @RequestParam(name = "country_code", required = false) String countryCode,
+            @RequestParam(name = "place_id", required = false) String placeId) {
+        if (rooms < 1 || rooms > 10 || guests < 1 || guests > 20) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Invalid room or guest count");
+        }
+        if ((latitude == null) != (longitude == null)
+                || (latitude != null && (!validCoordinate(latitude, -90, 90)
+                || !validCoordinate(longitude, -180, 180)))) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Invalid destination coordinates");
+        }
+        String normalizedDestinationCode = destinationCode == null
+                ? "" : destinationCode.trim();
+        if (!normalizedDestinationCode.isEmpty()
+                && !normalizedDestinationCode.matches("[A-Za-z0-9_-]{1,32}")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Invalid destination code");
+        }
+        String normalizedCountryCode = countryCode == null
+                ? "" : countryCode.trim().toUpperCase(Locale.ROOT);
+        if (!normalizedCountryCode.isEmpty()
+                && !normalizedCountryCode.matches("[A-Z]{2}")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Invalid destination country code");
+        }
+        String normalizedPlaceId = placeId == null ? "" : placeId.trim();
+        if (normalizedPlaceId.length() > 256) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Invalid destination place ID");
+        }
+        String normalizedCurrency = UnifiedInventoryService.validateCurrency(currency);
+        UnifiedInventoryService.HotelFilters hotelFilters =
+                unifiedInventoryService.validateFilters(
+                        new UnifiedInventoryService.HotelFilters(
+                                normalizedCurrency,
+                                priceMin,
+                                priceMax,
+                                ratingMin,
+                                amenities,
+                                roomType,
+                                preferences));
+        String normalizedCity = city.trim();
+        LocalDate parsedCheckIn = checkIn == null || checkIn.isBlank()
+                ? null
+                : parseFlightDate(checkIn, "check_in");
+        LocalDate parsedCheckOut = checkOut == null || checkOut.isBlank()
+                ? null
+                : parseFlightDate(checkOut, "check_out");
+        if ((parsedCheckIn == null) != (parsedCheckOut == null)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Both check_in and check_out are required");
+        }
+        if (parsedCheckIn != null) {
+            long nights = java.time.temporal.ChronoUnit.DAYS.between(
+                    parsedCheckIn, parsedCheckOut);
+            if (!parsedCheckOut.isAfter(parsedCheckIn) || nights > 99
+                    || parsedCheckIn.isAfter(LocalDate.now().plusDays(330))) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Invalid hotel stay dates");
+            }
+        }
+        List<UnifiedInventoryService.ProviderSearch> hotelProviders = List.of(
+                new UnifiedInventoryService.ProviderSearch(
+                        "liteapi",
+                        "LiteAPI hotel inventory is temporarily unavailable.",
+                        () -> liteApiHotelService.searchHotels(
+                                normalizedCity,
+                                parsedCheckIn,
+                                parsedCheckOut,
+                                rooms,
+                                guests,
+                                normalizedCurrency,
+                                latitude,
+                                longitude,
+                                normalizedCountryCode)));
+        UnifiedInventoryService.SearchOutcome merged = unifiedInventoryService.merge(
+                "hotel",
+                () -> hotelSearchRows(normalizedCity).stream()
+                        .map(row -> publicListing(row, "hotel"))
+                        .toList(),
+                hotelProviders,
+                "Partner hotel inventory is temporarily unavailable.");
+        UnifiedInventoryService.FilterOutcome filtered =
+                unifiedInventoryService.filterHotels(
+                        merged.items(), hotelFilters);
+        List<String> warnings = new ArrayList<>(merged.warnings());
+        warnings.addAll(filtered.warnings());
+        long partnerCount = filtered.hotels().stream()
+                .filter(hotel -> "partner".equals(hotel.get("source"))).count();
+        long liteApiCount = filtered.hotels().stream()
+                .filter(hotel -> "liteapi".equals(hotel.get("source"))).count();
+        List<String> distinctWarnings = warnings.stream().distinct().toList();
+        boolean hasProviderFailure = merged.providerStatuses().values().stream()
+                .anyMatch(status -> "error".equals(status)
+                        || "unavailable".equals(status));
+        String searchStatus = !filtered.hotels().isEmpty()
+                ? distinctWarnings.isEmpty() ? "success" : "partial"
+                : hasProviderFailure ? "unavailable" : "empty";
+        String reason = distinctWarnings.isEmpty()
+                ? filtered.hotels().isEmpty()
+                        ? "No hotels are available for this destination and stay dates."
+                        : ""
+                : distinctWarnings.getFirst();
+        Map<String, Object> destination = new LinkedHashMap<>();
+        destination.put("city", normalizedCity);
+        if (!normalizedCountryCode.isBlank()) {
+            destination.put("country_code", normalizedCountryCode);
+        }
+        if (!normalizedPlaceId.isBlank()) destination.put("place_id", normalizedPlaceId);
+        if (latitude != null) destination.put("latitude", latitude);
+        if (longitude != null) destination.put("longitude", longitude);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("hotels", filtered.hotels());
+        response.put("sources", Map.of(
+                "partner", partnerCount,
+                "liteapi", liteApiCount));
+        response.put("warnings", distinctWarnings);
+        response.put("status", searchStatus);
+        response.put("reason", reason);
+        response.put("provider_statuses", merged.providerStatuses());
+        response.put("provider_diagnostics", merged.providerDiagnostics());
+        response.put("destination", destination);
+        response.put("stay", Map.of(
+                "check_in", parsedCheckIn == null ? "" : parsedCheckIn.toString(),
+                "check_out", parsedCheckOut == null ? "" : parsedCheckOut.toString(),
+                "rooms", rooms,
+                "guests", guests,
+                "currency", normalizedCurrency));
+        return response;
     }
 
     @GetMapping("/hotels/nearby")
@@ -804,18 +1151,18 @@ public class PartnerController {
         if (normalizedQuery.length() < 2) return Map.of("suggestions", List.of());
         String pattern = "%" + normalizedQuery + "%";
         List<Map<String, Object>> rows = jdbc.queryForList("""
-                SELECT l.city, l.title, l.attributes
+                SELECT l.city, l.attributes
                 FROM partner_listings l
                 JOIN partners p ON p.id = l.partner_id AND p.status = 'active'
                 WHERE l.type = 'car' AND l.active = TRUE
-                  AND (LOWER(l.city) LIKE ? OR LOWER(l.title) LIKE ?
+                  AND (LOWER(l.city) LIKE ?
                        OR LOWER(COALESCE(l.attributes ->> 'pickup_location', '')) LIKE ?
                        OR LOWER(COALESCE(l.attributes ->> 'district', '')) LIKE ?
                        OR LOWER(COALESCE(l.attributes ->> 'neighborhood', '')) LIKE ?
                        OR LOWER(COALESCE(l.attributes ->> 'landmark', '')) LIKE ?)
-                ORDER BY l.city, l.title
+                ORDER BY l.city
                 LIMIT 50
-                """, pattern, pattern, pattern, pattern, pattern, pattern);
+                """, pattern, pattern, pattern, pattern, pattern);
         Set<String> suggestions = new java.util.LinkedHashSet<>();
         for (Map<String, Object> row : rows) {
             String city = text(row.get("city")).trim();
@@ -826,7 +1173,6 @@ public class PartnerController {
                 addLocationSuggestion(
                         suggestions, text(listingAttributes.get(key)), normalizedQuery);
             }
-            addLocationSuggestion(suggestions, text(row.get("title")), normalizedQuery);
         }
         return Map.of("suggestions", suggestions.stream().limit(12).toList());
     }
@@ -999,29 +1345,56 @@ public class PartnerController {
                     (SELECT COUNT(*) FROM partner_listings
                         WHERE partner_id = ? AND active = TRUE) AS active_listing_count,
                     (SELECT COUNT(*) FROM trips
-                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled')
+                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'
+                          AND EXISTS (SELECT 1 FROM partner_listings l
+                              WHERE l.id = trips.partner_listing_id
+                                AND l.partner_id = trips.partner_id))
                       + (SELECT COUNT(*) FROM bookings
-                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled')
+                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'
+                          AND EXISTS (SELECT 1 FROM partner_listings l
+                              WHERE l.id = bookings.partner_listing_id
+                                AND l.partner_id = bookings.partner_id))
                       + (SELECT COUNT(*) FROM transfers
-                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled')
+                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'
+                          AND EXISTS (SELECT 1 FROM partner_listings l
+                              WHERE l.id = transfers.partner_listing_id
+                                AND l.partner_id = transfers.partner_id))
                         AS reservation_count,
                     (SELECT COUNT(*) FROM users u
                         WHERE u.role = 'customer' AND EXISTS (
                             SELECT 1 FROM trips t
                             WHERE t.partner_id = ? AND t.user_id = u.id
+                              AND EXISTS (SELECT 1 FROM partner_listings l
+                                  WHERE l.id = t.partner_listing_id
+                                    AND l.partner_id = t.partner_id)
                             UNION ALL
                             SELECT 1 FROM bookings b
                             WHERE b.partner_id = ? AND b.user_id = u.id
+                              AND EXISTS (SELECT 1 FROM partner_listings l
+                                  WHERE l.id = b.partner_listing_id
+                                    AND l.partner_id = b.partner_id)
                             UNION ALL
                             SELECT 1 FROM transfers x
                             WHERE x.partner_id = ? AND x.user_id = u.id
+                              AND EXISTS (SELECT 1 FROM partner_listings l
+                                  WHERE l.id = x.partner_listing_id
+                                    AND l.partner_id = x.partner_id)
                         )) AS customer_count,
                     COALESCE((SELECT SUM(total_amount) FROM bookings
-                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'), 0)
+                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'
+                          AND EXISTS (SELECT 1 FROM partner_listings l
+                              WHERE l.id = bookings.partner_listing_id
+                                AND l.partner_id = bookings.partner_id)), 0)
                       + COALESCE((SELECT SUM(price) FROM trips
-                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'), 0)
+                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'
+                          AND EXISTS (SELECT 1 FROM partner_listings l
+                              WHERE l.id = trips.partner_listing_id
+                                AND l.partner_id = trips.partner_id)), 0)
                       + COALESCE((SELECT SUM(price) FROM transfers
-                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'), 0)
+                        WHERE partner_id = ? AND LOWER(status) <> 'cancelled'
+                          AND EXISTS (SELECT 1 FROM partner_listings l
+                              WHERE l.id = transfers.partner_listing_id
+                                AND l.partner_id = transfers.partner_id)), 0)
                         AS booked_value
                 """, partner.id(), partner.id(), partner.id(), partner.id(), partner.id(),
                 partner.id(), partner.id(), partner.id(), partner.id(), partner.id(),
@@ -1161,22 +1534,13 @@ public class PartnerController {
         applyGeneratedAttributes(listingAttributes, type, id, partner, active);
         jdbc.update("""
                 UPDATE partner_listings
-                SET attributes = jsonb_set(COALESCE(attributes, '{}'::jsonb),
-                        '{location_name}', to_jsonb(COALESCE(location_name, '')), TRUE)
-                WHERE id = ? AND partner_id = ?
-                """, id, partner.id());
-        jdbc.update("""
-                UPDATE partner_listings
-                SET attributes = jsonb_set(COALESCE(attributes, '{}'::jsonb),
-                        '{google_maps_url}', to_jsonb(COALESCE(google_maps_url, '')), TRUE),
-                    attributes = jsonb_set(COALESCE(attributes, '{}'::jsonb),
-                        '{place_id}', to_jsonb(COALESCE(place_id, '')), TRUE),
-                    attributes = jsonb_set(COALESCE(attributes, '{}'::jsonb),
-                        '{google_rating}', to_jsonb(google_rating), TRUE),
-                    attributes = jsonb_set(COALESCE(attributes, '{}'::jsonb),
-                        '{google_review_count}', to_jsonb(google_review_count), TRUE),
-                    attributes = jsonb_set(COALESCE(attributes, '{}'::jsonb),
-                        '{tax_and_fees_percentage}', to_jsonb(tax_and_fees_percentage), TRUE)
+                SET attributes = COALESCE(attributes, '{}'::jsonb) || jsonb_build_object(
+                    'location_name', COALESCE(location_name, ''),
+                    'google_maps_url', COALESCE(google_maps_url, ''),
+                    'place_id', COALESCE(place_id, ''),
+                    'google_rating', google_rating,
+                    'google_review_count', google_review_count,
+                    'tax_and_fees_percentage', tax_and_fees_percentage)
                 WHERE id = ? AND partner_id = ?
                 """, id, partner.id());
         googlePlacesRatingSync.refreshAsync(
@@ -1305,7 +1669,8 @@ public class PartnerController {
                         : 0,
                 id, partner.id());
         if (updated != 1) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "This listing is not managed by your partner account");
         }
         if (refreshGoogleRating) {
             googlePlacesRatingSync.refreshAsync(
@@ -1359,11 +1724,23 @@ public class PartnerController {
                 SELECT u.id, u.name, u.email, u.phone, u.created_at,
                     COUNT(reservations.id) AS reservation_count
                 FROM (
-                    SELECT user_id, id FROM trips WHERE partner_id = ?
+                    SELECT user_id, id FROM trips
+                    WHERE partner_id = ? AND EXISTS (
+                        SELECT 1 FROM partner_listings l
+                        WHERE l.id = trips.partner_listing_id
+                          AND l.partner_id = trips.partner_id)
                     UNION ALL
-                    SELECT user_id, id FROM bookings WHERE partner_id = ?
+                    SELECT user_id, id FROM bookings
+                    WHERE partner_id = ? AND EXISTS (
+                        SELECT 1 FROM partner_listings l
+                        WHERE l.id = bookings.partner_listing_id
+                          AND l.partner_id = bookings.partner_id)
                     UNION ALL
-                    SELECT user_id, id FROM transfers WHERE partner_id = ?
+                    SELECT user_id, id FROM transfers
+                    WHERE partner_id = ? AND EXISTS (
+                        SELECT 1 FROM partner_listings l
+                        WHERE l.id = transfers.partner_listing_id
+                          AND l.partner_id = transfers.partner_id)
                 ) reservations
                 JOIN users u ON u.id = reservations.user_id
                 WHERE u.role = 'customer'
@@ -1385,7 +1762,10 @@ public class PartnerController {
                         COALESCE(t.departure_date, t.created_at) AS reservation_date,
                         COALESCE(t.price, 0) AS amount, t.status, t.created_at
                     FROM trips t JOIN users u ON u.id = t.user_id
-                    WHERE t.partner_id = ?
+                    WHERE t.partner_id = ? AND EXISTS (
+                        SELECT 1 FROM partner_listings l
+                        WHERE l.id = t.partner_listing_id
+                          AND l.partner_id = t.partner_id)
                     UNION ALL
                     SELECT CONCAT('booking-', b.id) AS id, b.id AS reservation_id,
                         b.partner_listing_id, b.type,
@@ -1396,7 +1776,10 @@ public class PartnerController {
                         COALESCE(b.total_amount, b.price, 0) AS amount,
                         b.status, b.created_at
                     FROM bookings b JOIN users u ON u.id = b.user_id
-                    WHERE b.partner_id = ?
+                    WHERE b.partner_id = ? AND EXISTS (
+                        SELECT 1 FROM partner_listings l
+                        WHERE l.id = b.partner_listing_id
+                          AND l.partner_id = b.partner_id)
                     UNION ALL
                     SELECT CONCAT('transfer-', x.id) AS id, x.id AS reservation_id,
                         x.partner_listing_id, 'transfer' AS type,
@@ -1406,7 +1789,10 @@ public class PartnerController {
                         x.pickup_time AS reservation_date, x.price AS amount,
                         x.status, x.created_at
                     FROM transfers x JOIN users u ON u.id = x.user_id
-                    WHERE x.partner_id = ?
+                    WHERE x.partner_id = ? AND EXISTS (
+                        SELECT 1 FROM partner_listings l
+                        WHERE l.id = x.partner_listing_id
+                          AND l.partner_id = x.partner_id)
                 ) reservations
                 ORDER BY created_at DESC
                 LIMIT ?
@@ -1436,6 +1822,7 @@ public class PartnerController {
         listing.put("partner_name", partnerName);
         listing.put("city", city);
         listing.put("country", country);
+        listing.put("source", "partner");
         listing.put("description",
                 "flight".equals(type) ? "" : text(row.get("description")));
         listing.put("image_url", "flight".equals(type) ? null : row.get("image_url"));
@@ -1645,7 +2032,8 @@ public class PartnerController {
             listing.put("attributes", listingAttributes);
             return listing;
         } catch (org.springframework.dao.EmptyResultDataAccessException exception) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Listing not found");
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "This listing is not managed by your partner account");
         }
     }
 
@@ -1853,7 +2241,7 @@ public class PartnerController {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
             PreparedStatement statement =
-                    connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                    connection.prepareStatement(sql, new String[]{"id"});
             for (int i = 0; i < args.length; i++) {
                 statement.setObject(i + 1, args[i]);
             }

@@ -273,6 +273,51 @@ class AppLocalizationsEn extends AppLocalizations {
       'Choose a strong password to protect your account';
 
   @override
+  String get resetPasswordTitleLine1 => 'Reset';
+
+  @override
+  String get resetPasswordTitleLine2 => 'Password';
+
+  @override
+  String get resetCodeInputHint => 'Enter the 6-digit reset code';
+
+  @override
+  String get demoPasswordResetNotice =>
+      'Preview demo only: use code 123456. This will not change a real account.';
+
+  @override
+  String get resetCodeInvalid => 'Enter the valid 6-digit reset code';
+
+  @override
+  String get resetPasswordFieldsRequired =>
+      'Enter and confirm your new password';
+
+  @override
+  String get resetPasswordMinLength => 'Use at least 8 characters';
+
+  @override
+  String get resetPasswordMismatch => 'Passwords don\'t match';
+
+  @override
+  String get resetPasswordButton => 'Reset Password';
+
+  @override
+  String get passwordResetSuccessTitle => 'Password reset complete';
+
+  @override
+  String get demoPasswordResetComplete =>
+      'Demo completed. The real account password was not changed.';
+
+  @override
+  String get backToLogin => 'Back to Login';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
   String get saveNewPassword => 'Save Password';
 
   @override
@@ -407,6 +452,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifEmptyTitle => 'No notifications yet';
+
+  @override
+  String get notifEmptyHint => 'Booking and trip updates will appear here.';
+
+  @override
+  String get notifMarkAllRead => 'Mark all read';
+
+  @override
+  String get notifNewSection => 'New';
+
+  @override
+  String get notifEarlierSection => 'Earlier';
+
+  @override
+  String get notifTimeAgoNow => 'Now';
+
+  @override
+  String notifTimeAgoMinutes(Object minutes) {
+    return '${minutes}m ago';
+  }
+
+  @override
+  String notifUnreadCount(Object count) {
+    return '$count unread notifications';
+  }
 
   @override
   String notifTimeAgoHours(Object hours) {
@@ -557,6 +627,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get visaRequired => 'Visa required';
 
   @override
+  String get sampleDataLabel => 'Sample data';
+
+  @override
+  String get destinationInfoUnavailable =>
+      'Weather and visa information is unavailable right now.';
+
+  @override
+  String get destinationInfoPartial =>
+      'Some destination information is unavailable.';
+
+  @override
   String get offlineBannerText => 'You\'re offline — showing saved data';
 
   @override
@@ -621,7 +702,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingSkip => 'Skip';
 
   @override
-  String get chatbotTitle => 'Zen AI Assistant';
+  String get chatbotTitle => 'Zen AI';
 
   @override
   String get chatbotSubtitle => 'Powered by AI';
@@ -898,6 +979,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get flightResults => 'Available Flights';
 
   @override
+  String get flightSelectTitle => 'Select Flight';
+
+  @override
+  String get flightDateLabel => 'Flight Date';
+
+  @override
+  String get flightCalendar => 'Calendar';
+
+  @override
+  String flightAirlinesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count airlines',
+      one: '1 airline',
+      zero: 'No airlines',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get flightFare => 'Fare';
+
+  @override
+  String get flightSeatsLabel => 'Seats';
+
+  @override
+  String get flightPerPerson => 'per person';
+
+  @override
+  String flightDurationShort(int hours, int minutes) {
+    return '${hours}h ${minutes}m';
+  }
+
+  @override
   String get cheapest => 'Cheapest';
 
   @override
@@ -1125,10 +1241,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get carSearchButton => 'Search for a Car';
 
   @override
+  String get carSearchFailed =>
+      'Car search is temporarily unavailable. Please try again.';
+
+  @override
   String get carResults => 'Results';
 
   @override
-  String get carNoResults => 'No cars available';
+  String get carNoResults =>
+      'No partner cars match this location and date range.';
 
   @override
   String carSeatsCount(Object count) {
@@ -1258,7 +1379,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transferNoSuitableRides =>
-      'No rides fit this passenger count. Try fewer passengers.';
+      'No partner transfers match these locations and passenger count.';
 
   @override
   String get transferLocationRequired =>
@@ -1301,7 +1422,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get attractionSearchHint =>
-      'Search for a destination or attraction...';
+      'Search for a city, country or landmark...';
+
+  @override
+  String get attractionCountryFilter => 'Search places by country';
+
+  @override
+  String get attractionCountryLoadError =>
+      'Places could not be loaded. Check your connection and try again.';
+
+  @override
+  String get attractionCityNotFound =>
+      'We couldn\'t find that place. Check the spelling and try again.';
 
   @override
   String get attractionCategoryAll => 'All';
@@ -1333,10 +1465,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get attractionOpenOnMap => 'Open on Map';
 
   @override
-  String get attractionMapComingSoon => 'Map view is coming soon';
-
-  @override
-  String get chatOnlineStatus => 'Connected to AI';
+  String get chatOnlineStatus => 'Connected';
 
   @override
   String get chatHistoryTooltip => 'Chat history';
@@ -1361,7 +1490,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatQuickPromptCheapest => 'Cheapest destinations ✈️';
 
   @override
-  String get chatQuickPromptBudget => '\$1000 budget 💰';
+  String chatQuickPromptBudget(String budget) {
+    return '$budget budget 💰';
+  }
 
   @override
   String get chatQuickPromptIstanbulText =>
@@ -1372,8 +1503,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'What are the cheapest travel destinations from Egypt this month?';
 
   @override
-  String get chatQuickPromptBudgetText =>
-      'A great trip on a \$1000 budget — suggest destinations for me';
+  String chatQuickPromptBudgetText(String budget) {
+    return 'A great trip on a $budget budget — suggest destinations for me';
+  }
 
   @override
   String get chatConnectionError => 'Couldn\'t connect to the AI assistant';
@@ -1404,7 +1536,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatItinerarySave => 'Save Itinerary';
 
   @override
-  String get chatItinerarySavedSuccess => 'Itinerary saved to your trips';
+  String get chatItinerarySavedSuccess =>
+      'Saved in this device\'s chat history';
+
+  @override
+  String get chatItinerarySaveFailed =>
+      'Couldn\'t save this itinerary. Please try again.';
 
   @override
   String chatItineraryFullRequest(Object destination) {
@@ -1436,6 +1573,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flightNoResults => 'No flights available';
+
+  @override
+  String get flightProviderWarning =>
+      'Some flight providers are temporarily unavailable. Available results are shown.';
+
+  @override
+  String get flightFlexibleButton => 'I\'m flexible';
+
+  @override
+  String get flightSelectDates => 'Select dates';
+
+  @override
+  String get flightTripLength => 'How long is your trip?';
+
+  @override
+  String get flightWeekend => 'A weekend';
+
+  @override
+  String get flightWeekendHint =>
+      'Weekend departures are Fridays. Return trips come back Sunday.';
+
+  @override
+  String get flightWeek => 'A week';
+
+  @override
+  String get flightMonth => 'A month';
+
+  @override
+  String get flightOther => 'Other';
+
+  @override
+  String get flightDuration => 'Duration';
+
+  @override
+  String get flightDays => 'days';
+
+  @override
+  String get flightWhenToGo => 'When do you want to go?';
+
+  @override
+  String get flightSelectUpToMonths => 'Select up to 3 months';
+
+  @override
+  String get flightFlexibleSearchLoading =>
+      'Searching flights across your selected months…';
 
   @override
   String flightNoResultsForSearch(
@@ -1483,9 +1665,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get flightSelectedSeats => 'Selected seats';
-
-  @override
-  String get flightDuration => 'Duration';
 
   @override
   String get flightBookingConfirmed => 'Booking Confirmed';
@@ -1542,6 +1721,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get flightTotal => 'Total';
 
   @override
+  String get flightDuffelOffer => 'Duffel offer';
+
+  @override
+  String get flightDuffelBookingUnavailable =>
+      'Duffel booking is not connected yet';
+
+  @override
+  String get flightContinueToPayment => 'Continue to payment';
+
+  @override
+  String get flightSimulationBadge => 'Simulation';
+
+  @override
+  String get flightSimulatedSeatMapNotice =>
+      'Simulated seat map — seat numbers are for this booking demo only.';
+
+  @override
+  String get flightChooseSeatsAndContinue => 'Choose seats and continue';
+
+  @override
+  String get flightProviderUnavailable =>
+      'Live flight search is temporarily unavailable. Please try again.';
+
+  @override
+  String flightDuffelTotal(int count) {
+    return 'Duffel total for $count passengers';
+  }
+
+  @override
   String get flightTermsNotice =>
       'By tapping confirm you agree to the terms of service and refund policy';
 
@@ -1559,7 +1767,25 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter a destination or allow location access to detect your city.';
 
   @override
+  String get hotelSelectDestination =>
+      'Choose a destination from the suggestions.';
+
+  @override
+  String get hotelLoadingDestinations => 'Searching destinations...';
+
+  @override
+  String get hotelNoDestinationSuggestions =>
+      'No destinations found for this search.';
+
+  @override
+  String get hotelDestinationSuggestionsError =>
+      'Destination suggestions are temporarily unavailable.';
+
+  @override
   String get hotelSearchNearby => 'Search Nearby';
+
+  @override
+  String get openLocationSettings => 'Open settings';
 
   @override
   String get hotelNearbyTitle => 'Hotels Near Me';
@@ -1588,12 +1814,52 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String hotelNightsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count nights',
+      one: '$count night',
+      zero: '0 nights',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hotelRoomsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rooms',
+      one: '$count room',
+      zero: '0 rooms',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String hotelGuestsSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count guests',
+      one: '$count guest',
+      zero: '0 guests',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String hotelResultsTitle(Object city, Object nights) {
     return '$city Hotels · $nights nights';
   }
 
   @override
-  String get hotelNoResults => 'No hotels found';
+  String get hotelNoResults => 'No hotels for these dates.';
+
+  @override
+  String get hotelSearchUnavailable =>
+      'Search temporarily unavailable. Try again.';
 
   @override
   String get hotelFilterAll => 'All';
@@ -1640,6 +1906,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hotelBookNow => 'Book Now';
 
   @override
+  String get hotelDuffelBookingUnavailable =>
+      'Duffel hotel booking is not available yet';
+
+  @override
+  String get hotelExternalBookingUnavailable =>
+      'In-app booking for this hotel is not available yet';
+
+  @override
   String get hotelSoldOut => 'Sold out';
 
   @override
@@ -1649,11 +1923,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hotelAmenities => 'Amenities';
 
   @override
+  String get hotelRoomRatesTitle => 'Available room rates';
+
+  @override
+  String get hotelRoomRatesLoading => 'Loading current rates…';
+
+  @override
+  String get hotelRoomRatesUnavailable =>
+      'Room rates are temporarily unavailable.';
+
+  @override
   String get hotelDefaultDescription =>
       'An upscale hotel in the heart of the city offering a comfortable atmosphere and full amenities for guests.';
 
   @override
   String get hotelNightPrice => 'Price per Night';
+
+  @override
+  String get hotelXoteloEstimateLabel => 'Xotelo estimate (not confirmed)';
 
   @override
   String get hotelNightsCount => 'Number of Nights';
@@ -1979,7 +2266,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packageCatDesert => 'Desert';
 
   @override
-  String get homeMonuments => 'Tourist monuments';
+  String get homeMonuments => 'Popular places by country';
 
   @override
   String get carTypeElectric => 'Electric';
@@ -2010,6 +2297,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tripsFilterTours => 'Tours & monuments';
+
+  @override
+  String get tripsFilterTransfers => 'Transfers';
+
+  @override
+  String get tripsKindTransfer => 'Transfer';
+
+  @override
+  String get transferVehicleLabel => 'Vehicle';
+
+  @override
+  String get tripSeatsLabel => 'Seats';
+
+  @override
+  String get tripExtrasLabel => 'Extras';
 
   @override
   String get tripsKindFlight => 'Flight';
@@ -2046,10 +2348,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminOverview => 'Overview';
 
   @override
+  String get adminPartners => 'Partners';
+
+  @override
+  String get adminOffers => 'Offers';
+
+  @override
+  String get adminCatalog => 'Catalog';
+
+  @override
+  String get adminPlaces => 'Places';
+
+  @override
   String get adminReservations => 'Reservations';
 
   @override
   String get adminCustomers => 'Customers';
+
+  @override
+  String get adminPopularity => 'Popularity';
+
+  @override
+  String get adminCountryVisits => 'Visits by country';
+
+  @override
+  String get adminPlaceVisits => 'Visits by place';
+
+  @override
+  String get adminNoCountryVisits => 'No country visit totals yet.';
+
+  @override
+  String get adminNoPlaceVisits => 'No place visit totals yet.';
+
+  @override
+  String get adminUnspecifiedCountry => 'Unspecified country';
 
   @override
   String get adminWelcome => 'Good day';
@@ -2065,6 +2397,143 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminCustomerCount => 'Customers';
+
+  @override
+  String get adminUserCount => 'Users';
+
+  @override
+  String get adminPartnerCount => 'Active partners';
+
+  @override
+  String get adminPartnerListings => 'Listings';
+
+  @override
+  String get adminActivePartnerListings => 'Available listings';
+
+  @override
+  String get adminPartnerAccounts => 'Partner accounts';
+
+  @override
+  String get adminAddPartner => 'Add partner';
+
+  @override
+  String get adminPartnerName => 'Partner or company name';
+
+  @override
+  String get adminPartnerEmail => 'Registered user email';
+
+  @override
+  String get adminPartnerService => 'Partner service';
+
+  @override
+  String get adminPartnerExistingAccountHint =>
+      'The partner must already have a Zentrip account. This will not create or reset a password.';
+
+  @override
+  String get adminPartnerStatusActive => 'Active';
+
+  @override
+  String get adminPartnerStatusInactive => 'Inactive';
+
+  @override
+  String get adminDisablePartner => 'Disable partner';
+
+  @override
+  String get adminRestorePartner => 'Restore partner';
+
+  @override
+  String get adminPartnerRestored => 'Partner access restored.';
+
+  @override
+  String get adminDisablePartnerConfirmation =>
+      'This removes partner access but keeps the company, listings, and booking history.';
+
+  @override
+  String get adminPartnerDisabled =>
+      'Partner access disabled. Existing records were kept.';
+
+  @override
+  String get adminPartnerAdded => 'Partner added';
+
+  @override
+  String get adminNoPartners => 'No partners found.';
+
+  @override
+  String get adminLegacyAttractionReviewTitle =>
+      'Legacy attraction partner review';
+
+  @override
+  String get adminLegacyAttractionReviewDescription =>
+      'Review account access and listings. For each attraction, use an existing place, create a curated place, or leave it unmapped. Partner access is retired only after you approve.';
+
+  @override
+  String get adminLegacyAttractionReviewAction => 'Review and retire';
+
+  @override
+  String get adminLegacyAttractionReviewed => 'Reviewed and retired';
+
+  @override
+  String get adminLegacyAttractionApproveRetire => 'Approve and retire access';
+
+  @override
+  String get adminLegacyAttractionConfirmTitle => 'Approve partner retirement?';
+
+  @override
+  String get adminLegacyAttractionConfirmBody =>
+      'Partner accounts will lose partner access. Company and listing history will be kept, and selected places will be added to the curated catalog.';
+
+  @override
+  String get adminLegacyAttractionReviewSaved =>
+      'Review approved. Partner access was retired.';
+
+  @override
+  String get adminLegacyAttractionCreatePlace => 'Create a curated place';
+
+  @override
+  String get adminLegacyAttractionOmit => 'Leave unmapped';
+
+  @override
+  String get adminLegacyAttractionUseExisting => 'Use an existing place';
+
+  @override
+  String get adminLegacyAttractionNonPlaceListing =>
+      'This listing type cannot be added to Places. It will be retained.';
+
+  @override
+  String get adminLegacyAttractionNoListings =>
+      'No listings are attached to this account.';
+
+  @override
+  String get adminLegacyAttractionReviewPlace => 'Place mapping';
+
+  @override
+  String adminLegacyAttractionAccountReviewedBy(Object name) {
+    return 'Reviewed by $name';
+  }
+
+  @override
+  String get adminServiceAirline => 'Airline';
+
+  @override
+  String get adminServiceHotel => 'Hotel';
+
+  @override
+  String get adminServiceCar => 'Car rental';
+
+  @override
+  String get adminServiceTransfer => 'Transfer';
+
+  @override
+  String get adminServiceTravel => 'Travel packages';
+
+  @override
+  String get adminServiceAttraction => 'Attractions (legacy)';
+
+  @override
+  String get adminRequiredField => 'This field is required.';
+
+  @override
+  String get adminInvalidEmail => 'Enter a valid email address.';
 
   @override
   String get adminNewCustomers => 'New customers (30 days)';
@@ -2149,7 +2618,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminAddOffer => 'Add offer';
 
   @override
-  String get adminAddMonument => 'Add monument';
+  String get adminAddMonument => 'Add place';
 
   @override
   String get adminCatalogEmpty => 'No catalog entries yet.';
@@ -2197,6 +2666,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminHotelPriceNight => 'Hotel price per night';
 
   @override
+  String get adminLinkedFlight => 'Flight included in this offer';
+
+  @override
+  String get adminSelectFlight => 'Select an existing flight';
+
+  @override
+  String get adminOfferFlightMissing => 'Flight not linked';
+
+  @override
+  String get packageAirline => 'Airline';
+
+  @override
+  String get packageStayTotal => 'Hotel stay';
+
+  @override
   String get adminRating => 'Rating (0–5)';
 
   @override
@@ -2212,7 +2696,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminEditOffer => 'Edit offer';
 
   @override
-  String get adminEditMonument => 'Edit monument';
+  String get adminEditMonument => 'Edit place';
 
   @override
   String get adminCategory => 'Category';
@@ -2350,9 +2834,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get partnerTypeCar => 'Car rental';
-
-  @override
-  String get partnerTypeAttraction => 'Attraction';
 
   @override
   String get partnerTypeTransfer => 'Transfer';
@@ -2547,4 +3028,525 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get partnerInvalidServiceField =>
       'Enter a valid value for this field.';
+
+  @override
+  String get airportMajorLabel => 'Major hub';
+
+  @override
+  String get airportMinorLabel => 'Regional airport';
+
+  @override
+  String get airportNearestLabel => 'Nearest airport';
+
+  @override
+  String get airportCategoryAddLocation =>
+      'Add a city or place, for example Nature in Bali, Indonesia.';
+
+  @override
+  String get compareIn => 'Compare in';
+
+  @override
+  String get lydFixedRate => 'Fixed reference rate: 1 USD = 6.4 LYD';
+
+  @override
+  String get refreshRates => 'Refresh rates';
+
+  @override
+  String get retryRates => 'Retry rates';
+
+  @override
+  String get frankfurterRatesUnavailable =>
+      'Frankfurter daily reference rates · no rate date available';
+
+  @override
+  String frankfurterRatesDate(Object date) {
+    return 'Frankfurter daily reference rates · through $date';
+  }
+
+  @override
+  String get rateRefreshFailed =>
+      'Rates could not be refreshed. Converted prices may be unavailable.';
+
+  @override
+  String get ratesMayBeStale =>
+      'Reference rates may be stale. Refresh to check for updates.';
+
+  @override
+  String unpricedOffers(int count) {
+    return '$count offer(s) have no comparable price and are excluded from price filters.';
+  }
+
+  @override
+  String get priceEstimateDisclaimer =>
+      'Converted amounts are estimates only—not booking prices. Fees and settlement rates may differ.';
+
+  @override
+  String get providerPrice => 'Provider price';
+
+  @override
+  String get comparisonEstimate => 'Estimated comparison';
+
+  @override
+  String get priceUnavailable => 'Unavailable';
+
+  @override
+  String get providerTotal => 'provider total';
+
+  @override
+  String get providerPerPerson => 'per person';
+
+  @override
+  String get flightAllTravelersEstimate => 'Estimated total for all travelers';
+
+  @override
+  String get flightPartnerOutboundOnly => 'outbound only';
+
+  @override
+  String get flightPartnerRoundTripWarning =>
+      'Partner prices cover the outbound flight only and cannot be compared with round-trip totals.';
+
+  @override
+  String get flightMaxBudget => 'Max traveler total';
+
+  @override
+  String get clearBudget => 'Clear budget';
+
+  @override
+  String get hotelPerRoomNight => 'Provider amount per room / night';
+
+  @override
+  String get hotelEstimatePerRoomNight => 'Estimate per room / night';
+
+  @override
+  String hotelBudgetThreshold(Object currency) {
+    return 'Budget <100 $currency/night';
+  }
+
+  @override
+  String hotelMidThreshold(Object currency) {
+    return 'Mid-range 100–<250 $currency/night';
+  }
+
+  @override
+  String hotelLuxuryThreshold(Object currency) {
+    return 'Luxury ≥250 $currency/night';
+  }
+
+  @override
+  String get offerSourcePartner => 'Partner';
+
+  @override
+  String get offerSourceDuffel => 'Duffel';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
+  String get invalidComparisonBudget => 'Enter a valid amount ≥0';
+
+  @override
+  String get referenceRatePolicy =>
+      'Rates older than 4 days are flagged; rates older than 7 days are not used.';
+
+  @override
+  String get authInvalidEmail => 'Enter a valid email address';
+
+  @override
+  String get forgotTitleLine1 => 'Forgot Your Password?';
+
+  @override
+  String get forgotTitleLine2 => 'We\'ll Get You Back On Track';
+
+  @override
+  String get forgotSubtitle =>
+      'Enter the email linked to your account and we\'ll send you a code to reset your password.';
+
+  @override
+  String get authEmailHint => 'Enter your email';
+
+  @override
+  String get sendResetCode => 'Send Reset Code';
+
+  @override
+  String get rememberedIt => 'Remembered it?';
+
+  @override
+  String get backToLoginLower => 'Back to login';
+
+  @override
+  String get authPasswordHint => 'Enter your password';
+
+  @override
+  String get loginTitleLine1 => 'Login to';
+
+  @override
+  String get loginTitleLine2 => 'Travel Around the Globe';
+
+  @override
+  String get rememberMe => 'Remember me';
+
+  @override
+  String get forgotPasswordLink => 'Forgot password?';
+
+  @override
+  String get loginButton => 'Login';
+
+  @override
+  String get orSignUpWith => 'Or sign up with';
+
+  @override
+  String get noAccountPrompt => 'Don\'t have an account? ';
+
+  @override
+  String get createAnAccount => 'Create an account';
+
+  @override
+  String get fullNameHint => 'Enter your full name';
+
+  @override
+  String phoneExactDigits(int count, String country) {
+    return 'Enter exactly $count digits for $country';
+  }
+
+  @override
+  String phoneDigitRange(int min, int max, String country) {
+    return 'Enter $min-$max digits for $country';
+  }
+
+  @override
+  String get passwordMinLength => 'Use at least 8 characters';
+
+  @override
+  String get passwordsDontMatch => 'Passwords don\'t match';
+
+  @override
+  String get acceptTermsError => 'Please accept the terms to continue';
+
+  @override
+  String get phoneHint => 'Enter your phone number';
+
+  @override
+  String get addProfilePhotoOptional => 'Add a profile photo (optional)';
+
+  @override
+  String get registerTitleLine1 => 'Create Your Account';
+
+  @override
+  String get registerTitleLine2 => 'Start Your Journey';
+
+  @override
+  String get createPasswordHint => 'Create a password';
+
+  @override
+  String get confirmPasswordHint => 'Confirm your password';
+
+  @override
+  String get agreeToThe => 'I agree to the ';
+
+  @override
+  String get termsOfService => 'Terms of Service';
+
+  @override
+  String get createAccountButton => 'Create Account';
+
+  @override
+  String get enterSixDigitCode => 'Enter the 6-digit verification code';
+
+  @override
+  String get enterAndConfirmPassword => 'Enter and confirm your new password';
+
+  @override
+  String get verifyTitleLine1 => 'Verify Your';
+
+  @override
+  String get verifyTitleLine2 => 'Email Address';
+
+  @override
+  String get verifySubtitle =>
+      'Enter the 6-digit code sent to your email address.';
+
+  @override
+  String get verificationCodeHint => 'Enter verification code';
+
+  @override
+  String get verifyCodeButton => 'Verify Code';
+
+  @override
+  String get didntReceiveCode => 'Didn\'t receive a code?';
+
+  @override
+  String resendInSeconds(int seconds) {
+    return 'Resend in $seconds s';
+  }
+
+  @override
+  String get newPasswordTitleLine1 => 'Choose a';
+
+  @override
+  String get newPasswordTitleLine2 => 'New Password';
+
+  @override
+  String get newPasswordSubtitle => 'Create a new password for your account.';
+
+  @override
+  String get newPasswordHint => 'New password';
+
+  @override
+  String get confirmNewPasswordHint => 'Confirm new password';
+
+  @override
+  String get resetPasswordAction => 'Reset Password';
+
+  @override
+  String get passwordUpdatedSuccess =>
+      'Your password has been updated successfully.';
+
+  @override
+  String get backToLoginButton => 'Back to Login';
+
+  @override
+  String get photoTooLarge => 'Choose an image smaller than 5 MB.';
+
+  @override
+  String get photoUnreadable =>
+      'Could not read this image. Please try another.';
+
+  @override
+  String get seatListingMissing => 'This flight is missing its listing ID.';
+
+  @override
+  String get seatLoadFailed => 'Could not load seat availability.';
+
+  @override
+  String get seatNoLongerAvailable =>
+      'A seat you selected is no longer available. Please choose again.';
+
+  @override
+  String selectUpToSeats(int count) {
+    return 'Select up to $count seats for this booking.';
+  }
+
+  @override
+  String selectSeatsToContinue(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Select $count seats to continue.',
+      one: 'Select 1 seat to continue.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get fareNotEnoughSeats => 'This fare no longer has enough seats.';
+
+  @override
+  String get flightAvailabilityUnverified =>
+      'Could not verify flight availability.';
+
+  @override
+  String get flightConflictsBooking =>
+      'This flight conflicts with another booking on your account.';
+
+  @override
+  String get seatsNoLongerAvailable => 'Those seats are no longer available.';
+
+  @override
+  String get paymentNotCompletedNoTrip =>
+      'Payment was not completed. No trip was saved.';
+
+  @override
+  String paymentHoldNotReleased(String details) {
+    return 'Payment was not completed and the seat hold could not be released. $details';
+  }
+
+  @override
+  String get paymentHoldReleased =>
+      'Payment was not completed. Your seat hold was released.';
+
+  @override
+  String get chooseSeats => 'Choose seats';
+
+  @override
+  String get refreshAvailability => 'Refresh availability';
+
+  @override
+  String proceedToPaymentAmount(String amount) {
+    return 'Proceed to Payment · $amount';
+  }
+
+  @override
+  String get seatAvailabilityUnavailable =>
+      'Seat availability is not available right now.';
+
+  @override
+  String get aircraftDetails => 'Aircraft details';
+
+  @override
+  String get sharedInventory => 'Shared inventory';
+
+  @override
+  String cabinNumber(String number) {
+    return 'Cabin $number';
+  }
+
+  @override
+  String get optionalExtras => 'Optional extras';
+
+  @override
+  String get optionalExtrasSubtitle => 'Add only what you need';
+
+  @override
+  String get extraLegroomSeats => 'Extra-legroom seats';
+
+  @override
+  String get taxesAndFees => 'Taxes and fees';
+
+  @override
+  String get estimatedTotal => 'Estimated total';
+
+  @override
+  String get retryShort => 'Retry';
+
+  @override
+  String get boardingDirect => 'Direct';
+
+  @override
+  String get boardingOneStop => '1 Stop';
+
+  @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get passwordResetTitleLine1 => 'Password';
+
+  @override
+  String get passwordResetTitleLine2 => 'Reset';
+
+  @override
+  String get boardingDate => 'Date';
+
+  @override
+  String get boardingFlight => 'Flight';
+
+  @override
+  String get boardingClass => 'Class';
+
+  @override
+  String get boardingRef => 'Ref';
+
+  @override
+  String get resendCodeLink => 'Resend code';
+
+  @override
+  String get attractionLocationUnavailable =>
+      'The location of this place is not available.';
+
+  @override
+  String fareTimesPassengers(String fare, int count) {
+    return '$fare fare × $count';
+  }
+
+  @override
+  String get nearbySearching => 'Searching for nearby places…';
+
+  @override
+  String get nearbyCategoryRestaurant => 'Restaurant';
+
+  @override
+  String get nearbyCategoryCafe => 'Café';
+
+  @override
+  String get nearbyCategoryHotel => 'Hotel';
+
+  @override
+  String get nearbyCategoryMuseum => 'Museum';
+
+  @override
+  String get nearbyCategoryActivity => 'Activity';
+
+  @override
+  String get nearbyCategoryAttraction => 'Attraction';
+
+  @override
+  String get nearbyCategoryLandmark => 'Landmark';
+
+  @override
+  String get cityIstanbul => 'Istanbul';
+
+  @override
+  String get cityJeddah => 'Jeddah';
+
+  @override
+  String get cityBali => 'Bali';
+
+  @override
+  String get cityMale => 'Malé';
+
+  @override
+  String get cityTunis => 'Tunis';
+
+  @override
+  String get cityJakarta => 'Jakarta';
+
+  @override
+  String get cityAlBayda => 'Al Bayda';
+
+  @override
+  String get cityTobruk => 'Tobruk';
+
+  @override
+  String get citySirte => 'Sirte';
+
+  @override
+  String get cityKhoms => 'Khoms';
+
+  @override
+  String get countryLibya => 'Libya';
+
+  @override
+  String get countryEgypt => 'Egypt';
+
+  @override
+  String get countrySaudiArabia => 'Saudi Arabia';
+
+  @override
+  String get countryTurkey => 'Turkey';
+
+  @override
+  String get countryIndonesia => 'Indonesia';
+
+  @override
+  String get countryUnitedArabEmirates => 'United Arab Emirates';
+
+  @override
+  String get countryMaldives => 'Maldives';
+
+  @override
+  String get countryTunisia => 'Tunisia';
+
+  @override
+  String get countryFrance => 'France';
+
+  @override
+  String get countryJapan => 'Japan';
+
+  @override
+  String get adminOfferTitleArabic => 'Offer title (Arabic)';
+
+  @override
+  String get adminOfferCityArabic => 'City (Arabic)';
+
+  @override
+  String get adminOfferCountryArabic => 'Country (Arabic)';
+
+  @override
+  String get adminOfferDescriptionArabic => 'Offer description (Arabic)';
+
+  @override
+  String get adminOfferHighlightsArabic => 'Offer highlights (Arabic)';
+
+  @override
+  String get adminOfferHighlightsArabicHint =>
+      'Enter highlights separated by commas';
 }

@@ -19,6 +19,14 @@ class TripModel {
   final String? refundMethod;
   final int? partnerListingId;
   final int passengerCount;
+  final String source;
+  final String? sourceOfferId;
+  final String priceCurrencyCode;
+  final double? bookingDisplayAmount;
+  final String bookingCurrencyCode;
+  final bool isSimulated;
+  final List<String> selectedSeats;
+  final List<String> extras;
 
   const TripModel({
     required this.id,
@@ -41,7 +49,15 @@ class TripModel {
     this.refundMethod,
     this.partnerListingId,
     this.passengerCount = 1,
-  });
+    this.source = 'partner',
+    this.sourceOfferId,
+    this.priceCurrencyCode = 'USD',
+    this.bookingDisplayAmount,
+    String? bookingCurrencyCode,
+    this.isSimulated = false,
+    this.selectedSeats = const [],
+    this.extras = const [],
+  }) : bookingCurrencyCode = bookingCurrencyCode ?? priceCurrencyCode;
 
   static int _intFromDynamic(dynamic value, [int fallback = 0]) {
     if (value == null) return fallback;
@@ -103,7 +119,30 @@ class TripModel {
             ? null
             : _intFromDynamic(json['partner_listing_id']),
         passengerCount: _intFromDynamic(json['passenger_count'], 1),
+        source: (json['source'] ?? 'partner').toString(),
+        sourceOfferId: json['duffel_offer_id']?.toString(),
+        priceCurrencyCode:
+            (json['price_currency'] ?? 'USD').toString().toUpperCase(),
+        bookingDisplayAmount: json['booking_display_amount'] == null
+            ? null
+            : _doubleFromDynamic(json['booking_display_amount']),
+        bookingCurrencyCode:
+            (json['booking_currency'] ?? json['price_currency'] ?? 'USD')
+                .toString()
+                .toUpperCase(),
+        isSimulated: _boolFromDynamic(json['is_simulated'], false),
+        selectedSeats: _stringList(json['selected_seats']),
+        extras: _stringList(json['extras']),
       );
+
+  static List<String> _stringList(dynamic value) {
+    if (value is! List) return const [];
+    return value
+        .where((item) => item != null)
+        .map((item) => item.toString())
+        .where((item) => item.isNotEmpty)
+        .toList(growable: false);
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -126,6 +165,14 @@ class TripModel {
         'refund_method': refundMethod,
         'partner_listing_id': partnerListingId,
         'passenger_count': passengerCount,
+        'source': source,
+        'duffel_offer_id': sourceOfferId,
+        'price_currency': priceCurrencyCode,
+        'booking_display_amount': bookingDisplayAmount,
+        'booking_currency': bookingCurrencyCode,
+        'is_simulated': isSimulated,
+        'selected_seats': selectedSeats,
+        'extras': extras,
       };
 
   TripModel copyWith({
@@ -134,6 +181,14 @@ class TripModel {
     String? refundMethod,
     int? partnerListingId,
     int? passengerCount,
+    String? source,
+    String? sourceOfferId,
+    String? priceCurrencyCode,
+    double? bookingDisplayAmount,
+    String? bookingCurrencyCode,
+    bool? isSimulated,
+    List<String>? selectedSeats,
+    List<String>? extras,
   }) =>
       TripModel(
         id: id,
@@ -156,5 +211,13 @@ class TripModel {
         refundMethod: refundMethod ?? this.refundMethod,
         partnerListingId: partnerListingId ?? this.partnerListingId,
         passengerCount: passengerCount ?? this.passengerCount,
+        source: source ?? this.source,
+        sourceOfferId: sourceOfferId ?? this.sourceOfferId,
+        priceCurrencyCode: priceCurrencyCode ?? this.priceCurrencyCode,
+        bookingDisplayAmount: bookingDisplayAmount ?? this.bookingDisplayAmount,
+        bookingCurrencyCode: bookingCurrencyCode ?? this.bookingCurrencyCode,
+        isSimulated: isSimulated ?? this.isSimulated,
+        selectedSeats: selectedSeats ?? this.selectedSeats,
+        extras: extras ?? this.extras,
       );
 }

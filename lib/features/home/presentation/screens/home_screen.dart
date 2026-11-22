@@ -1,8 +1,16 @@
+import 'dart:async';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../features/flight_booking/logic/flight_controller.dart';
+import '../../../../features/flight_booking/logic/flexible_flight_selection.dart';
+import '../../../../features/flight_booking/presentation/widgets/flexible_flight_dates_button.dart';
+import '../../../../features/notifications/logic/notifications_store.dart';
+import '../../../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../../../global_widgets/app_snackbar.dart';
+import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/current_location_service.dart';
 import '../../../../features/attractions/logic/attractions_controller.dart';
@@ -42,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _roundTrip = true;
   DateTime _departureDate = DateTime.now().add(const Duration(days: 7));
   DateTime? _returnDate = DateTime.now().add(const Duration(days: 14));
+  FlexibleFlightSelection? _flexibleFlightSelection;
   int _passengers = 1;
   String _seatClass = 'economy';
   bool _isSearchingFlights = false;
@@ -63,10 +72,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadHomeSections();
     _loadAirports();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadCurrentAirport();
+      if (!mounted) return;
+      _loadHomeSections();
+      _loadCurrentAirport();
     });
   }
 
@@ -159,7 +169,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadMonuments() async {
     try {
-      final monuments = await AttractionsController.loadFeaturedMonuments();
+      final destination = _airportByCode(_toCode);
+      if (destination == null) {
+        if (!mounted) return;
+        setState(() {
+          _monuments = const [];
+          _monumentsLoading = false;
+          _monumentsFailed = false;
+        });
+        return;
+      }
+      final monuments = await AttractionsController.loadFeaturedMonuments(
+        city: destination.city,
+        country: destination.country,
+        language: Localizations.localeOf(context).languageCode,
+        latitude: destination.latitude,
+        longitude: destination.longitude,
+      );
       if (!mounted) return;
       setState(() {
         _monuments = monuments;
@@ -188,8 +214,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void _setTripType(bool roundTrip) {
     setState(() {
       _roundTrip = roundTrip;
-      if (roundTrip && _returnDate == null) {
-        _returnDate = _departureDate.add(const Duration(days: 7));
+      if (roundTrip && _flexibleFlightSelection != null) {
+        _returnDate = _departureDate.add(
+          Duration(days: _flexibleFlightSelection!.tripDurationDays),
+        );
+      } else if (roundTrip && _returnDate == null) {
+        _returnDate = _departureDate.add(
+          const Duration(days: 7),
+        );
       }
     });
   }
@@ -205,6 +237,50 @@ class _HomeScreenState extends State<HomeScreen> {
     return AirportOption.byCode(code);
   }
 
+  String _localizedAirportCity(
+    String code,
+    String fallback,
+    AppLocalizations l10n,
+  ) {
+    final city = switch (code.toUpperCase()) {
+      'MJI' => l10n.cityTripoli,
+      'MRA' => l10n.cityMisrata,
+      'BEN' => l10n.cityBenghazi,
+      'SEB' => l10n.citySebha,
+      'CAI' => l10n.cityCairo,
+      'DXB' => l10n.cityDubai,
+      'IST' => l10n.cityIstanbul,
+      'JED' => l10n.cityJeddah,
+      'DPS' => l10n.cityBali,
+      'MLE' => l10n.cityMale,
+      'TUN' => l10n.cityTunis,
+      'CGK' => l10n.cityJakarta,
+      _ => fallback,
+    };
+    return _localizedCityName(city, l10n);
+  }
+
+  String _localizedCityName(String city, AppLocalizations l10n) =>
+      switch (city.trim().toLowerCase()) {
+        'tripoli' => l10n.cityTripoli,
+        'misrata' => l10n.cityMisrata,
+        'benghazi' => l10n.cityBenghazi,
+        'sebha' || 'sabha' => l10n.citySebha,
+        'cairo' => l10n.cityCairo,
+        'dubai' => l10n.cityDubai,
+        'istanbul' => l10n.cityIstanbul,
+        'jeddah' => l10n.cityJeddah,
+        'bali' => l10n.cityBali,
+        'male' || 'malé' => l10n.cityMale,
+        'tunis' => l10n.cityTunis,
+        'jakarta' => l10n.cityJakarta,
+        'al bayda' || 'bayda' => l10n.cityAlBayda,
+        'tobruk' => l10n.cityTobruk,
+        'sirte' => l10n.citySirte,
+        'khoms' => l10n.cityKhoms,
+        _ => city,
+      };
+
   Future<void> _chooseAirport({required bool origin}) async {
     final selected = await showModalBottomSheet<AirportOption>(
       context: context,
@@ -213,20 +289,28 @@ class _HomeScreenState extends State<HomeScreen> {
       showDragHandle: true,
       builder: (sheetContext) => _AirportPickerSheet(
         airports: _airports,
-        onSearch: ApiService.instance.searchAirports,
+        onSearch: ApiService.instance.searchAirportDirectory,
       ),
     );
     if (selected == null || !mounted) return;
     setState(() {
+      _airports = [
+        ..._airports.where((airport) => airport.code != selected.code),
+        selected,
+      ];
       if (origin) {
         _originEdited = true;
         _fromCode = selected.code;
-        _fromName = selected.airportName;
+        _fromName = selected.city;
       } else {
         _toCode = selected.code;
-        _toName = selected.airportName;
+        _toName = selected.city;
+        _monuments = [];
+        _monumentsLoading = true;
+        _monumentsFailed = false;
       }
     });
+    if (!origin) _loadMonuments();
   }
 
   Future<void> _chooseDate({required bool departure}) async {
@@ -240,6 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (selected == null || !mounted) return;
     setState(() {
+      _flexibleFlightSelection = null;
       if (departure) {
         _departureDate = selected;
         if (_returnDate != null && _returnDate!.isBefore(selected)) {
@@ -247,6 +332,27 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       } else {
         _returnDate = selected;
+      }
+    });
+  }
+
+  void _setFlexibleFlightSelection(FlexibleFlightSelection? selection) {
+    setState(() {
+      _flexibleFlightSelection = selection;
+      if (selection != null) {
+        final firstMonth = selection.departureMonths.reduce(
+          (a, b) => a.isBefore(b) ? a : b,
+        );
+        final now = DateTime.now();
+        _departureDate =
+            firstMonth.year == now.year && firstMonth.month == now.month
+                ? DateTime(now.year, now.month, now.day)
+                : firstMonth;
+        if (_roundTrip) {
+          _returnDate = _departureDate.add(
+            Duration(days: selection.tripDurationDays),
+          );
+        }
       }
     });
   }
@@ -335,6 +441,10 @@ class _HomeScreenState extends State<HomeScreen> {
       passengers: _passengers,
       seatClass: _seatClass,
       isRoundTrip: _roundTrip,
+      flexibleDepartureMonths:
+          _flexibleFlightSelection?.departureMonths ?? const [],
+      flexibleTripDurationDays: _flexibleFlightSelection?.tripDurationDays ?? 7,
+      flexibleWeekendsOnly: _flexibleFlightSelection?.weekendsOnly ?? false,
     );
     setState(() => _isSearchingFlights = true);
     try {
@@ -391,18 +501,28 @@ class _HomeScreenState extends State<HomeScreen> {
                         roundTrip: _roundTrip,
                         onTripChanged: _setTripType,
                         fromCode: _fromCode,
-                        fromName: _fromName,
+                        fromName: _localizedAirportCity(
+                          _fromCode,
+                          _fromName,
+                          l10n,
+                        ),
                         toCode: _toCode,
-                        toName: _toName,
+                        toName: _localizedAirportCity(
+                          _toCode,
+                          _toName,
+                          l10n,
+                        ),
                         onSwap: _swap,
                         onPickOrigin: () => _chooseAirport(origin: true),
                         onPickDestination: () => _chooseAirport(origin: false),
                         departureDate: _departureDate,
                         returnDate: _returnDate,
+                        flexibleSelection: _flexibleFlightSelection,
                         passengers: _passengers,
                         seatClass: _seatClass,
                         onPickDepartureDate: () => _chooseDate(departure: true),
                         onPickReturnDate: () => _chooseDate(departure: false),
+                        onFlexibleDatesChanged: _setFlexibleFlightSelection,
                         onPickPassengers: _choosePassengers,
                         onPickSeatClass: _chooseSeatClass,
                         isSearching: _isSearchingFlights,
@@ -545,6 +665,7 @@ class _HomeMonumentsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final languageCode = Localizations.localeOf(context).languageCode;
     if (isLoading) {
       return const SizedBox(
         height: 190,
@@ -591,7 +712,7 @@ class _HomeMonumentsSection extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            monument.name,
+                            monument.displayName(languageCode),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -601,7 +722,7 @@ class _HomeMonumentsSection extends StatelessWidget {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            monument.location,
+                            monument.displayLocation(languageCode),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -641,6 +762,8 @@ class _HomeOffersSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final locationSeparator = languageCode == 'ar' ? '، ' : ', ';
     if (isLoading) {
       return const SizedBox(
         height: 220,
@@ -714,7 +837,7 @@ class _HomeOffersSection extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            offer.title,
+                            offer.displayTitle(languageCode),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -727,7 +850,7 @@ class _HomeOffersSection extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  '${offer.location}, ${offer.country}',
+                                  '${offer.displayLocation(languageCode)}$locationSeparator${offer.displayCountry(languageCode)}',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -736,8 +859,10 @@ class _HomeOffersSection extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              Text(
-                                '${l10n.homeStartingFrom} \$${offer.pricePerPerson.toStringAsFixed(0)}',
+                              CurrencyAmountText(
+                                amount: offer.pricePerPerson,
+                                prefix: '${l10n.homeStartingFrom} ',
+                                decimalDigits: 0,
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
@@ -816,12 +941,13 @@ class _Header extends StatelessWidget {
               children: [
                 Text(
                   l10n.greeting,
-                  style: TextStyle(fontSize: 13, color: Color(0xFFC9D0F5)),
+                  style:
+                      const TextStyle(fontSize: 13, color: Color(0xFFC9D0F5)),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   l10n.homeSearchTitle,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -833,31 +959,69 @@ class _Header extends StatelessWidget {
           Positioned(
             right: 20,
             top: topPad + 22,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(50),
-                shape: BoxShape.circle,
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(Icons.notifications_none_rounded,
-                      color: Colors.white, size: 22),
-                  Positioned(
-                    top: 9,
-                    right: 10,
-                    child: Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF5A524),
-                        shape: BoxShape.circle,
-                      ),
+            child: Material(
+              color: Colors.white.withAlpha(50),
+              shape: const CircleBorder(),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const NotificationsScreen(),
                     ),
+                  );
+                },
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: AnimatedBuilder(
+                    animation: NotificationsStore.instance,
+                    builder: (context, _) {
+                      final unread = NotificationsStore.instance.unreadCount;
+                      return Semantics(
+                        button: true,
+                        label: unread > 0
+                            ? '${l10n.notificationsTitle}, ${l10n.notifUnreadCount(unread)}'
+                            : l10n.notificationsTitle,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          clipBehavior: Clip.none,
+                          children: [
+                            const Icon(Icons.notifications_none_rounded,
+                                color: Colors.white, size: 22),
+                            if (unread > 0)
+                              PositionedDirectional(
+                                top: 2,
+                                end: 2,
+                                child: Container(
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(horizontal: 4),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFF5A524),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    unread > 9 ? '9+' : '$unread',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -922,10 +1086,12 @@ class _SearchCard extends StatelessWidget {
     required this.onPickDestination,
     required this.departureDate,
     required this.returnDate,
+    required this.flexibleSelection,
     required this.passengers,
     required this.seatClass,
     required this.onPickDepartureDate,
     required this.onPickReturnDate,
+    required this.onFlexibleDatesChanged,
     required this.onPickPassengers,
     required this.onPickSeatClass,
     required this.isSearching,
@@ -939,9 +1105,11 @@ class _SearchCard extends StatelessWidget {
   final VoidCallback onPickOrigin, onPickDestination;
   final DateTime departureDate;
   final DateTime? returnDate;
+  final FlexibleFlightSelection? flexibleSelection;
   final int passengers;
   final String seatClass;
   final VoidCallback onPickDepartureDate, onPickReturnDate;
+  final ValueChanged<FlexibleFlightSelection?> onFlexibleDatesChanged;
   final VoidCallback onPickPassengers, onPickSeatClass;
   final bool isSearching;
   final VoidCallback onSearch;
@@ -1054,24 +1222,35 @@ class _SearchCard extends StatelessWidget {
                 child: _SelectField(
                   label: l10n.departureDate,
                   icon: Icons.calendar_today_outlined,
-                  value: MaterialLocalizations.of(context)
-                      .formatMediumDate(departureDate),
+                  value: flexibleSelection == null
+                      ? MaterialLocalizations.of(context)
+                          .formatMediumDate(departureDate)
+                      : l10n.flightFlexibleButton,
                   onTap: onPickDepartureDate,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _SelectField(
-                  label: l10n.returnDate,
+                  label: flexibleSelection != null && roundTrip
+                      ? l10n.flightDuration
+                      : l10n.returnDate,
                   icon: Icons.calendar_today_outlined,
-                  value: roundTrip && returnDate != null
-                      ? MaterialLocalizations.of(context)
-                          .formatMediumDate(returnDate!)
-                      : '—',
+                  value: flexibleSelection != null && roundTrip
+                      ? '${flexibleSelection!.tripDurationDays} ${l10n.flightDays}'
+                      : roundTrip && returnDate != null
+                          ? MaterialLocalizations.of(context)
+                              .formatMediumDate(returnDate!)
+                          : '—',
                   onTap: roundTrip ? onPickReturnDate : null,
                 ),
               ),
             ],
+          ),
+          FlexibleFlightDatesButton(
+            selection: flexibleSelection,
+            onChanged: onFlexibleDatesChanged,
+            compact: false,
           ),
           const SizedBox(height: 10),
           Row(
@@ -1264,7 +1443,7 @@ class _AirportPickerSheet extends StatefulWidget {
   });
 
   final List<AirportOption> airports;
-  final Future<List<AirportOption>> Function(String query) onSearch;
+  final Future<AirportSearchResult> Function(String query) onSearch;
 
   @override
   State<_AirportPickerSheet> createState() => _AirportPickerSheetState();
@@ -1273,32 +1452,82 @@ class _AirportPickerSheet extends StatefulWidget {
 class _AirportPickerSheetState extends State<_AirportPickerSheet> {
   final _queryController = TextEditingController();
   late List<AirportOption> _results = widget.airports;
+  List<AirportSearchLandmark> _landmarks = const [];
+  String _queryType = '';
   bool _isLoading = false;
   int _requestId = 0;
+  Timer? _debounce;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _queryController.dispose();
     super.dispose();
   }
 
-  Future<void> _search(String query) async {
+  void _search(String query) {
+    _debounce?.cancel();
     final requestId = ++_requestId;
+    final localMatches =
+        widget.airports.where((airport) => airport.matches(query)).toList();
     setState(() {
-      _results =
-          widget.airports.where((airport) => airport.matches(query)).toList();
-      _isLoading = true;
+      _results = localMatches;
+      _landmarks = const [];
+      _queryType = '';
+      _isLoading = query.trim().length >= 2;
     });
+    if (query.trim().length < 2) return;
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _fetchSearchResults(query, requestId),
+    );
+  }
+
+  Future<void> _fetchSearchResults(String query, int requestId) async {
     try {
-      final matches = await widget.onSearch(query);
+      final result = await widget.onSearch(query);
       if (!mounted || requestId != _requestId) return;
-      setState(() => _results = matches);
+      setState(() {
+        _results = result.airports;
+        _landmarks = result.landmarks;
+        _queryType = result.queryType;
+      });
     } catch (error) {
       debugPrint(
           'Airport directory search failed; filtering local list: $error');
       if (!mounted || requestId != _requestId) return;
-      setState(() => _results =
-          widget.airports.where((airport) => airport.matches(query)).toList());
+      setState(() {
+        _results =
+            widget.airports.where((airport) => airport.matches(query)).toList();
+        _landmarks = const [];
+        _queryType = '';
+      });
+    } finally {
+      if (mounted && requestId == _requestId) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _submitQuery(String query) async {
+    if (query.trim().length < 2) return;
+    _debounce?.cancel();
+    final requestId = ++_requestId;
+    setState(() => _isLoading = true);
+    try {
+      final result = await widget.onSearch(query);
+      if (!mounted || requestId != _requestId) return;
+      setState(() {
+        _results = result.airports;
+        _landmarks = result.landmarks;
+        _queryType = result.queryType;
+      });
+      if (result.airports.length == 1 &&
+          const {'airport_code', 'airport_name'}.contains(result.queryType)) {
+        Navigator.pop(context, result.airports.single);
+      }
+    } catch (error) {
+      debugPrint('Airport exact selection failed: $error');
     } finally {
       if (mounted && requestId == _requestId) {
         setState(() => _isLoading = false);
@@ -1335,22 +1564,84 @@ class _AirportPickerSheetState extends State<_AirportPickerSheet> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
+              textInputAction: TextInputAction.search,
               onChanged: _search,
+              onSubmitted: _submitQuery,
             ),
             const SizedBox(height: 8),
             if (_isLoading) const LinearProgressIndicator(),
             Expanded(
-              child: _results.isEmpty
-                  ? Center(child: Text(l10n.noResults))
+              child: _results.isEmpty && _landmarks.isEmpty
+                  ? Center(
+                      child: Text(
+                        _queryType == 'category'
+                            ? l10n.airportCategoryAddLocation
+                            : l10n.noResults,
+                        textAlign: TextAlign.center,
+                      ),
+                    )
                   : ListView.builder(
-                      itemCount: _results.length,
+                      itemCount: _landmarks.length + _results.length,
                       itemBuilder: (context, index) {
-                        final airport = _results[index];
+                        if (index < _landmarks.length) {
+                          return _buildLandmarkTile(_landmarks[index], l10n);
+                        }
+                        final airportIndex = index - _landmarks.length;
+                        final airport = _results[airportIndex];
+                        final languageCode =
+                            Localizations.localeOf(context).languageCode;
+                        final cityName = languageCode == 'ar'
+                            ? switch (airport.code.toUpperCase()) {
+                                'MJI' => l10n.cityTripoli,
+                                'MRA' => l10n.cityMisrata,
+                                'BEN' => l10n.cityBenghazi,
+                                'SEB' => l10n.citySebha,
+                                'CAI' => l10n.cityCairo,
+                                'DXB' => l10n.cityDubai,
+                                'IST' => l10n.cityIstanbul,
+                                'JED' => l10n.cityJeddah,
+                                'DPS' => l10n.cityBali,
+                                'MLE' => l10n.cityMale,
+                                'TUN' => l10n.cityTunis,
+                                'CGK' => l10n.cityJakarta,
+                                _ => airport.city,
+                              }
+                            : airport.city;
+                        final countryName = languageCode == 'ar'
+                            ? switch (airport.country.toLowerCase()) {
+                                'libya' => l10n.countryLibya,
+                                'egypt' => l10n.countryEgypt,
+                                'saudi arabia' => l10n.countrySaudiArabia,
+                                'turkey' || 'turkiye' => l10n.countryTurkey,
+                                'indonesia' => l10n.countryIndonesia,
+                                'united arab emirates' ||
+                                'uae' =>
+                                  l10n.countryUnitedArabEmirates,
+                                'maldives' => l10n.countryMaldives,
+                                'tunisia' => l10n.countryTunisia,
+                                _ => airport.country,
+                              }
+                            : airport.country;
+                        final airportDetails = <String>[
+                          airport.airportName,
+                          if (airport.icaoCode.isNotEmpty) airport.icaoCode,
+                          countryName,
+                          airport.isMajor
+                              ? l10n.airportMajorLabel
+                              : l10n.airportMinorLabel,
+                        ].where((part) => part.isNotEmpty).join(' · ');
                         return ListTile(
-                          title: Text('${airport.city} [${airport.code}]'),
-                          subtitle: Text(
-                            '${airport.airportName} · ${airport.country}',
+                          leading: CircleAvatar(
+                            child: Icon(
+                              airport.isMajor
+                                  ? Icons.flight_takeoff_rounded
+                                  : Icons.flight_rounded,
+                            ),
                           ),
+                          title: Text(
+                            '$cityName · $countryName [${airport.code}]',
+                          ),
+                          subtitle: Text(airportDetails),
                           onTap: () => Navigator.pop(context, airport),
                         );
                       },
@@ -1361,6 +1652,77 @@ class _AirportPickerSheetState extends State<_AirportPickerSheet> {
       ),
     );
   }
+
+  Widget _buildLandmarkTile(
+    AirportSearchLandmark landmark,
+    AppLocalizations l10n,
+  ) {
+    final languageCode = Localizations.localeOf(context).languageCode;
+    final nearest = landmark.nearestAirport;
+    final distance = nearest?.distanceKm;
+    final nearestLabel = nearest == null
+        ? l10n.noResults
+        : '${l10n.airportNearestLabel}: ${nearest.code}'
+            '${distance == null ? '' : ' · ${distance.toStringAsFixed(0)} km'}';
+    final subtitle = <String>[
+      _localizedLandmarkCategory(landmark.category, l10n),
+      '${landmark.cityAr?.trim().isNotEmpty == true ? landmark.cityAr!.trim() : languageCode == 'ar' ? switch (landmark.city.toLowerCase()) {
+          'tripoli' => l10n.cityTripoli,
+          'misrata' => l10n.cityMisrata,
+          'benghazi' => l10n.cityBenghazi,
+          'sebha' || 'sabha' => l10n.citySebha,
+          'cairo' => l10n.cityCairo,
+          'istanbul' => l10n.cityIstanbul,
+          'jeddah' => l10n.cityJeddah,
+          'dubai' => l10n.cityDubai,
+          _ => landmark.city,
+        } : landmark.city}، ${landmark.countryAr?.trim().isNotEmpty == true ? landmark.countryAr!.trim() : languageCode == 'ar' && landmark.country.toLowerCase() == 'libya' ? l10n.countryLibya : landmark.country}',
+      nearestLabel,
+      if (landmark.sourceAttribution.isNotEmpty) landmark.sourceAttribution,
+      if (landmark.imageSource?.isNotEmpty == true) landmark.imageSource!,
+    ].join(' · ');
+
+    return ListTile(
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: landmark.imageUrl == null
+              ? const Icon(Icons.place_rounded)
+              : CachedNetworkImage(
+                  imageUrl: landmark.imageUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) =>
+                      const Icon(Icons.image_outlined),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.place_rounded),
+                ),
+        ),
+      ),
+      title: Text(AttractionModel.localizedName(
+        landmark.name,
+        languageCode,
+        arabicName: landmark.nameAr,
+      )),
+      subtitle: Text(subtitle),
+      onTap: nearest == null ? null : () => Navigator.pop(context, nearest),
+    );
+  }
+
+  String _localizedLandmarkCategory(
+    String category,
+    AppLocalizations l10n,
+  ) =>
+      switch (category.toLowerCase()) {
+        'museum' => l10n.nearbyCategoryMuseum,
+        'activity' || 'activities' => l10n.nearbyCategoryActivity,
+        'restaurant' => l10n.nearbyCategoryRestaurant,
+        'cafe' || 'café' => l10n.nearbyCategoryCafe,
+        'hotel' => l10n.nearbyCategoryHotel,
+        'attraction' => l10n.nearbyCategoryAttraction,
+        _ => l10n.nearbyCategoryLandmark,
+      };
 }
 
 class _SelectField extends StatelessWidget {

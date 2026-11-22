@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/api_service.dart';
 import '../../../../core/services/current_location_service.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_model.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/flight_controller.dart';
+import '../../logic/flexible_flight_selection.dart';
+import '../widgets/flexible_flight_dates_button.dart';
 
 /// مفتاح تخزين آخر وجهة تم البحث عنها، يُستخدم من شاشة SearchFlightsScreen
 /// (لعرض اقتراح "كرر آخر بحث") ومن هذه الشاشة نفسها.
@@ -135,6 +138,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
 
   DateTime _departure = DateTime.now().add(const Duration(days: 7));
   DateTime? _return;
+  FlexibleFlightSelection? _flexibleFlightSelection;
 
   Future<void> _loadCurrentAirport() async {
     setState(() => _isLoadingOriginLocation = true);
@@ -176,17 +180,49 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
 
   Future<void> _pickAirport({required bool isOrigin}) async {
     final l10n = AppLocalizations.of(context);
+    Timer? debounce;
+    var searchVersion = 0;
     final selected = await showModalBottomSheet<AirportOption>(
       context: context,
       showDragHandle: true,
       builder: (sheetContext) {
         var query = '';
+        var airports = AirportOption.supported;
+        var isLoading = true;
+        var didInitialize = false;
+
+        Future<void> loadAirports(
+          String value,
+          StateSetter setSheetState,
+        ) async {
+          final version = ++searchVersion;
+          try {
+            final matches = await ApiService.instance.searchAirports(value);
+            if (!sheetContext.mounted || version != searchVersion) return;
+            setSheetState(() {
+              airports = matches;
+              isLoading = false;
+            });
+          } catch (_) {
+            if (!sheetContext.mounted || version != searchVersion) return;
+            setSheetState(() {
+              airports = [];
+              isLoading = false;
+            });
+          }
+        }
+
         return SafeArea(
           child: StatefulBuilder(
             builder: (sheetContext, setSheetState) {
-              final airports = AirportOption.supported
-                  .where((airport) => airport.matches(query))
-                  .toList();
+              if (!didInitialize) {
+                didInitialize = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (sheetContext.mounted) {
+                    unawaited(loadAirports('', setSheetState));
+                  }
+                });
+              }
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -209,37 +245,59 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                         hintText: l10n.partnerAirportSearch,
                         border: const OutlineInputBorder(),
                       ),
-                      onChanged: (value) => setSheetState(() => query = value),
+                      onChanged: (value) {
+                        query = value;
+                        searchVersion++;
+                        debounce?.cancel();
+                        setSheetState(() {
+                          isLoading = true;
+                          airports = [];
+                        });
+                        debounce = Timer(const Duration(milliseconds: 350), () {
+                          unawaited(loadAirports(value.trim(), setSheetState));
+                        });
+                      },
                     ),
                   ),
                   Flexible(
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: airports.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
-                      itemBuilder: (context, index) {
-                        final airport = airports[index];
-                        final label =
-                            '${_cityForCode(airport.code, l10n)} [${airport.code}]';
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: AppColors.primarySurface,
-                            child: Text(airport.code,
-                                style: const TextStyle(
-                                    color: AppColors.primary,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800)),
+                    child: airports.isEmpty
+                        ? Center(
+                            child: isLoading
+                                ? const CircularProgressIndicator()
+                                : Text(l10n.noResults),
+                          )
+                        : ListView.separated(
+                            shrinkWrap: true,
+                            padding: const EdgeInsets.only(bottom: 16),
+                            itemCount: airports.length,
+                            separatorBuilder: (_, __) =>
+                                const Divider(height: 1),
+                            itemBuilder: (context, index) {
+                              final airport = airports[index];
+                              final label =
+                                  '${_cityForCode(airport.code, l10n)} [${airport.code}]';
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: AppColors.primarySurface,
+                                  child: Text(
+                                    airport.code,
+                                    style: const TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                title: Text.rich(_highlightMatch(label, query)),
+                                subtitle: Text.rich(_highlightMatch(
+                                  '${airport.airportName} · ${airport.country}',
+                                  query,
+                                )),
+                                onTap: () =>
+                                    Navigator.pop(sheetContext, airport),
+                              );
+                            },
                           ),
-                          title: Text.rich(_highlightMatch(label, query)),
-                          subtitle: Text.rich(_highlightMatch(
-                            '${airport.airportName} · ${airport.country}',
-                            query,
-                          )),
-                          onTap: () => Navigator.pop(sheetContext, airport),
-                        );
-                      },
-                    ),
                   ),
                 ],
               );
@@ -248,6 +306,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
         );
       },
     );
+    debounce?.cancel();
     if (selected == null || !mounted) return;
     setState(() {
       if (isOrigin) {
@@ -307,10 +366,27 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
       passengers: _passengers,
       seatClass: _class,
       isRoundTrip: _isRoundTrip,
+      flexibleDepartureMonths:
+          _flexibleFlightSelection?.departureMonths ?? const [],
+      flexibleTripDurationDays: _flexibleFlightSelection?.tripDurationDays ?? 7,
+      flexibleWeekendsOnly: _flexibleFlightSelection?.weekendsOnly ?? false,
     );
     unawaited(FlightSearchHistory.saveDestination(_toCode, _toCity));
     if (!mounted) return;
     Navigator.pushNamed(context, AppRoutes.flightResults, arguments: params);
+  }
+
+  void _setRoundTrip(bool roundTrip) {
+    setState(() {
+      _isRoundTrip = roundTrip;
+      if (roundTrip && _flexibleFlightSelection != null) {
+        _return = _departure.add(
+          Duration(days: _flexibleFlightSelection!.tripDurationDays),
+        );
+      } else if (roundTrip && _return == null) {
+        _return = _departure.add(const Duration(days: 7));
+      }
+    });
   }
 
   @override
@@ -340,12 +416,12 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                     _TripTypeChip(
                         label: l10n.oneWay,
                         selected: !_isRoundTrip,
-                        onTap: () => setState(() => _isRoundTrip = false)),
+                        onTap: () => _setRoundTrip(false)),
                     const SizedBox(width: 10),
                     _TripTypeChip(
                         label: l10n.roundTrip,
                         selected: _isRoundTrip,
-                        onTap: () => setState(() => _isRoundTrip = true)),
+                        onTap: () => _setRoundTrip(true)),
                   ],
                 ).animate().fade(duration: 300.ms),
                 const SizedBox(height: 20),
@@ -437,7 +513,12 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                                   firstDate: DateTime.now(),
                                   lastDate: DateTime.now()
                                       .add(const Duration(days: 365)));
-                              if (d != null) setState(() => _departure = d);
+                              if (d != null) {
+                                setState(() {
+                                  _departure = d;
+                                  _flexibleFlightSelection = null;
+                                });
+                              }
                             })),
                     if (_isRoundTrip) ...[
                       const SizedBox(width: 10),
@@ -455,11 +536,42 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                                     firstDate: _departure,
                                     lastDate: DateTime.now()
                                         .add(const Duration(days: 365)));
-                                if (d != null) setState(() => _return = d);
+                                if (d != null) {
+                                  setState(() {
+                                    _return = d;
+                                    _flexibleFlightSelection = null;
+                                  });
+                                }
                               })),
                     ],
                   ],
                 ).animate().fade(delay: 180.ms),
+                FlexibleFlightDatesButton(
+                  selection: _flexibleFlightSelection,
+                  onChanged: (selection) {
+                    if (selection == null ||
+                        selection.departureMonths.isEmpty) {
+                      return;
+                    }
+                    final firstMonth = selection.departureMonths.reduce(
+                      (a, b) => a.isBefore(b) ? a : b,
+                    );
+                    final now = DateTime.now();
+                    final departureAnchor = firstMonth.year == now.year &&
+                            firstMonth.month == now.month
+                        ? DateTime(now.year, now.month, now.day)
+                        : firstMonth;
+                    setState(() {
+                      _flexibleFlightSelection = selection;
+                      _departure = departureAnchor;
+                      if (_isRoundTrip) {
+                        _return = departureAnchor.add(
+                          Duration(days: selection.tripDurationDays),
+                        );
+                      }
+                    });
+                  },
+                ),
                 const SizedBox(height: 16),
 
                 // ── Passengers + Class ────────────────────────────────

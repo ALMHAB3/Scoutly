@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -8,6 +10,7 @@ import '../../../../global_widgets/booking_load_error.dart';
 import '../../../../global_widgets/booking_loading_overlay.dart';
 import '../../../../global_widgets/booking_confirmation_screen.dart';
 import '../../../../global_widgets/payment_checkout_screen.dart';
+import '../../../../core/services/currency_service.dart';
 import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/booking_model.dart';
@@ -67,18 +70,19 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
       return;
     }
 
-    final paid = await PaymentCheckoutScreen.start(context,
+    final payment = await PaymentCheckoutScreen.start(context,
         amountUsd: totalPrice,
         description: '${car.brand} ${car.model}',
         referenceId: ref);
     if (!mounted) return;
-    if (!paid) {
+    if (payment?.paid != true) {
       AppSnackbar.error(context, l10n.paymentFailedMessage);
       return;
     }
 
     setState(() => _isBooking = true);
     await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
     final booking = BookingModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       type: BookingType.car,
@@ -97,7 +101,10 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
       title: AppLocalizations.of(context).hotelBookingInProgress,
       subtitle: '${car.brand} ${car.model}',
       serviceIcon: Icons.directions_car_rounded,
-      action: () => ApiService.instance.createBooking(booking),
+      action: () => ApiService.instance.createBooking(
+        booking,
+        paymentAttemptId: payment?.attemptId,
+      ),
     );
     if (createResult.isFailure) {
       if (!mounted) return;
@@ -113,10 +120,11 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
     if (!mounted) return;
     setState(() => _isBooking = false);
     AppSnackbar.success(context, l10n.carBookedSuccess);
-    await NotificationsStore.instance.add(
-        kind: NotifKind.booking,
-        title: l10n.notifBookingConfirmedTitle,
-        subtitle: '${car.brand} ${car.model}');
+    unawaited(NotificationsStore.instance.refreshAfterBooking(
+      title: l10n.notifBookingConfirmedTitle,
+      subtitle: '${car.brand} ${car.model}',
+      bookingRef: ref,
+    ));
     if (!mounted) return;
     Navigator.push(
       context,
@@ -128,7 +136,10 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
           reference: ref,
           dateLabel:
               MaterialLocalizations.of(context).formatMediumDate(pickupDate),
-          priceLabel: '\$${totalPrice.toStringAsFixed(2)}',
+          priceLabel: CurrencyService.instance.format(
+            totalPrice,
+            locale: Localizations.localeOf(context).languageCode,
+          ),
           serviceIcon: Icons.directions_car_rounded,
         ),
       ),
@@ -199,7 +210,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                         car.transmission == 'automatic'
                             ? l10n.carTransmissionAuto
                             : l10n.carTransmissionManual,
-                        AppColors.accentOrange),
+                        AppColors.primary),
                     _SpecChip(
                         Icons.ac_unit_rounded,
                         car.hasAC ? l10n.carHasAc : l10n.carNoAc,
@@ -245,19 +256,40 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                               ? AppColors.darkBorder
                               : AppColors.border)),
                   child: Column(children: [
-                    _PriceRow(l10n.carPricePerDay,
-                        '\$${car.pricePerDay.toStringAsFixed(0)}'),
-                    _PriceRow(l10n.carSubtotal,
-                        '\$${pricing.subtotal.toStringAsFixed(0)}'),
+                    _PriceRow(
+                        l10n.carPricePerDay,
+                        CurrencyService.instance.format(
+                          car.pricePerDay,
+                          locale: Localizations.localeOf(context).languageCode,
+                        )),
+                    _PriceRow(
+                        l10n.carSubtotal,
+                        CurrencyService.instance.format(
+                          pricing.subtotal,
+                          locale: Localizations.localeOf(context).languageCode,
+                        )),
                     _PriceRow(l10n.carNumberOfDays, l10n.carDaysCount(days)),
-                    _PriceRow(l10n.carInsurance,
-                        '\$${car.insuranceFee.toStringAsFixed(0)}'),
-                    _PriceRow(l10n.carServiceFee,
-                        '\$${car.serviceFee.toStringAsFixed(0)}'),
+                    _PriceRow(
+                        l10n.carInsurance,
+                        CurrencyService.instance.format(
+                          car.insuranceFee,
+                          locale: Localizations.localeOf(context).languageCode,
+                        )),
+                    _PriceRow(
+                        l10n.carServiceFee,
+                        CurrencyService.instance.format(
+                          car.serviceFee,
+                          locale: Localizations.localeOf(context).languageCode,
+                        )),
                     const Divider(height: 20),
-                    _PriceRow(l10n.carTotal,
-                        '\$${car.totalPriceForDays(days).toStringAsFixed(0)}',
-                        isBold: true, color: AppColors.accentOrange),
+                    _PriceRow(
+                        l10n.carTotal,
+                        CurrencyService.instance.format(
+                          car.totalPriceForDays(days),
+                          locale: Localizations.localeOf(context).languageCode,
+                        ),
+                        isBold: true,
+                        color: AppColors.primary),
                   ]),
                 ).animate().fade(delay: 150.ms),
                 const SizedBox(height: 28),
@@ -276,7 +308,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                           ? l10n.carBooking
                           : l10n.carBookNow),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accentOrange),
+                      backgroundColor: AppColors.primary),
                 ).animate().fade(delay: 220.ms),
               ]),
             ),

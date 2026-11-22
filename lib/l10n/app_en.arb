@@ -86,6 +86,20 @@
   "resendCode": "Resend Code",
   "resetPasswordTitle": "Create New Password",
   "resetPasswordSubtitle": "Choose a strong password to protect your account",
+  "resetPasswordTitleLine1": "Reset",
+  "resetPasswordTitleLine2": "Password",
+  "resetCodeInputHint": "Enter the 6-digit reset code",
+  "demoPasswordResetNotice": "Preview demo only: use code 123456. This will not change a real account.",
+  "resetCodeInvalid": "Enter the valid 6-digit reset code",
+  "resetPasswordFieldsRequired": "Enter and confirm your new password",
+  "resetPasswordMinLength": "Use at least 8 characters",
+  "resetPasswordMismatch": "Passwords don't match",
+  "resetPasswordButton": "Reset Password",
+  "passwordResetSuccessTitle": "Password reset complete",
+  "demoPasswordResetComplete": "Demo completed. The real account password was not changed.",
+  "backToLogin": "Back to Login",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
   "saveNewPassword": "Save Password",
   "genericError": "Something went wrong, please try again",
   "bookingLoadError": "Couldn't load booking details",
@@ -130,13 +144,42 @@
   "notifPromoBody": "20% off on car rentals this weekend",
   "notifTripCancelledTitle": "Trip cancelled",
   "notifEmptyTitle": "No notifications yet",
+  "notifEmptyHint": "Booking and trip updates will appear here.",
+  "notifMarkAllRead": "Mark all read",
+  "notifNewSection": "New",
+  "notifEarlierSection": "Earlier",
+  "notifTimeAgoNow": "Now",
+  "notifTimeAgoMinutes": "{minutes}m ago",
+  "@notifTimeAgoMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "Object"
+      }
+    }
+  },
+  "notifUnreadCount": "{count} unread notifications",
+  "@notifUnreadCount": {
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
+  },
   "notifTimeAgoHours": "{hours}h ago",
   "@notifTimeAgoHours": {
-    "placeholders": { "hours": { "type": "Object" } }
+    "placeholders": {
+      "hours": {
+        "type": "Object"
+      }
+    }
   },
   "notifTimeAgoDays": "{days}d ago",
   "@notifTimeAgoDays": {
-    "placeholders": { "days": { "type": "Object" } }
+    "placeholders": {
+      "days": {
+        "type": "Object"
+      }
+    }
   },
   "tripReminders": "Trip Reminders",
   "tripRemindersDesc": "Get notified before your trips",
@@ -178,10 +221,18 @@
   "tripShareText": "My flight: {origin} → {destination} on {date} (flight {flightNumber}). Booked via Zentrip!",
   "@tripShareText": {
     "placeholders": {
-      "origin": {"type": "Object"},
-      "destination": {"type": "Object"},
-      "date": {"type": "Object"},
-      "flightNumber": {"type": "Object"}
+      "origin": {
+        "type": "Object"
+      },
+      "destination": {
+        "type": "Object"
+      },
+      "date": {
+        "type": "Object"
+      },
+      "flightNumber": {
+        "type": "Object"
+      }
     }
   },
   "itineraryTitle": "Trip Itinerary",
@@ -190,6 +241,9 @@
   "visaOnArrival": "Visa on arrival",
   "eVisa": "e-Visa required",
   "visaRequired": "Visa required",
+  "sampleDataLabel": "Sample data",
+  "destinationInfoUnavailable": "Weather and visa information is unavailable right now.",
+  "destinationInfoPartial": "Some destination information is unavailable.",
   "offlineBannerText": "You're offline — showing saved data",
   "security": "Security & Password",
   "logout": "Log Out",
@@ -210,7 +264,7 @@
   "onboardingNext": "Next",
   "onboardingStart": "Get Started",
   "onboardingSkip": "Skip",
-  "chatbotTitle": "Zen AI Assistant",
+  "chatbotTitle": "Zen AI",
   "chatbotSubtitle": "Powered by AI",
   "chatbotWelcome": "Hello! I'm Zen, your AI travel companion. Tell me your dream destination and I'll plan the perfect trip for you ✨",
   "chatbotInputHint": "Ask Zen anything...",
@@ -238,7 +292,13 @@
   "travelPaceBalanced": "Balanced",
   "travelPacePacked": "Packed",
   "travelDurationLabel": "Trip length: {days} days",
-  "@travelDurationLabel": { "placeholders": { "days": { "type": "int" } } },
+  "@travelDurationLabel": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "travelersLabel": "Travelers",
   "travelDestinationLabel": "Preferred destination (optional)",
   "travelDestinationHint": "e.g. Istanbul",
@@ -307,6 +367,31 @@
   "roundTrip": "Round Trip",
   "searchFlightsBtn": "Search Flights",
   "flightResults": "Available Flights",
+  "flightSelectTitle": "Select Flight",
+  "flightDateLabel": "Flight Date",
+  "flightCalendar": "Calendar",
+  "flightAirlinesCount": "{count, plural, =0{No airlines} =1{1 airline} other{{count} airlines}}",
+  "@flightAirlinesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "flightFare": "Fare",
+  "flightSeatsLabel": "Seats",
+  "flightPerPerson": "per person",
+  "flightDurationShort": "{hours}h {minutes}m",
+  "@flightDurationShort": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      },
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
   "cheapest": "Cheapest",
   "fastest": "Fastest",
   "seatsLeft": "{count} seats left",
@@ -394,8 +479,9 @@
   "carTypeAll": "All",
   "carSearching": "Searching...",
   "carSearchButton": "Search for a Car",
+  "carSearchFailed": "Car search is temporarily unavailable. Please try again.",
   "carResults": "Results",
-  "carNoResults": "No cars available",
+  "carNoResults": "No partner cars match this location and date range.",
   "carSeatsCount": "{count} seats",
   "carBagsCount": "{count} bags",
   "carDaysCount": "{count} days",
@@ -434,7 +520,7 @@
   "transferChooseTime": "Choose time",
   "transferVehicleOptions": "Taxi options",
   "transferRidePriceNote": "Total price for this ride",
-  "transferNoSuitableRides": "No rides fit this passenger count. Try fewer passengers.",
+  "transferNoSuitableRides": "No partner transfers match these locations and passenger count.",
   "transferLocationRequired": "Enter both pickup and drop-off locations.",
   "transferRidePrivate": "Private ride",
   "taxiSelectPickupOnMap": "Choose pickup on map",
@@ -446,7 +532,10 @@
   "taxiLocationPermissionDeniedForever": "Location access is blocked. Enable it in app settings to center the map near you.",
   "taxiLocationUnavailable": "Couldn't get your current location. Check your signal and try again.",
   "taxiUseCurrentLocation": "Center map on my current location",
-  "attractionSearchHint": "Search for a destination or attraction...",
+  "attractionSearchHint": "Search for a city, country or landmark...",
+  "attractionCountryFilter": "Search places by country",
+  "attractionCountryLoadError": "Places could not be loaded. Check your connection and try again.",
+  "attractionCityNotFound": "We couldn't find that place. Check the spelling and try again.",
   "attractionCategoryAll": "All",
   "attractionTicketBookedSuccess": "🎫 Ticket booked successfully!",
   "attractionAbout": "About This Place",
@@ -456,8 +545,7 @@
   "attractionBooking": "Booking...",
   "attractionBookTicket": "Book a Ticket — {price}",
   "attractionOpenOnMap": "Open on Map",
-  "attractionMapComingSoon": "Map view is coming soon",
-  "chatOnlineStatus": "Connected to AI",
+  "chatOnlineStatus": "Connected",
   "chatHistoryTooltip": "Chat history",
   "chatDeleteTitle": "Delete Conversation",
   "chatDeleteMessage": "Do you want to permanently delete this conversation?",
@@ -465,10 +553,24 @@
   "chatMessagesCount": "messages",
   "chatQuickPromptIstanbul": "Istanbul 7 days 🕌",
   "chatQuickPromptCheapest": "Cheapest destinations ✈️",
-  "chatQuickPromptBudget": "$1000 budget 💰",
+  "chatQuickPromptBudget": "{budget} budget 💰",
+  "@chatQuickPromptBudget": {
+    "placeholders": {
+      "budget": {
+        "type": "String"
+      }
+    }
+  },
   "chatQuickPromptIstanbulText": "I want a full 7-day travel itinerary for Istanbul",
   "chatQuickPromptCheapestText": "What are the cheapest travel destinations from Egypt this month?",
-  "chatQuickPromptBudgetText": "A great trip on a $1000 budget — suggest destinations for me",
+  "chatQuickPromptBudgetText": "A great trip on a {budget} budget — suggest destinations for me",
+  "@chatQuickPromptBudgetText": {
+    "placeholders": {
+      "budget": {
+        "type": "String"
+      }
+    }
+  },
   "chatConnectionError": "Couldn't connect to the AI assistant",
   "chatItineraryTitle": "{destination} Travel Itinerary",
   "chatItineraryBudget": "Estimated cost: {budget}",
@@ -476,7 +578,8 @@
   "chatItineraryDefaultDestination": "your destination",
   "chatItineraryDayFallback": "Day {number}",
   "chatItinerarySave": "Save Itinerary",
-  "chatItinerarySavedSuccess": "Itinerary saved to your trips",
+  "chatItinerarySavedSuccess": "Saved in this device's chat history",
+  "chatItinerarySaveFailed": "Couldn't save this itinerary. Please try again.",
   "chatItineraryFullRequest": "I want a full 7-day travel itinerary for {destination}",
   "flightSearching": "Searching...",
   "flightPassengersLabel": "Passengers",
@@ -486,6 +589,20 @@
   "flightClassLabel": "Class",
   "flightSelectThis": "Select this flight",
   "flightNoResults": "No flights available",
+  "flightProviderWarning": "Some flight providers are temporarily unavailable. Available results are shown.",
+  "flightFlexibleButton": "I'm flexible",
+  "flightSelectDates": "Select dates",
+  "flightTripLength": "How long is your trip?",
+  "flightWeekend": "A weekend",
+  "flightWeekendHint": "Weekend departures are Fridays. Return trips come back Sunday.",
+  "flightWeek": "A week",
+  "flightMonth": "A month",
+  "flightOther": "Other",
+  "flightDuration": "Duration",
+  "flightDays": "days",
+  "flightWhenToGo": "When do you want to go?",
+  "flightSelectUpToMonths": "Select up to 3 months",
+  "flightFlexibleSearchLoading": "Searching flights across your selected months…",
   "flightNoResultsForSearch": "No flights found from {origin} to {destination} on {date}.",
   "@flightNoResultsForSearch": {
     "placeholders": {
@@ -506,7 +623,6 @@
   "flightAircraft": "Aircraft",
   "flightBookingReferenceLabel": "Booking reference",
   "flightSelectedSeats": "Selected seats",
-  "flightDuration": "Duration",
   "flightBookingConfirmed": "Booking Confirmed",
   "flightConfirmationError": "Your booking could not be confirmed. Retry to safely check its status.",
   "flightBackToHome": "Back to Home",
@@ -541,12 +657,32 @@
   "flightTaxesFees": "Taxes & Fees",
   "flightServiceFee": "Service Fee",
   "flightTotal": "Total",
+  "flightDuffelOffer": "Duffel offer",
+  "flightDuffelBookingUnavailable": "Duffel booking is not connected yet",
+  "flightContinueToPayment": "Continue to payment",
+  "flightSimulationBadge": "Simulation",
+  "flightSimulatedSeatMapNotice": "Simulated seat map — seat numbers are for this booking demo only.",
+  "flightChooseSeatsAndContinue": "Choose seats and continue",
+  "flightProviderUnavailable": "Live flight search is temporarily unavailable. Please try again.",
+  "flightDuffelTotal": "Duffel total for {count} passengers",
+  "@flightDuffelTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "flightTermsNotice": "By tapping confirm you agree to the terms of service and refund policy",
   "flightDemoUser": "Demo User",
   "hotelSearching": "Searching...",
   "hotelDestinationHint": "City or destination...",
   "hotelDestinationRequired": "Enter a destination or allow location access to detect your city.",
+  "hotelSelectDestination": "Choose a destination from the suggestions.",
+  "hotelLoadingDestinations": "Searching destinations...",
+  "hotelNoDestinationSuggestions": "No destinations found for this search.",
+  "hotelDestinationSuggestionsError": "Destination suggestions are temporarily unavailable.",
   "hotelSearchNearby": "Search Nearby",
+  "openLocationSettings": "Open settings",
   "hotelNearbyTitle": "Hotels Near Me",
   "hotelNearbyUsingDemoLocation": "Location is unavailable; showing demo hotels near Tripoli.",
   "hotelSortDistance": "📍 Distance",
@@ -554,8 +690,33 @@
   "hotelRoomsLabel": "Rooms",
   "hotelGuestsLabel": "Guests",
   "hotelStaySummary": "{nights} nights · {rooms} rooms · {guests} guests",
+  "hotelNightsSummary": "{count, plural, =0{0 nights} one{{count} night} other{{count} nights}}",
+  "@hotelNightsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hotelRoomsSummary": "{count, plural, =0{0 rooms} one{{count} room} other{{count} rooms}}",
+  "@hotelRoomsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hotelGuestsSummary": "{count, plural, =0{0 guests} one{{count} guest} other{{count} guests}}",
+  "@hotelGuestsSummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "hotelResultsTitle": "{city} Hotels · {nights} nights",
-  "hotelNoResults": "No hotels found",
+  "hotelNoResults": "No hotels for these dates.",
+  "hotelSearchUnavailable": "Search temporarily unavailable. Try again.",
   "hotelFilterAll": "All",
   "hotelFilterBudget": "Budget",
   "hotelFilterMidRange": "Mid-range",
@@ -570,11 +731,17 @@
   "hotelBookingSuccess": "✅ Hotel booked successfully!",
   "hotelBookingInProgress": "Booking...",
   "hotelBookNow": "Book Now",
+  "hotelDuffelBookingUnavailable": "Duffel hotel booking is not available yet",
+  "hotelExternalBookingUnavailable": "In-app booking for this hotel is not available yet",
   "hotelSoldOut": "Sold out",
   "hotelAbout": "About the Hotel",
   "hotelAmenities": "Amenities",
+  "hotelRoomRatesTitle": "Available room rates",
+  "hotelRoomRatesLoading": "Loading current rates…",
+  "hotelRoomRatesUnavailable": "Room rates are temporarily unavailable.",
   "hotelDefaultDescription": "An upscale hotel in the heart of the city offering a comfortable atmosphere and full amenities for guests.",
   "hotelNightPrice": "Price per Night",
+  "hotelXoteloEstimateLabel": "Xotelo estimate (not confirmed)",
   "hotelNightsCount": "Number of Nights",
   "hotelNightsValue": "{nights} nights",
   "hotelTaxesFees": "Taxes & Fees",
@@ -609,22 +776,38 @@
   "commonGreetingNamed": "Hi, {name} 👋",
   "resendCodeIn": "Resend code in {seconds}s",
   "@resendCodeIn": {
-    "placeholders": { "seconds": { "type": "Object" } }
+    "placeholders": {
+      "seconds": {
+        "type": "Object"
+      }
+    }
   },
   "codeInvalidWithAttempts": "The code you entered is incorrect. {count} attempts left",
   "@codeInvalidWithAttempts": {
-    "placeholders": { "count": { "type": "Object" } }
+    "placeholders": {
+      "count": {
+        "type": "Object"
+      }
+    }
   },
   "tooManyAttempts": "Too many failed attempts. Please request a new code.",
   "tripsSuggestedFromPackage": "Suggested from your package",
   "tripsRepeatLastSearch": "Repeat last search",
   "tripsSearchFlightsTo": "Search flights to {destination}",
   "@tripsSearchFlightsTo": {
-    "placeholders": { "destination": { "type": "Object" } }
+    "placeholders": {
+      "destination": {
+        "type": "Object"
+      }
+    }
   },
   "tripsSearchHotelsIn": "Search hotels in {destination}",
   "@tripsSearchHotelsIn": {
-    "placeholders": { "destination": { "type": "Object" } }
+    "placeholders": {
+      "destination": {
+        "type": "Object"
+      }
+    }
   },
   "tripsGoToFlightSearch": "Go to flight search",
   "tripsGoToHotelSearch": "Go to hotel search",
@@ -638,7 +821,11 @@
   "bookThisOffer": "Book This Offer",
   "packageBookingSuccess": "Your package to {destination} is booked!",
   "@packageBookingSuccess": {
-    "placeholders": { "destination": { "type": "Object" } }
+    "placeholders": {
+      "destination": {
+        "type": "Object"
+      }
+    }
   },
   "tripsFlightInfo": "Flight Information",
   "tripsAirline": "Airline",
@@ -688,7 +875,7 @@
   "packageCatCity": "City",
   "packageCatMountain": "Mountain",
   "packageCatDesert": "Desert",
-  "homeMonuments": "Tourist monuments",
+  "homeMonuments": "Popular places by country",
   "carTypeElectric": "Electric",
   "carFuelHybrid": "Hybrid",
   "carFuelDiesel": "Diesel",
@@ -699,6 +886,11 @@
   "tripsFilterHotels": "Hotels",
   "tripsFilterCars": "Car rentals",
   "tripsFilterTours": "Tours & monuments",
+  "tripsFilterTransfers": "Transfers",
+  "tripsKindTransfer": "Transfer",
+  "transferVehicleLabel": "Vehicle",
+  "tripSeatsLabel": "Seats",
+  "tripExtrasLabel": "Extras",
   "tripsKindFlight": "Flight",
   "tripsKindHotel": "Hotel",
   "tripsKindCar": "Car rental",
@@ -710,13 +902,70 @@
   "adminDashboard": "Admin dashboard",
   "adminWorkspaceLabel": "Zentrip management",
   "adminOverview": "Overview",
+  "adminPartners": "Partners",
+  "adminOffers": "Offers",
+  "adminCatalog": "Catalog",
+  "adminPlaces": "Places",
   "adminReservations": "Reservations",
   "adminCustomers": "Customers",
+  "adminPopularity": "Popularity",
+  "adminCountryVisits": "Visits by country",
+  "adminPlaceVisits": "Visits by place",
+  "adminNoCountryVisits": "No country visit totals yet.",
+  "adminNoPlaceVisits": "No place visit totals yet.",
+  "adminUnspecifiedCountry": "Unspecified country",
   "adminWelcome": "Good day",
   "adminSubtitle": "Your travel business at a glance.",
   "adminBackToApp": "Back to travel app",
   "adminRefresh": "Refresh",
   "adminCustomerCount": "Customers",
+  "adminUserCount": "Users",
+  "adminPartnerCount": "Active partners",
+  "adminPartnerListings": "Listings",
+  "adminActivePartnerListings": "Available listings",
+  "adminPartnerAccounts": "Partner accounts",
+  "adminAddPartner": "Add partner",
+  "adminPartnerName": "Partner or company name",
+  "adminPartnerEmail": "Registered user email",
+  "adminPartnerService": "Partner service",
+  "adminPartnerExistingAccountHint": "The partner must already have a Zentrip account. This will not create or reset a password.",
+  "adminPartnerStatusActive": "Active",
+  "adminPartnerStatusInactive": "Inactive",
+  "adminDisablePartner": "Disable partner",
+  "adminRestorePartner": "Restore partner",
+  "adminPartnerRestored": "Partner access restored.",
+  "adminDisablePartnerConfirmation": "This removes partner access but keeps the company, listings, and booking history.",
+  "adminPartnerDisabled": "Partner access disabled. Existing records were kept.",
+  "adminPartnerAdded": "Partner added",
+  "adminNoPartners": "No partners found.",
+  "adminLegacyAttractionReviewTitle": "Legacy attraction partner review",
+  "adminLegacyAttractionReviewDescription": "Review account access and listings. For each attraction, use an existing place, create a curated place, or leave it unmapped. Partner access is retired only after you approve.",
+  "adminLegacyAttractionReviewAction": "Review and retire",
+  "adminLegacyAttractionReviewed": "Reviewed and retired",
+  "adminLegacyAttractionApproveRetire": "Approve and retire access",
+  "adminLegacyAttractionConfirmTitle": "Approve partner retirement?",
+  "adminLegacyAttractionConfirmBody": "Partner accounts will lose partner access. Company and listing history will be kept, and selected places will be added to the curated catalog.",
+  "adminLegacyAttractionReviewSaved": "Review approved. Partner access was retired.",
+  "adminLegacyAttractionCreatePlace": "Create a curated place",
+  "adminLegacyAttractionOmit": "Leave unmapped",
+  "adminLegacyAttractionUseExisting": "Use an existing place",
+  "adminLegacyAttractionNonPlaceListing": "This listing type cannot be added to Places. It will be retained.",
+  "adminLegacyAttractionNoListings": "No listings are attached to this account.",
+  "adminLegacyAttractionReviewPlace": "Place mapping",
+  "adminLegacyAttractionAccountReviewedBy": "Reviewed by {name}",
+  "@adminLegacyAttractionAccountReviewedBy": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "adminServiceAirline": "Airline",
+  "adminServiceHotel": "Hotel",
+  "adminServiceCar": "Car rental",
+  "adminServiceTransfer": "Transfer",
+  "adminServiceTravel": "Travel packages",
+  "adminServiceAttraction": "Attractions (legacy)",
+  "adminRequiredField": "This field is required.",
+  "adminInvalidEmail": "Enter a valid email address.",
   "adminNewCustomers": "New customers (30 days)",
   "adminReservationCount": "Reservations",
   "adminFlights": "Flights",
@@ -744,7 +993,7 @@
   "adminDeleteConfirmation": "This action cannot be undone.",
   "adminDelete": "Delete",
   "adminAddOffer": "Add offer",
-  "adminAddMonument": "Add monument",
+  "adminAddMonument": "Add place",
   "adminCatalogEmpty": "No catalog entries yet.",
   "adminWorkingHours": "Working hours",
   "adminBestTime": "Best time to visit",
@@ -760,12 +1009,17 @@
   "adminStartingPrice": "Starting price per person",
   "adminFlightPrice": "Flight price per person",
   "adminHotelPriceNight": "Hotel price per night",
+  "adminLinkedFlight": "Flight included in this offer",
+  "adminSelectFlight": "Select an existing flight",
+  "adminOfferFlightMissing": "Flight not linked",
+  "packageAirline": "Airline",
+  "packageStayTotal": "Hotel stay",
   "adminRating": "Rating (0–5)",
   "adminReviewCount": "Review count",
   "adminCategoryTag": "Category label",
   "adminEntryFee": "Entry fee",
   "adminEditOffer": "Edit offer",
-  "adminEditMonument": "Edit monument",
+  "adminEditMonument": "Edit place",
   "adminCategory": "Category",
   "adminFeaturedBadge": "Featured offer",
   "adminHighlights": "Highlights",
@@ -811,7 +1065,6 @@
   "partnerTypeFlight": "Flight",
   "partnerTypeHotel": "Accommodation",
   "partnerTypeCar": "Car rental",
-  "partnerTypeAttraction": "Attraction",
   "partnerTypeTransfer": "Transfer",
   "partnerTypePackage": "Travel package",
   "partnerAddListingHint": "Create listings only for your company's service. Fill in the service details below; the country is detected from the selected location.",
@@ -873,5 +1126,263 @@
   "partnerDurationNights": "Duration in nights",
   "partnerHighlights": "Highlights",
   "partnerCommaSeparatedHint": "Separate multiple values with commas.",
-  "partnerInvalidServiceField": "Enter a valid value for this field."
+  "partnerInvalidServiceField": "Enter a valid value for this field.",
+  "airportMajorLabel": "Major hub",
+  "airportMinorLabel": "Regional airport",
+  "airportNearestLabel": "Nearest airport",
+  "airportCategoryAddLocation": "Add a city or place, for example Nature in Bali, Indonesia.",
+  "compareIn": "Compare in",
+  "lydFixedRate": "Fixed reference rate: 1 USD = 6.4 LYD",
+  "refreshRates": "Refresh rates",
+  "retryRates": "Retry rates",
+  "frankfurterRatesUnavailable": "Frankfurter daily reference rates · no rate date available",
+  "frankfurterRatesDate": "Frankfurter daily reference rates · through {date}",
+  "@frankfurterRatesDate": {
+    "placeholders": {
+      "date": {}
+    }
+  },
+  "rateRefreshFailed": "Rates could not be refreshed. Converted prices may be unavailable.",
+  "ratesMayBeStale": "Reference rates may be stale. Refresh to check for updates.",
+  "unpricedOffers": "{count} offer(s) have no comparable price and are excluded from price filters.",
+  "@unpricedOffers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "priceEstimateDisclaimer": "Converted amounts are estimates only—not booking prices. Fees and settlement rates may differ.",
+  "providerPrice": "Provider price",
+  "comparisonEstimate": "Estimated comparison",
+  "priceUnavailable": "Unavailable",
+  "providerTotal": "provider total",
+  "providerPerPerson": "per person",
+  "flightAllTravelersEstimate": "Estimated total for all travelers",
+  "flightPartnerOutboundOnly": "outbound only",
+  "flightPartnerRoundTripWarning": "Partner prices cover the outbound flight only and cannot be compared with round-trip totals.",
+  "flightMaxBudget": "Max traveler total",
+  "clearBudget": "Clear budget",
+  "hotelPerRoomNight": "Provider amount per room / night",
+  "hotelEstimatePerRoomNight": "Estimate per room / night",
+  "hotelBudgetThreshold": "Budget <100 {currency}/night",
+  "@hotelBudgetThreshold": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "hotelMidThreshold": "Mid-range 100–<250 {currency}/night",
+  "@hotelMidThreshold": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "hotelLuxuryThreshold": "Luxury ≥250 {currency}/night",
+  "@hotelLuxuryThreshold": {
+    "placeholders": {
+      "currency": {}
+    }
+  },
+  "offerSourcePartner": "Partner",
+  "offerSourceDuffel": "Duffel",
+  "tryAgain": "Try again",
+  "invalidComparisonBudget": "Enter a valid amount ≥0",
+  "referenceRatePolicy": "Rates older than 4 days are flagged; rates older than 7 days are not used.",
+  "authInvalidEmail": "Enter a valid email address",
+  "forgotTitleLine1": "Forgot Your Password?",
+  "forgotTitleLine2": "We'll Get You Back On Track",
+  "forgotSubtitle": "Enter the email linked to your account and we'll send you a code to reset your password.",
+  "authEmailHint": "Enter your email",
+  "sendResetCode": "Send Reset Code",
+  "rememberedIt": "Remembered it?",
+  "backToLoginLower": "Back to login",
+  "authPasswordHint": "Enter your password",
+  "loginTitleLine1": "Login to",
+  "loginTitleLine2": "Travel Around the Globe",
+  "rememberMe": "Remember me",
+  "forgotPasswordLink": "Forgot password?",
+  "loginButton": "Login",
+  "orSignUpWith": "Or sign up with",
+  "noAccountPrompt": "Don't have an account? ",
+  "createAnAccount": "Create an account",
+  "fullNameHint": "Enter your full name",
+  "phoneExactDigits": "Enter exactly {count} digits for {country}",
+  "@phoneExactDigits": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "phoneDigitRange": "Enter {min}-{max} digits for {country}",
+  "@phoneDigitRange": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      },
+      "country": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordMinLength": "Use at least 8 characters",
+  "passwordsDontMatch": "Passwords don't match",
+  "acceptTermsError": "Please accept the terms to continue",
+  "phoneHint": "Enter your phone number",
+  "addProfilePhotoOptional": "Add a profile photo (optional)",
+  "registerTitleLine1": "Create Your Account",
+  "registerTitleLine2": "Start Your Journey",
+  "createPasswordHint": "Create a password",
+  "confirmPasswordHint": "Confirm your password",
+  "agreeToThe": "I agree to the ",
+  "termsOfService": "Terms of Service",
+  "createAccountButton": "Create Account",
+  "enterSixDigitCode": "Enter the 6-digit verification code",
+  "enterAndConfirmPassword": "Enter and confirm your new password",
+  "verifyTitleLine1": "Verify Your",
+  "verifyTitleLine2": "Email Address",
+  "verifySubtitle": "Enter the 6-digit code sent to your email address.",
+  "verificationCodeHint": "Enter verification code",
+  "verifyCodeButton": "Verify Code",
+  "didntReceiveCode": "Didn't receive a code?",
+  "resendInSeconds": "Resend in {seconds} s",
+  "@resendInSeconds": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "newPasswordTitleLine1": "Choose a",
+  "newPasswordTitleLine2": "New Password",
+  "newPasswordSubtitle": "Create a new password for your account.",
+  "newPasswordHint": "New password",
+  "confirmNewPasswordHint": "Confirm new password",
+  "resetPasswordAction": "Reset Password",
+  "passwordUpdatedSuccess": "Your password has been updated successfully.",
+  "backToLoginButton": "Back to Login",
+  "photoTooLarge": "Choose an image smaller than 5 MB.",
+  "photoUnreadable": "Could not read this image. Please try another.",
+  "seatListingMissing": "This flight is missing its listing ID.",
+  "seatLoadFailed": "Could not load seat availability.",
+  "seatNoLongerAvailable": "A seat you selected is no longer available. Please choose again.",
+  "selectUpToSeats": "Select up to {count} seats for this booking.",
+  "@selectUpToSeats": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectSeatsToContinue": "{count, plural, =1{Select 1 seat to continue.} other{Select {count} seats to continue.}}",
+  "@selectSeatsToContinue": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "fareNotEnoughSeats": "This fare no longer has enough seats.",
+  "flightAvailabilityUnverified": "Could not verify flight availability.",
+  "flightConflictsBooking": "This flight conflicts with another booking on your account.",
+  "seatsNoLongerAvailable": "Those seats are no longer available.",
+  "paymentNotCompletedNoTrip": "Payment was not completed. No trip was saved.",
+  "paymentHoldNotReleased": "Payment was not completed and the seat hold could not be released. {details}",
+  "@paymentHoldNotReleased": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "paymentHoldReleased": "Payment was not completed. Your seat hold was released.",
+  "chooseSeats": "Choose seats",
+  "refreshAvailability": "Refresh availability",
+  "proceedToPaymentAmount": "Proceed to Payment · {amount}",
+  "@proceedToPaymentAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "seatAvailabilityUnavailable": "Seat availability is not available right now.",
+  "aircraftDetails": "Aircraft details",
+  "sharedInventory": "Shared inventory",
+  "cabinNumber": "Cabin {number}",
+  "@cabinNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "optionalExtras": "Optional extras",
+  "optionalExtrasSubtitle": "Add only what you need",
+  "extraLegroomSeats": "Extra-legroom seats",
+  "taxesAndFees": "Taxes and fees",
+  "estimatedTotal": "Estimated total",
+  "retryShort": "Retry",
+  "boardingDirect": "Direct",
+  "boardingOneStop": "1 Stop",
+  "clearSearch": "Clear search",
+  "passwordResetTitleLine1": "Password",
+  "passwordResetTitleLine2": "Reset",
+  "boardingDate": "Date",
+  "boardingFlight": "Flight",
+  "boardingClass": "Class",
+  "boardingRef": "Ref",
+  "resendCodeLink": "Resend code",
+  "attractionLocationUnavailable": "The location of this place is not available.",
+  "fareTimesPassengers": "{fare} fare × {count}",
+  "@fareTimesPassengers": {
+    "placeholders": {
+      "fare": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nearbySearching": "Searching for nearby places…",
+  "nearbyCategoryRestaurant": "Restaurant",
+  "nearbyCategoryCafe": "Café",
+  "nearbyCategoryHotel": "Hotel",
+  "nearbyCategoryMuseum": "Museum",
+  "nearbyCategoryActivity": "Activity",
+  "nearbyCategoryAttraction": "Attraction",
+  "nearbyCategoryLandmark": "Landmark",
+  "cityIstanbul": "Istanbul",
+  "cityJeddah": "Jeddah",
+  "cityBali": "Bali",
+  "cityMale": "Malé",
+  "cityTunis": "Tunis",
+  "cityJakarta": "Jakarta",
+  "cityAlBayda": "Al Bayda",
+  "cityTobruk": "Tobruk",
+  "citySirte": "Sirte",
+  "cityKhoms": "Khoms",
+  "countryLibya": "Libya",
+  "countryEgypt": "Egypt",
+  "countrySaudiArabia": "Saudi Arabia",
+  "countryTurkey": "Turkey",
+  "countryIndonesia": "Indonesia",
+  "countryUnitedArabEmirates": "United Arab Emirates",
+  "countryMaldives": "Maldives",
+  "countryTunisia": "Tunisia",
+  "countryFrance": "France",
+  "countryJapan": "Japan",
+  "adminOfferTitleArabic": "Offer title (Arabic)",
+  "adminOfferCityArabic": "City (Arabic)",
+  "adminOfferCountryArabic": "Country (Arabic)",
+  "adminOfferDescriptionArabic": "Offer description (Arabic)",
+  "adminOfferHighlightsArabic": "Offer highlights (Arabic)",
+  "adminOfferHighlightsArabicHint": "Enter highlights separated by commas"
 }

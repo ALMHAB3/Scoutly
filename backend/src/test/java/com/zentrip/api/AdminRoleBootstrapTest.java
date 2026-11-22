@@ -22,38 +22,30 @@ class AdminRoleBootstrapTest {
 
     @Test
     void addsAndBackfillsHotelListingColumnsForExistingDatabases() {
-        when(jdbc.queryForObject(
-                contains("information_schema.COLUMNS"),
-                eq(Integer.class),
-                anyString(),
-                anyString()))
-                .thenAnswer(invocation ->
-                        "partner_listings".equals(invocation.getArgument(2)) ? 0 : 1);
-
-        new AdminRoleBootstrap(jdbc, "", "").run(args);
+        new AdminRoleBootstrap(jdbc, "", "", false).run(args);
 
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN location_name VARCHAR(512) NULL");
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS location_name VARCHAR(512) NULL");
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN google_maps_url VARCHAR(2048) NULL");
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS google_maps_url VARCHAR(2048) NULL");
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN place_id VARCHAR(255) NULL");
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS place_id VARCHAR(255) NULL");
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN google_rating "
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS google_rating "
                         + "DECIMAL(2,1) NOT NULL DEFAULT 0.0");
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN google_review_count "
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS google_review_count "
                         + "INTEGER NOT NULL DEFAULT 0");
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN amenities JSONB NULL");
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS amenities JSONB NULL");
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN tax_and_fees_percentage "
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS tax_and_fees_percentage "
                         + "DECIMAL(5,2) NOT NULL DEFAULT 12.00");
         verify(jdbc).execute(
-                "ALTER TABLE partner_listings ADD COLUMN available_rooms "
+                "ALTER TABLE partner_listings ADD COLUMN IF NOT EXISTS available_rooms "
                         + "INTEGER NOT NULL DEFAULT 0");
         ArgumentCaptor<String> statements = ArgumentCaptor.forClass(String.class);
-        verify(jdbc, times(9)).execute(statements.capture());
+        verify(jdbc, times(17)).execute(statements.capture());
         assertTrue(statements.getAllValues().stream()
                 .anyMatch(sql -> sql.contains("UPDATE partner_listings")));
     }
@@ -72,13 +64,14 @@ class AdminRoleBootstrapTest {
                 "admin@example.com"))
                 .thenReturn(1);
 
-        new AdminRoleBootstrap(jdbc, "admin@example.com", "").run(args);
+        new AdminRoleBootstrap(jdbc, "admin@example.com", "", false).run(args);
 
         verify(jdbc).update(
                 "UPDATE users SET role = 'admin', partner_id = NULL WHERE email = ?",
                 "admin@example.com");
-        verify(jdbc).update("UPDATE users SET role = 'customer', partner_id = NULL WHERE role = 'partner'");
-        verify(jdbc).update("UPDATE partners SET status = 'inactive'");
+        verify(jdbc, never()).update(
+                "UPDATE users SET role = 'customer', partner_id = NULL WHERE role = 'partner'");
+        verify(jdbc, never()).update("UPDATE partners SET status = 'inactive'");
     }
 
     @Test
@@ -97,11 +90,20 @@ class AdminRoleBootstrapTest {
 
         assertThrows(
                 IllegalStateException.class,
-                () -> new AdminRoleBootstrap(jdbc, "missing@example.com", "").run(args));
+                () -> new AdminRoleBootstrap(jdbc, "missing@example.com", "", false).run(args));
 
         verify(jdbc, never()).update(
                 "UPDATE users SET role = 'admin', partner_id = NULL WHERE email = ?",
                 "missing@example.com");
+    }
+
+    @Test
+    void preservesExistingPartnerAccessWhenPartnerReconciliationIsNotEnabled() {
+        new AdminRoleBootstrap(jdbc, "", "", false).run(args);
+
+        verify(jdbc, never()).update(
+                "UPDATE users SET role = 'customer', partner_id = NULL WHERE role = 'partner'");
+        verify(jdbc, never()).update("UPDATE partners SET status = 'inactive'");
     }
 
     @Test
@@ -126,7 +128,8 @@ class AdminRoleBootstrapTest {
         new AdminRoleBootstrap(
                 jdbc,
                 "",
-                "libyanwings@zentrip.ly|libyan-wings|Libyan Wings|airline")
+                "libyanwings@zentrip.ly|libyan-wings|Libyan Wings|airline",
+                true)
                 .run(args);
 
         verify(jdbc).update(
@@ -173,7 +176,8 @@ class AdminRoleBootstrapTest {
                 jdbc,
                 "",
                 "almasahotel@zentrip.ly|al-masa-hotel|Al-Masa Hotel|hotel;"
-                        + "zentripcarrental@zentrip.com|zentrip-car-rental|Zentrip Car Rental|car")
+                        + "zentripcarrental@zentrip.com|zentrip-car-rental|Zentrip Car Rental|car",
+                true)
                 .run(args);
 
         verify(jdbc).update(
@@ -215,7 +219,8 @@ class AdminRoleBootstrapTest {
                 () -> new AdminRoleBootstrap(
                         jdbc,
                         "",
-                        "missing@zentrip.ly|missing|Missing|hotel").run(args));
+                        "missing@zentrip.ly|missing|Missing|hotel",
+                        true).run(args));
 
         verify(jdbc, never()).update(contains("UPDATE users SET role = 'customer'"));
     }

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/money_format.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/api_result.dart';
 import '../../../../global_widgets/app_network_image.dart';
@@ -18,7 +21,13 @@ import '../../../../models/review_model.dart';
 import '../../logic/hotel_controller.dart';
 
 class HotelDetailScreen extends StatefulWidget {
-  const HotelDetailScreen({super.key});
+  const HotelDetailScreen({
+    super.key,
+    this.loadReviews,
+  });
+
+  final Future<ApiResult<List<ReviewModel>>> Function(String itemId)?
+      loadReviews;
 
   @override
   State<HotelDetailScreen> createState() => _HotelDetailScreenState();
@@ -30,6 +39,24 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
   int _photoIndex = 0;
   Future<ApiResult<List<ReviewModel>>>? _hotelReviewsFuture;
 
+  String _formatPrice(HotelModel hotel, double amount, {int decimals = 0}) {
+    final locale = Localizations.localeOf(context).languageCode;
+    if (hotel.priceCurrencyCode.toUpperCase() == 'LYD') {
+      return formatCurrencyAmount(amount, 'LYD', locale: locale);
+    }
+    return '${hotel.priceCurrencyCode} ${amount.toStringAsFixed(decimals)}';
+  }
+
+  String _formatAvailablePrice(
+    HotelModel hotel,
+    double amount,
+    AppLocalizations l10n, {
+    int decimals = 0,
+  }) =>
+      hotel.comparisonNightlyPrice == null
+          ? l10n.priceUnavailable
+          : _formatPrice(hotel, amount, decimals: decimals);
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -39,7 +66,10 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
       _ctrl = controller;
       final hotel = controller?.selectedHotel;
       if (hotel != null) {
-        _hotelReviewsFuture = ApiService.instance.getReviews(itemId: hotel.id);
+        final loadReviews = widget.loadReviews;
+        _hotelReviewsFuture = loadReviews == null
+            ? ApiService.instance.getReviews(itemId: hotel.id)
+            : loadReviews(hotel.id);
       }
     }
   }
@@ -62,13 +92,14 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
   Future<void> _book() async {
     final l10n = AppLocalizations.of(context);
     final ctrl = _ctrl;
-    final hotel = ctrl?.selectedHotel;
+    final selectedHotel = ctrl?.selectedHotel;
+    final hotel = selectedHotel;
     if (hotel == null) {
       AppSnackbar.error(context, l10n.genericError);
       return;
     }
     final rooms = ctrl?.searchParams?.rooms ?? 1;
-    if (hotel.availableRooms < rooms) {
+    if (hotel.availabilityKnown && hotel.availableRooms < rooms) {
       AppSnackbar.error(context, l10n.hotelSoldOut);
       return;
     }
@@ -96,16 +127,17 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
     final ref =
         'ZT-H-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
 
-    final paid = await PaymentCheckoutScreen.start(context,
+    final payment = await PaymentCheckoutScreen.start(context,
         amountUsd: totalPrice, description: hotel.name, referenceId: ref);
     if (!mounted) return;
-    if (!paid) {
+    if (payment?.paid != true) {
       AppSnackbar.error(context, l10n.paymentFailedMessage);
       return;
     }
 
     setState(() => _isBooking = true);
     await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
     final booking = BookingModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       type: BookingType.hotel,
@@ -125,7 +157,10 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
       title: l10n.hotelBookingInProgress,
       subtitle: hotel.name,
       serviceIcon: Icons.hotel_rounded,
-      action: () => ApiService.instance.createBooking(booking),
+      action: () => ApiService.instance.createBooking(
+        booking,
+        paymentAttemptId: payment?.attemptId,
+      ),
     );
     if (createResult.isFailure) {
       if (!mounted) return;
@@ -140,13 +175,14 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
       );
       return;
     }
-    setState(() => _isBooking = false);
     if (!mounted) return;
+    setState(() => _isBooking = false);
     AppSnackbar.success(context, l10n.hotelBookingSuccess);
-    await NotificationsStore.instance.add(
-        kind: NotifKind.booking,
-        title: l10n.notifBookingConfirmedTitle,
-        subtitle: hotel.name);
+    unawaited(NotificationsStore.instance.refreshAfterBooking(
+      title: l10n.notifBookingConfirmedTitle,
+      subtitle: hotel.name,
+      bookingRef: ref,
+    ));
     if (!mounted) return;
     Navigator.push(
       context,
@@ -156,8 +192,9 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
           primaryText: hotel.name,
           secondaryText: hotel.address,
           reference: ref,
-          dateLabel: MaterialLocalizations.of(context).formatMediumDate(checkIn),
-          priceLabel: '\$${totalPrice.toStringAsFixed(2)}',
+          dateLabel:
+              MaterialLocalizations.of(context).formatMediumDate(checkIn),
+          priceLabel: _formatPrice(hotel, totalPrice, decimals: 2),
           serviceIcon: Icons.hotel_rounded,
         ),
       ),
@@ -173,7 +210,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
     final nights = ctrl?.searchParams?.nights ?? 1;
     final rooms = ctrl?.searchParams?.rooms ?? 1;
     if (hotel == null) return const BookingLoadError();
-    final isSoldOut = hotel.availableRooms < rooms;
+    final isSoldOut = hotel.availabilityKnown && hotel.availableRooms < rooms;
     final pricing = hotel.pricingFor(nights, rooms: rooms);
 
     return Scaffold(
@@ -245,42 +282,61 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
               delegate: SliverChildListDelegate([
                 // Location + rating
                 Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(children: [
-                        const Icon(Icons.place_rounded,
-                            color: AppColors.primary, size: 16),
-                        const SizedBox(width: 4),
-                        Text(hotel.address,
-                            style: const TextStyle(
-                                fontSize: 13, color: AppColors.textSecondary)),
-                      ]),
-                      Row(children: [
-                        ...List.generate(
-                            hotel.starRating,
-                            (_) => const Icon(Icons.star_rounded,
-                                color: Colors.amber, size: 14)),
-                        const SizedBox(width: 6),
-                        if (hotel.hasGoogleRating)
-                          Text(
-                            '(${hotel.reviewCount}) '
-                            '${hotel.rating.toStringAsFixed(1)}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          )
-                        else
-                          Text(
-                            l10n.hotelRatingUnavailable,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.place_rounded,
+                              color: AppColors.primary, size: 16),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              hotel.address,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
                             ),
                           ),
-                      ]),
-                    ]).animate().fade(duration: 300.ms),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ...List.generate(
+                            hotel.starRating,
+                            (_) => const Icon(Icons.star_rounded,
+                                color: Colors.amber, size: 14),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              hotel.hasGoogleRating
+                                  ? '${hotel.rating.toStringAsFixed(1)} '
+                                      '(${hotel.reviewCount})'
+                                  : l10n.hotelRatingUnavailable,
+                              textDirection: TextDirection.ltr,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: hotel.hasGoogleRating
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ).animate().fade(duration: 300.ms),
                 const SizedBox(height: 16),
                 // Amenities
                 Text(l10n.hotelAmenities,
@@ -340,22 +396,42 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                   ),
                   child: Column(children: [
                     _Row(
-                      l10n.hotelNightPrice,
-                      '\$${hotel.pricePerNight.toStringAsFixed(0)}',
+                      hotel.isLiteApiOffer
+                          ? '${l10n.hotelNightPrice} · LiteAPI'
+                          : l10n.hotelNightPrice,
+                      _formatAvailablePrice(hotel, hotel.pricePerNight, l10n),
                     ),
+                    if (hotel.offers.isNotEmpty) ...[
+                      const Divider(height: 20),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: Text(
+                          l10n.hotelRoomRatesTitle,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                      for (final offer in hotel.offers)
+                        _Row(
+                          _offerName(offer, l10n.hotelRoomRatesTitle),
+                          _offerPrice(offer, hotel.priceCurrencyCode),
+                        ),
+                    ],
                     _Row(l10n.hotelNightsCount, l10n.hotelNightsValue(nights)),
                     _Row(
                       l10n.hotelSubtotal,
-                      '\$${pricing.subtotal.toStringAsFixed(0)}',
+                      _formatAvailablePrice(hotel, pricing.subtotal, l10n),
                     ),
                     _Row(
                       '${l10n.hotelTaxesFees} '
-                          '(${hotel.taxAndFeesPercentage.toStringAsFixed(0)}%)',
-                      '\$${pricing.taxAndFees.toStringAsFixed(0)}',
+                      '(${hotel.taxAndFeesPercentage.toStringAsFixed(0)}%)',
+                      _formatAvailablePrice(hotel, pricing.taxAndFees, l10n),
                     ),
                     const Divider(height: 20),
                     _Row(l10n.hotelTotal,
-                        '\$${pricing.totalPrice.toStringAsFixed(0)}',
+                        _formatAvailablePrice(hotel, pricing.totalPrice, l10n),
                         isBold: true, color: AppColors.primary),
                   ]),
                 ).animate().fade(delay: 200.ms),
@@ -382,6 +458,31 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
         ],
       ),
     );
+  }
+
+  String _offerName(Map<String, dynamic> offer, String fallback) {
+    final roomName = offer['room_name']?.toString().trim() ?? '';
+    final rateName = offer['name']?.toString().trim() ?? '';
+    final parts = [roomName, rateName].where((value) => value.isNotEmpty);
+    final label = parts.join(' · ');
+    return label.isEmpty ? fallback : label;
+  }
+
+  String _offerPrice(Map<String, dynamic> offer, String fallbackCurrency) {
+    final amount = double.tryParse(
+      '${offer['total_amount'] ?? offer['stay_total'] ?? ''}',
+    );
+    if (amount == null || !amount.isFinite) return '—';
+    final currency = (offer['total_currency'] ??
+            offer['price_currency'] ??
+            offer['currency'] ??
+            fallbackCurrency)
+        .toString();
+    final locale = Localizations.localeOf(context).languageCode;
+    if (currency.toUpperCase() == 'LYD') {
+      return formatCurrencyAmount(amount, 'LYD', locale: locale);
+    }
+    return '$currency ${amount.toStringAsFixed(2)}';
   }
 
   Widget _hotelReviewsSection(HotelModel hotel, AppLocalizations l10n) {
@@ -474,16 +575,30 @@ class _Row extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label,
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13)),
-            Text(value,
+                    color: AppColors.textSecondary, fontSize: 13),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.end,
                 style: TextStyle(
-                    fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
-                    fontSize: isBold ? 16 : 14,
-                    color: color)),
+                  fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: isBold ? 16 : 14,
+                  color: color,
+                ),
+              ),
+            ),
           ],
         ),
       );

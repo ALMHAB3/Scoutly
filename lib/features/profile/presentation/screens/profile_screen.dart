@@ -10,6 +10,7 @@ import '../../../favorites/logic/favorites_controller.dart';
 import '../../../chatbot/presentation/screens/chat_history_screen.dart';
 import '../../../chatbot/logic/chatbot_controller.dart';
 import '../../logic/profile_controller.dart';
+import '../../../trips/logic/trips_controller.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 import 'appearance_screen.dart';
@@ -221,7 +222,7 @@ class _ProfileHeader extends StatelessWidget {
     return Column(
       children: [
         Stack(
-          alignment: Alignment.bottomRight,
+          alignment: AlignmentDirectional.bottomEnd,
           children: [
             Container(
               width: 88,
@@ -287,31 +288,40 @@ class _StatsRowState extends State<_StatsRow> {
   int? _chatsCount;
   bool _isLoading = true;
   int _loadGeneration = 0;
+  late final TripsController _tripsController;
 
   @override
   void initState() {
     super.initState();
-    ApiService.flightTripsRevision.addListener(_load);
+    _tripsController = TripsController()..addListener(_onTripsChanged);
     _load();
   }
 
   @override
   void dispose() {
-    ApiService.flightTripsRevision.removeListener(_load);
+    _tripsController.removeListener(_onTripsChanged);
+    _tripsController.dispose();
     super.dispose();
   }
 
   Future<void> _load() async {
     final generation = ++_loadGeneration;
-    final flightsResult = await ApiService.instance.getMyFlightTrips();
-    final sessions = await ChatbotController.loadHistory();
+    final sessionsFuture = ChatbotController.loadHistory();
+    await _tripsController.loadTrips();
+    final sessions = await sessionsFuture;
     if (!mounted || generation != _loadGeneration) return;
     setState(() {
-      _tripsCount = ProfileController.countNonCancelledFlights(
-        flightsResult.data ?? const [],
-      );
+      _tripsCount = _tripsController.profileTripCount;
       _chatsCount = sessions.length;
       _isLoading = false;
+    });
+  }
+
+  void _onTripsChanged() {
+    if (!mounted) return;
+    setState(() {
+      _tripsCount = _tripsController.profileTripCount;
+      _isLoading = _tripsController.isLoading && _tripsCount == null;
     });
   }
 
@@ -405,7 +415,7 @@ class _MenuSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 10, right: 4),
+          padding: const EdgeInsetsDirectional.only(bottom: 10, end: 4),
           child: Text(title,
               style: const TextStyle(
                   fontSize: 13,

@@ -12,11 +12,13 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -73,6 +75,42 @@ class AdminControllerTest {
     }
 
     @Test
+    void attractionPopularityReturnsAggregatedPlaceAndCountryCountsForAdmins() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        List<Map<String, Object>> places = List.of(Map.of(
+                "title", "Leptis Magna",
+                "city", "Khoms",
+                "country", "Libya",
+                "visit_count", 41L));
+        List<Map<String, Object>> countries = List.of(
+                Map.of("country", "Libya", "visit_count", 41L),
+                Map.of("country", "Unspecified country", "visit_count", 0L));
+        when(jdbc.queryForList(contains("FROM tourist_monuments monuments")))
+                .thenReturn(places, countries);
+
+        Map<String, Object> response = controller.attractionPopularity(authenticatedRequest());
+
+        assertEquals(places, response.get("places"));
+        assertEquals(countries, response.get("countries"));
+        verify(jdbc).queryForList(contains("SUM(visit_count)"));
+    }
+
+    @Test
+    void attractionPopularityRequiresAdministratorRole() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("customer");
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.attractionPopularity(authenticatedRequest()));
+
+        assertEquals(403, exception.getStatusCode().value());
+        verify(jdbc, org.mockito.Mockito.never())
+                .queryForList(anyString());
+    }
+
+    @Test
     void customerListRejectsOutOfRangeLimit() {
         when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
                 .thenReturn("admin");
@@ -84,6 +122,83 @@ class AdminControllerTest {
         assertEquals(400, exception.getStatusCode().value());
         verify(jdbc).queryForObject(
                 "SELECT role FROM users WHERE id = ?", String.class, 7L);
+    }
+
+    @Test
+    void partnerManagementRequiresAdministratorRole() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("customer");
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.partners(authenticatedRequest()));
+
+        assertEquals(403, exception.getStatusCode().value());
+    }
+
+    @Test
+    void partnerDirectoryOmitsPlacesAndDoesNotDependOnLegacyReviewTable() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        when(jdbc.queryForList(contains("FROM partners p"))).thenReturn(List.of());
+
+        Map<String, Object> response = controller.partners(authenticatedRequest());
+
+        assertEquals(List.of(), response.get("partners"));
+        verify(jdbc).queryForList(contains(
+                "WHERE TRIM(LOWER(COALESCE(p.service_type, ''))) <> 'attraction'"));
+    }
+
+    @Test
+    void legacyPlaceListingDoesNotRequireTheOptionalReviewTable() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        when(jdbc.queryForObject(
+                "SELECT to_regclass('legacy_attraction_partner_reviews') IS NOT NULL",
+                Boolean.class))
+                .thenReturn(false);
+        when(jdbc.queryForList(contains("WHERE LOWER(p.service_type) = 'attraction'")))
+                .thenReturn(List.of());
+
+        Map<String, Object> response =
+                controller.legacyAttractionPartners(authenticatedRequest());
+
+        assertEquals(List.of(), response.get("partners"));
+        verify(jdbc).queryForList(contains("NULL AS approved_at, NULL AS reviewed_by_name"));
+    }
+
+    @Test
+    void legacyPlaceReviewFailsSafelyWhenReviewStorageIsMissing() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        when(jdbc.queryForObject(
+                "SELECT to_regclass('legacy_attraction_partner_reviews') IS NOT NULL",
+                Boolean.class))
+                .thenReturn(false);
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.reviewAndRetireAttractionPartner(
+                        12, Map.of("approved", true), authenticatedRequest()));
+
+        assertEquals(409, exception.getStatusCode().value());
+        verify(jdbc, never()).queryForList(contains("FOR UPDATE"));
+    }
+
+    @Test
+    void addPartnerRejectsUnsupportedServices() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.addPartner(Map.of(
+                        "name", "Example partner",
+                        "email", "traveler@example.com",
+                        "service_type", "attraction"),
+                        authenticatedRequest()));
+
+        assertEquals(400, exception.getStatusCode().value());
     }
 
     @Test
@@ -157,20 +272,88 @@ class AdminControllerTest {
 
         ResponseStatusException exception = assertThrows(
                 ResponseStatusException.class,
-                () -> controller.createOffer(Map.of(
-                        "title", "Istanbul Dream",
-                        "location", "Istanbul",
-                        "country", "Turkey",
-                        "description", "A trip",
-                        "price_per_person", 1290,
-                        "flight_price_per_person", 420,
-                        "hotel_price_per_night", 95,
-                        "duration_nights", 0,
-                        "rating", 4.8,
-                        "review_count", 2340),
+                () -> controller.createOffer(Map.ofEntries(
+                        Map.entry("title", "Istanbul Dream"),
+                        Map.entry("location", "Istanbul"),
+                        Map.entry("country", "Turkey"),
+                        Map.entry("description", "A trip"),
+                        Map.entry("price_per_person", 1290),
+                        Map.entry("flight_price_per_person", 420),
+                        Map.entry("flight_listing_id", 25),
+                        Map.entry("hotel_price_per_night", 95),
+                        Map.entry("duration_nights", 0),
+                        Map.entry("rating", 4.8),
+                        Map.entry("review_count", 2340)),
                         authenticatedRequest()));
 
         assertEquals(400, exception.getStatusCode().value());
+    }
+
+    @Test
+    void offerListFallsBackUntilFlightLinkMigrationIsApplied() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        when(jdbc.queryForObject(contains("pg_attribute"), eq(Boolean.class)))
+                .thenReturn(false);
+        when(jdbc.queryForList(contains("FROM offers"))).thenReturn(List.of());
+
+        Map<String, Object> response = controller.offers(authenticatedRequest());
+
+        assertEquals(false, response.get("flight_link_schema_ready"));
+        assertEquals(List.of(), response.get("offers"));
+    }
+
+    @Test
+    void offerWriteReturnsMigrationInstructionInsteadOfDatabaseError() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        when(jdbc.queryForObject(contains("pg_attribute"), eq(Boolean.class)))
+                .thenReturn(false);
+
+        var response = controller.createOffer(Map.ofEntries(
+                Map.entry("title", "Istanbul Dream"),
+                Map.entry("location", "Istanbul"),
+                Map.entry("country", "Turkey"),
+                Map.entry("description", "A trip"),
+                Map.entry("price_per_person", 1085),
+                Map.entry("flight_price_per_person", 420),
+                Map.entry("flight_listing_id", 25),
+                Map.entry("hotel_price_per_night", 95),
+                Map.entry("duration_nights", 7),
+                Map.entry("rating", 4.8),
+                Map.entry("review_count", 2340)),
+                authenticatedRequest());
+
+        assertEquals(409, response.getStatusCode().value());
+        assertTrue(response.getBody().get("message").toString()
+                .contains("20261107_offer_flight_link.sql"));
+    }
+
+    @Test
+    void offerWriteExplainsThatArabicFieldsNeedTheirMigration() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        when(jdbc.queryForObject(contains("pg_attribute"), eq(Boolean.class)))
+                .thenReturn(true, false);
+
+        var response = controller.createOffer(Map.ofEntries(
+                Map.entry("title", "Istanbul Dream"),
+                Map.entry("title_ar", "حلم إسطنبول"),
+                Map.entry("location", "Istanbul"),
+                Map.entry("country", "Turkey"),
+                Map.entry("description", "A trip"),
+                Map.entry("price_per_person", 1085),
+                Map.entry("flight_price_per_person", 420),
+                Map.entry("flight_listing_id", 25),
+                Map.entry("hotel_price_per_night", 95),
+                Map.entry("duration_nights", 7),
+                Map.entry("rating", 4.8),
+                Map.entry("review_count", 2340)),
+                authenticatedRequest());
+
+        assertEquals(409, response.getStatusCode().value());
+        assertTrue(response.getBody().get("message").toString()
+                .contains("migrate_20261108_arabic_catalog_fields.sql"));
     }
 
     @Test
@@ -202,12 +385,17 @@ class AdminControllerTest {
     void offerUpdatePersistsTheCustomBadge() {
         when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
                 .thenReturn("admin");
+        when(jdbc.queryForObject(contains("pg_attribute"), eq(Boolean.class)))
+                .thenReturn(true);
         when(jdbc.queryForObject(
                 "SELECT COUNT(*) FROM offers WHERE id = ? AND is_active = TRUE",
                 Integer.class,
                 "offer-1")).thenReturn(1);
+        when(jdbc.queryForList(
+                contains("FROM partner_listings l"), eq(25L)))
+                .thenReturn(List.of(Map.of("price", new BigDecimal("420"))));
 
-        Map<String, Object> response = controller.updateOffer(
+        var response = controller.updateOffer(
                 "offer-1",
                 Map.ofEntries(
                         Map.entry("title", "Istanbul Dream"),
@@ -216,6 +404,7 @@ class AdminControllerTest {
                         Map.entry("description", "Explore the city"),
                         Map.entry("price_per_person", 1290),
                         Map.entry("flight_price_per_person", 420),
+                        Map.entry("flight_listing_id", 25),
                         Map.entry("hotel_price_per_night", 95),
                         Map.entry("duration_nights", 7),
                         Map.entry("rating", 4.8),
@@ -226,13 +415,44 @@ class AdminControllerTest {
                 authenticatedRequest());
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> offer = (Map<String, Object>) response.get("offer");
+        Map<String, Object> offer =
+                (Map<String, Object>) response.getBody().get("offer");
         assertEquals("offer-1", offer.get("id"));
         assertEquals("Limited-time", offer.get("badge"));
         verify(jdbc).update(
                 contains("INSERT INTO offer_catalog_metadata"),
                 eq("offer-1"),
                 eq("Limited-time"));
+    }
+
+    @Test
+    void offerFlightPickerListsOnlyActivePartnerFlightsWithAirlineAndPrice() {
+        when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
+                .thenReturn("admin");
+        when(jdbc.queryForList(contains("FROM partner_listings l")))
+                .thenReturn(List.of(Map.ofEntries(
+                        Map.entry("linked_flight_id", 25L),
+                        Map.entry("flight_title", "MRA to MJI"),
+                        Map.entry("flight_city", "Tripoli"),
+                        Map.entry("flight_country", "Libya"),
+                        Map.entry("linked_flight_price", new BigDecimal("175")),
+                        Map.entry("flight_active", true),
+                        Map.entry("flight_attributes",
+                                "{\"origin_code\":\"MRA\",\"destination_code\":\"MJI\","
+                                        + "\"flight_number\":\"YL25\"}"),
+                        Map.entry("flight_airline", "Libyan Wings"))));
+
+        Map<String, Object> response =
+                controller.offerFlightListings(authenticatedRequest());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> flight =
+                (Map<String, Object>) ((List<?>) response.get("flights")).getFirst();
+
+        assertEquals("Libyan Wings", flight.get("airline"));
+        assertEquals(25L, flight.get("partner_listing_id"));
+        assertEquals("MRA", flight.get("origin_code"));
+        assertEquals("MJI", flight.get("destination_code"));
+        assertEquals(Boolean.TRUE, flight.get("is_active"));
     }
 
     @Test

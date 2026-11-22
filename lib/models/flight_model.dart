@@ -2,39 +2,78 @@ import 'dart:math' as math;
 
 class AirportOption {
   final String code;
+  final String icaoCode;
   final String city;
   final String airportName;
   final String country;
   final String region;
+  final double? latitude;
+  final double? longitude;
+  final String airportType;
+  final bool isMajor;
+  final bool scheduledService;
+  final String isoCountry;
+  final String keywords;
+  final String? wikipediaLink;
+  final String sourceProvider;
+  final double? distanceKm;
 
   const AirportOption({
     required this.code,
+    this.icaoCode = '',
     required this.city,
     required this.airportName,
     required this.country,
     this.region = '',
+    this.latitude,
+    this.longitude,
+    this.airportType = '',
+    this.isMajor = false,
+    this.scheduledService = true,
+    this.isoCountry = '',
+    this.keywords = '',
+    this.wikipediaLink,
+    this.sourceProvider = '',
+    this.distanceKm,
   });
 
   String get label => '$city [$code]';
+  String get priorityLabel => isMajor ? 'major' : 'minor';
 
-  factory AirportOption.fromJson(Map<String, dynamic> json) => AirportOption(
-        code: (json['code'] ?? '').toString().toUpperCase(),
-        city: (json['city'] ?? '').toString(),
-        airportName:
-            (json['airport_name'] ?? json['airportName'] ?? '').toString(),
-        country: (json['country'] ?? '').toString(),
-        region: (json['region'] ?? '').toString(),
-      );
+  factory AirportOption.fromJson(Map<String, dynamic> json) {
+    final airport = AirportOption(
+      code: (json['code'] ?? '').toString().trim().toUpperCase(),
+      icaoCode: (json['icao_code'] ?? '').toString().trim().toUpperCase(),
+      city: (json['city'] ?? '').toString(),
+      airportName:
+          (json['airport_name'] ?? json['airportName'] ?? '').toString(),
+      country: (json['country'] ?? '').toString(),
+      region: (json['region'] ?? '').toString(),
+      latitude: _doubleOrNull(json['latitude']),
+      longitude: _doubleOrNull(json['longitude']),
+      airportType: (json['airport_type'] ?? '').toString(),
+      isMajor: _asBool(json['is_major']) ||
+          (json['priority'] ?? '').toString().toLowerCase() == 'major',
+      scheduledService: _asBool(json['scheduled_service'], fallback: false),
+      isoCountry: (json['iso_country'] ?? '').toString().trim().toUpperCase(),
+      keywords: (json['keywords'] ?? '').toString(),
+      wikipediaLink: json['wikipedia_link']?.toString(),
+      sourceProvider: (json['source_provider'] ?? '').toString(),
+      distanceKm: _doubleOrNull(json['distance_km']),
+    );
+    if (airport.code.isNotEmpty) _directory[airport.code] = airport;
+    return airport;
+  }
 
   bool matches(String query) {
     final normalized = query.trim().toLowerCase();
     if (normalized.isEmpty) return true;
-    return '$city $code $airportName $country $region'
+    return '$city $code $icaoCode $airportName $country $region $keywords'
         .toLowerCase()
         .contains(normalized);
   }
 
-  static const supported = <AirportOption>[
+  static const _defaults = <AirportOption>[
     AirportOption(
       code: 'MJI',
       city: 'Tripoli',
@@ -114,15 +153,19 @@ class AirportOption {
     ),
   ];
 
+  static final Map<String, AirportOption> _directory = {
+    for (final airport in _defaults) airport.code: airport,
+  };
+
+  static List<AirportOption> get supported =>
+      List.unmodifiable(_directory.values);
+
   static AirportOption? byCode(String code) {
-    for (final airport in supported) {
-      if (airport.code == code) return airport;
-    }
-    return null;
+    return _directory[code.trim().toUpperCase()];
   }
 
   static AirportOption? byCity(String city) {
-    for (final airport in supported) {
+    for (final airport in _directory.values) {
       if (airport.city.toLowerCase() == city.trim().toLowerCase()) {
         return airport;
       }
@@ -143,8 +186,10 @@ class AirportOption {
 
     AirportOption? nearest;
     var nearestDistance = double.infinity;
-    for (final airport in supported) {
-      final coordinates = _coordinates[airport.code];
+    for (final airport in _directory.values) {
+      final coordinates = airport.latitude != null && airport.longitude != null
+          ? (airport.latitude!, airport.longitude!)
+          : _coordinates[airport.code];
       if (coordinates == null) continue;
       final distance = _distanceInKm(
         latitude,
@@ -195,6 +240,138 @@ class AirportOption {
   }
 
   static double _radians(double degrees) => degrees * math.pi / 180;
+
+  static double? _doubleOrNull(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  static bool _asBool(dynamic value, {bool fallback = false}) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      switch (value.trim().toLowerCase()) {
+        case 'true':
+        case 'yes':
+        case '1':
+          return true;
+        case 'false':
+        case 'no':
+        case '0':
+          return false;
+      }
+    }
+    return fallback;
+  }
+}
+
+class AirportSearchResult {
+  final String queryType;
+  final List<AirportOption> airports;
+  final List<AirportSearchLandmark> landmarks;
+  final int total;
+  final bool hasMore;
+  final String? message;
+
+  const AirportSearchResult({
+    required this.queryType,
+    required this.airports,
+    required this.landmarks,
+    required this.total,
+    required this.hasMore,
+    this.message,
+  });
+
+  factory AirportSearchResult.fromJson(Map<String, dynamic> json) {
+    final rawAirports = json['airports'] as List? ?? const [];
+    final rawLandmarks = json['landmarks'] as List? ?? const [];
+    return AirportSearchResult(
+      queryType: (json['query_type'] ?? 'search').toString(),
+      airports: rawAirports
+          .whereType<Map>()
+          .map((item) => AirportOption.fromJson(
+                Map<String, dynamic>.from(item),
+              ))
+          .toList(growable: false),
+      landmarks: rawLandmarks
+          .whereType<Map>()
+          .map((item) => AirportSearchLandmark.fromJson(
+                Map<String, dynamic>.from(item),
+              ))
+          .toList(growable: false),
+      total: _readInt(json['total']),
+      hasMore: json['has_more'] == true,
+      message: json['message']?.toString(),
+    );
+  }
+
+  static int _readInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+}
+
+class AirportSearchLandmark {
+  final String name;
+  final String? nameAr;
+  final String city;
+  final String? cityAr;
+  final String country;
+  final String? countryAr;
+  final String category;
+  final String? imageUrl;
+  final String? imageSource;
+  final String? wikipediaUrl;
+  final String sourceAttribution;
+  final double? latitude;
+  final double? longitude;
+  final double? distanceKm;
+  final AirportOption? nearestAirport;
+
+  const AirportSearchLandmark({
+    required this.name,
+    this.nameAr,
+    required this.city,
+    this.cityAr,
+    required this.country,
+    this.countryAr,
+    required this.category,
+    required this.sourceAttribution,
+    this.imageUrl,
+    this.imageSource,
+    this.wikipediaUrl,
+    this.latitude,
+    this.longitude,
+    this.distanceKm,
+    this.nearestAirport,
+  });
+
+  factory AirportSearchLandmark.fromJson(Map<String, dynamic> json) {
+    final rawAirport = json['nearest_airport'];
+    final airport = rawAirport is Map
+        ? AirportOption.fromJson(Map<String, dynamic>.from(rawAirport))
+        : null;
+    return AirportSearchLandmark(
+      name: (json['name'] ?? '').toString(),
+      nameAr: json['name_ar']?.toString(),
+      city: (json['city'] ?? '').toString(),
+      cityAr: json['city_ar']?.toString(),
+      country: (json['country'] ?? '').toString(),
+      countryAr: json['country_ar']?.toString(),
+      category: (json['highlight_category'] ?? json['category'] ?? 'Landmark')
+          .toString(),
+      imageUrl: json['image_url']?.toString(),
+      imageSource: json['image_source']?.toString(),
+      wikipediaUrl: json['wikipedia_url']?.toString(),
+      sourceAttribution: (json['source_attribution'] ?? '').toString(),
+      latitude: AirportOption._doubleOrNull(json['latitude']),
+      longitude: AirportOption._doubleOrNull(json['longitude']),
+      distanceKm: AirportOption._doubleOrNull(json['distance_km']),
+      nearestAirport: airport,
+    );
+  }
 }
 
 class FlightModel {
@@ -221,6 +398,29 @@ class FlightModel {
   final String aircraftName;
   final String seatLayout;
   final int seatRows;
+  final String source;
+  final String? duffelOfferId;
+  final String priceCurrencyCode;
+  final bool priceIsTotal;
+
+  bool get isDuffelOffer => source == 'duffel';
+
+  /// Requested-cabin traveler total, without changing the provider quote.
+  /// Duffel already returns a total for the requested travelers and cabin.
+  double? comparisonTotal(
+      {required int passengers, required String seatClass}) {
+    final amount = priceIsTotal
+        ? economyPrice
+        : switch (seatClass) {
+            'business' => businessPrice,
+            'first' => firstPrice,
+            _ => economyPrice,
+          };
+    if (amount == null || !amount.isFinite || amount < 0 || passengers < 1) {
+      return null;
+    }
+    return priceIsTotal ? amount : amount * passengers;
+  }
 
   const FlightModel({
     required this.id,
@@ -246,6 +446,10 @@ class FlightModel {
     this.aircraftName = '',
     this.seatLayout = '3-3',
     this.seatRows = 30,
+    this.source = 'partner',
+    this.duffelOfferId,
+    this.priceCurrencyCode = 'USD',
+    this.priceIsTotal = false,
   });
 
   bool get usesTwoByTwoSeatLayout =>
@@ -310,6 +514,8 @@ class FlightModel {
   }
 
   factory FlightModel.fromJson(Map<String, dynamic> json) {
+    final source = _stringFromDynamic(json['source'], 'partner');
+    final isDuffelOffer = source == 'duffel';
     final seatLayout = _stringFromDynamic(
       json['seat_layout'] ??
           json['seat_configuration'] ??
@@ -353,7 +559,10 @@ class FlightModel {
       firstPrice: json['first_price'] == null
           ? null
           : _doubleFromDynamic(json['first_price']),
-      seatsAvailable: _intFromDynamic(json['seats_available'], 0),
+      seatsAvailable: _intFromDynamic(
+        json['seats_available'],
+        isDuffelOffer ? -1 : 0,
+      ),
       airlineLogoUrl: json['airline_logo_url'] == null
           ? null
           : _stringFromDynamic(json['airline_logo_url']),
@@ -365,12 +574,19 @@ class FlightModel {
             !_isInactiveStatus(json['status']),
           ) &&
           !_isInactiveStatus(json['status']),
-      aircraftName: aircraftName,
+      aircraftName:
+          isDuffelOffer && json['aircraft_name'] == null ? '' : aircraftName,
       seatLayout: seatLayout,
       seatRows: _intFromDynamic(
         json['seat_rows'] ?? json['row_count'],
-        defaultSeatRows,
+        isDuffelOffer ? 0 : defaultSeatRows,
       ),
+      source: source,
+      duffelOfferId: json['duffel_offer_id']?.toString() ??
+          (isDuffelOffer ? _stringFromDynamic(json['id']) : null),
+      priceCurrencyCode:
+          _stringFromDynamic(json['price_currency'], 'USD').toUpperCase(),
+      priceIsTotal: _boolFromDynamic(json['price_is_total']),
     );
   }
 
@@ -406,7 +622,7 @@ class FlightModel {
         departureTime.year == departureDate.year &&
         departureTime.month == departureDate.month &&
         departureTime.day == departureDate.day &&
-        seatsAvailable >= passengers;
+        (isDuffelOffer || seatsAvailable >= passengers);
   }
 
   static bool _matchesAirport(

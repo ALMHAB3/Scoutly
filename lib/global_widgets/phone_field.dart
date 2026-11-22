@@ -84,7 +84,7 @@ class _PhoneFieldState extends State<PhoneField> {
       decoration: InputDecoration(
         labelText: widget.label,
         prefixIcon: Padding(
-          padding: const EdgeInsets.only(left: 4),
+          padding: const EdgeInsetsDirectional.only(start: 4),
           child: InkWell(
             borderRadius: BorderRadius.circular(10),
             onTap: _pickCountry,
@@ -100,13 +100,16 @@ class _PhoneFieldState extends State<PhoneField> {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
-                      color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                      color: isDark
+                          ? AppColors.darkTextPrimary
+                          : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Icon(Icons.expand_more_rounded, size: 18, color: AppColors.textSecondary),
+                  const Icon(Icons.expand_more_rounded,
+                      size: 18, color: AppColors.textSecondary),
                   Container(
-                    margin: const EdgeInsets.only(left: 8),
+                    margin: const EdgeInsetsDirectional.only(start: 8),
                     height: 24,
                     width: 1,
                     color: isDark ? AppColors.darkBorder : AppColors.border,
@@ -136,8 +139,12 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   List<Country> get _filtered {
     if (_query.trim().isEmpty) return CountryCodes.all;
     final q = _query.trim().toLowerCase();
-    return CountryCodes.all.where((c) =>
-        c.name.toLowerCase().contains(q) || c.dialCode.contains(q) || c.isoCode.toLowerCase().contains(q)).toList();
+    return CountryCodes.all
+        .where((c) =>
+            c.name.toLowerCase().contains(q) ||
+            c.dialCode.contains(q) ||
+            c.isoCode.toLowerCase().contains(q))
+        .toList();
   }
 
   @override
@@ -152,7 +159,12 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       builder: (context, scrollController) => Column(
         children: [
           const SizedBox(height: 10),
-          Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2))),
+          Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2))),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
             child: TextField(
@@ -160,16 +172,23 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               onChanged: (v) => setState(() => _query = v),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context).phoneCountrySearchHint,
-                prefixIcon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                prefixIcon:
+                    const Icon(Icons.search_rounded, color: AppColors.primary),
                 filled: true,
-                fillColor: isDark ? AppColors.darkSurfaceSecondary : AppColors.surfaceSecondary,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                fillColor: isDark
+                    ? AppColors.darkSurfaceSecondary
+                    : AppColors.surfaceSecondary,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none),
               ),
             ),
           ),
           Expanded(
             child: results.isEmpty
-                ? const Center(child: Icon(Icons.search_off_rounded, color: AppColors.textHint, size: 32))
+                ? const Center(
+                    child: Icon(Icons.search_off_rounded,
+                        color: AppColors.textHint, size: 32))
                 : ListView.builder(
                     controller: scrollController,
                     itemCount: results.length,
@@ -177,9 +196,13 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                       final c = results[i];
                       final isSelected = c.isoCode == widget.selected.isoCode;
                       return ListTile(
-                        leading: Text(c.flag, style: const TextStyle(fontSize: 22)),
+                        leading:
+                            Text(c.flag, style: const TextStyle(fontSize: 22)),
                         title: Text(c.name),
-                        trailing: Text(c.dialCode, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.primary)),
+                        trailing: Text(c.dialCode,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.primary)),
                         selected: isSelected,
                         onTap: () => Navigator.pop(context, c),
                       );
