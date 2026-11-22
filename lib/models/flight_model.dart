@@ -455,6 +455,18 @@ class FlightModel {
   bool get usesTwoByTwoSeatLayout =>
       RegExp(r'^2\s*[-x×+]\s*2$').hasMatch(seatLayout.trim().toLowerCase());
 
+  /// Provider duration, or arrival − departure when the API omits it.
+  static int _durationMinutes(Map<String, dynamic> json) {
+    final reported = _intFromDynamic(json['duration_minutes']);
+    if (reported > 0) return reported;
+    final departure =
+        DateTime.tryParse(_stringFromDynamic(json['departure_time']));
+    final arrival = DateTime.tryParse(_stringFromDynamic(json['arrival_time']));
+    if (departure == null || arrival == null) return reported;
+    final minutes = arrival.difference(departure).inMinutes;
+    return minutes > 0 ? minutes : reported;
+  }
+
   static String _stringFromDynamic(dynamic value, [String fallback = '']) {
     if (value == null) return fallback;
     if (value is String) return value;
@@ -549,7 +561,9 @@ class FlightModel {
       arrivalTime:
           DateTime.tryParse(_stringFromDynamic(json['arrival_time'])) ??
               DateTime.now(),
-      durationMinutes: _intFromDynamic(json['duration_minutes']),
+      // Partner listings do not send duration_minutes: derive it from the
+      // departure/arrival times instead of showing "0h 0m".
+      durationMinutes: _durationMinutes(json),
       isDirect: _boolFromDynamic(json['is_direct'], true),
       stops: _intFromDynamic(json['stops'], 0),
       economyPrice: _doubleFromDynamic(json['economy_price']),

@@ -196,13 +196,17 @@ class _FlightTripDetailsScreenState extends State<FlightTripDetailsScreen>
   /// available; otherwise the provider's own currency (never mislabelled).
   ({double amount, String currency}) _chargeFor(BuildContext context) {
     final converted = _userTotal(context);
-    if (converted != null) {
-      return (amount: converted, currency: userCurrencyCode(context));
-    }
-    return (
-      amount: _sourceFlightTotal + _packageStayTotal,
-      currency: _sourceCurrency,
-    );
+    final currency =
+        converted != null ? userCurrencyCode(context) : _sourceCurrency;
+    final amount = converted ?? _sourceFlightTotal + _packageStayTotal;
+    // Charge exactly what is displayed: rounded to the currency's minor
+    // units (LYD 3, USD/EUR 2), without floating-point noise.
+    return (amount: _roundMinor(amount, currency), currency: currency);
+  }
+
+  static double _roundMinor(double amount, String currency) {
+    final digits = currencyDecimalDigits(currency);
+    return double.parse(amount.toStringAsFixed(digits));
   }
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
@@ -958,8 +962,8 @@ class _FlightTripDetailsScreenState extends State<FlightTripDetailsScreen>
                         ),
                         caption: _isDuffel
                             ? labels.perTraveler
-                            : '${labels.perTraveler} · '
-                                '${labels.availableSeats}: ${fare.availableSeats}',
+                            : '${labels.perTraveler}\n'
+                                '${AppLocalizations.of(context).seatsLeft(fare.availableSeats)}',
                         selected: fare.id == _fare?.id,
                         enabled: !_submitting &&
                             (_isDuffel ||

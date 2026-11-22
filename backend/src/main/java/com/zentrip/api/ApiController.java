@@ -2731,7 +2731,12 @@ public class ApiController {
             throw new ResponseStatusException(
                     HttpStatus.UNPROCESSABLE_ENTITY, "paid must be a boolean");
         }
-        BigDecimal amount = decimal(required(body, "amount"));
+        // payment_attempts.amount is NUMERIC(12,2): normalize to that scale
+        // before storing and comparing, otherwise converted amounts (binary
+        // floating-point noise, or LYD's third decimal) never match the stored
+        // row and every verification fails with 409.
+        BigDecimal amount = decimal(required(body, "amount"))
+                .setScale(2, RoundingMode.HALF_UP);
         if (amount.signum() < 0) {
             throw new ResponseStatusException(
                     HttpStatus.UNPROCESSABLE_ENTITY, "amount must not be negative");

@@ -111,6 +111,12 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.darkBackground,
         foregroundColor: Colors.white,
+        // The theme's title colour (dark text) overrides foregroundColor, so
+        // the title was invisible on the dark background.
+        titleTextStyle: Theme.of(context)
+            .appBarTheme
+            .titleTextStyle
+            ?.copyWith(color: Colors.white),
         title: Text(l10n.flightBookingConfirmed),
       ),
       body: _loading
@@ -172,6 +178,17 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
     final extras =
         confirmation.extras.isEmpty ? widget.draft.extras : confirmation.extras;
     final travelers = widget.draft.travelers;
+    // Show what was actually charged. The partner confirm API returns its own
+    // total in USD (total_price) without the display amount, which was then
+    // shown with the booking currency's label (e.g. "LYD 118.400" for 118.40
+    // USD), so use the charged amount from the draft. A Duffel confirmation is
+    // built in the app from the saved trip and is already in that currency.
+    final fromServer = widget.initialConfirmation == null;
+    final paidAmount =
+        fromServer ? widget.draft.totalPrice : confirmation.totalPrice;
+    final paidCurrency = fromServer
+        ? widget.draft.currencyCode
+        : confirmation.trip.bookingCurrencyCode;
     final passengerName =
         ApiService.instance.currentUser?.name.trim().isNotEmpty == true
             ? ApiService.instance.currentUser!.name
@@ -226,8 +243,8 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
               reference: confirmation.reference,
               seats: seats,
               seatClass: widget.draft.seatClass,
-              totalPrice: confirmation.totalPrice,
-              currencyCode: confirmation.trip.bookingCurrencyCode,
+              totalPrice: paidAmount,
+              currencyCode: paidCurrency,
               passengerName:
                   travelers.isNotEmpty && travelers.first.name.trim().isNotEmpty
                       ? travelers.first.name
@@ -262,7 +279,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                 ],
                 seatClass: widget.draft.seatClass,
                 totalPrice: null,
-                currencyCode: confirmation.trip.bookingCurrencyCode,
+                currencyCode: paidCurrency,
                 passengerName: travelers[i].name,
               ),
             ],
@@ -295,15 +312,14 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '${l10n.flightTotal} · '
-                        '${CheckoutLabels(l10n).travellerPrice(travelers.length)}',
+                        CheckoutLabels(l10n).travellerPrice(travelers.length),
                         style: const TextStyle(
                             color: AppColors.textSecondary, fontSize: 11),
                       ),
                       Text(
                         checkoutMoney(
-                          confirmation.trip.bookingCurrencyCode,
-                          confirmation.totalPrice,
+                          paidCurrency,
+                          paidAmount,
                           locale: Localizations.localeOf(context).languageCode,
                         ),
                         style: const TextStyle(
