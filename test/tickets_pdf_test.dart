@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zentrip/core/constants/currency_rates.dart';
 import 'package:zentrip/features/flight_booking/logic/flight_checkout_passenger.dart';
@@ -93,12 +95,47 @@ void main() {
         duration: 'Duration',
         reference: 'Reference',
         total: 'Total',
-        ticketOf: (i, n) => 'Ticket $i of $n',
+        ticket: 'Ticket',
       ),
     );
     final text = String.fromCharCodes(bytes);
     expect(text.startsWith('%PDF'), isTrue);
     expect(RegExp(r'/Type\s*/Page\b').allMatches(text).length, 3);
+  });
+
+  test('Arabic tickets use the bundled Arabic font (works offline)', () async {
+    final bytes = await buildTicketsPdf(
+      flight: _flight(),
+      reference: 'ZT1234',
+      seatClassLabel: 'اقتصادية',
+      totalText: '2,227.200 د.ل',
+      rtl: true,
+      locale: 'ar',
+      tickets: const [
+        TicketPdfEntry(
+            passengerName: 'عمر بن علي',
+            typeLabel: 'بالغ',
+            seat: '12A',
+            code: 'ZT1234-1'),
+      ],
+      labels: TicketPdfLabels(
+        title: 'تذاكر',
+        passenger: 'المسافر',
+        seat: 'المقعد',
+        seatClass: 'الدرجة',
+        flight: 'الرحلة',
+        date: 'التاريخ',
+        departure: 'الإقلاع',
+        arrival: 'الوصول',
+        duration: 'المدة',
+        reference: 'رقم الحجز',
+        total: 'الإجمالي',
+        ticket: 'التذكرة',
+      ),
+    );
+    expect(String.fromCharCodes(bytes), contains('NotoSansArabic'));
+    final out = Platform.environment['TICKETS_PDF_OUT'];
+    if (out != null) File(out).writeAsBytesSync(bytes);
   });
 
   test('LYD rate ignores invalid admin values', () {

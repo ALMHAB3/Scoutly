@@ -86,7 +86,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
           duration: ar ? 'المدة' : 'Duration',
           reference: l10n.flightBookingReferenceLabel,
           total: labels.travellerPrice(widget.draft.travelers.length),
-          ticketOf: (i, n) => ar ? 'التذكرة $i من $n' : 'Ticket $i of $n',
+          ticket: ar ? 'التذكرة' : 'Ticket',
         ),
       );
       await shareTicketsPdf(bytes, confirmation.reference);

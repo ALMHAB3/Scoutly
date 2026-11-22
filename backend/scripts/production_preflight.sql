@@ -70,7 +70,10 @@ WITH checks(sort_order, item, present, fixed_by) AS (
          to_regclass('public.user_favorites') IS NOT NULL
          AND to_regclass('public.user_price_alerts') IS NOT NULL
          AND to_regclass('public.user_settings') IS NOT NULL,
-         '20261115_user_saved_data.sql')
+         '20261115_user_saved_data.sql'),
+    (110, 'table public.app_settings  (admin dinar rate)',
+          to_regclass('public.app_settings') IS NOT NULL,
+          '20261122_app_settings.sql')
 )
 SELECT sort_order,
        item,

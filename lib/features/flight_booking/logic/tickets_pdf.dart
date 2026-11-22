@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -37,7 +38,9 @@ class TicketPdfLabels {
   final String duration;
   final String reference;
   final String total;
-  final String Function(int index, int count) ticketOf;
+
+  /// "Ticket" / "التذكرة"; printed before "1/3".
+  final String ticket;
 
   const TicketPdfLabels({
     required this.title,
@@ -51,7 +54,7 @@ class TicketPdfLabels {
     required this.duration,
     required this.reference,
     required this.total,
-    required this.ticketOf,
+    required this.ticket,
   });
 }
 
@@ -59,6 +62,72 @@ const _navy = PdfColor.fromInt(0xFF202F96);
 const _ink = PdfColor.fromInt(0xFF0F1E36);
 const _muted = PdfColor.fromInt(0xFF6B7A99);
 const _line = PdfColor.fromInt(0xFFE4EAF2);
+
+/// Fonts are bundled in assets/fonts/pdf (Noto Sans + Noto Sans Arabic) so
+/// Arabic names print correctly without internet. If the assets are missing
+/// (e.g. in plain Dart tests) it falls back to Google Fonts, then the
+/// built-in font.
+class _PdfFonts {
+  final pw.Font latin, latinBold, arabic, arabicBold;
+  const _PdfFonts(this.latin, this.latinBold, this.arabic, this.arabicBold);
+}
+
+/// Fonts are bundled in assets/fonts/pdf (Noto Sans + Noto Sans Arabic) so
+/// Arabic names print correctly without internet. If the assets are missing
+/// it falls back to Google Fonts, then to the built-in font (no Arabic).
+Future<_PdfFonts?> _loadFonts() async {
+  Future<pw.Font> asset(String name) async =>
+      pw.Font.ttf(await rootBundle.load('assets/fonts/pdf/$name.ttf'));
+  try {
+    return _PdfFonts(
+      await asset('NotoSans-Regular'),
+      await asset('NotoSans-Bold'),
+      await asset('NotoSansArabic-Regular'),
+      await asset('NotoSansArabic-Bold'),
+    );
+  } catch (_) {}
+  try {
+    return _PdfFonts(
+      await PdfGoogleFonts.notoSansRegular(),
+      await PdfGoogleFonts.notoSansBold(),
+      await PdfGoogleFonts.notoSansArabicRegular(),
+      await PdfGoogleFonts.notoSansArabicBold(),
+    );
+  } catch (_) {
+    return null;
+  }
+}
+
+_PdfFonts? _fonts;
+
+final _arabicChars =
+    RegExp(r'[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]');
+
+/// Text whose direction follows its content: Arabic right-to-left, codes,
+/// times and Latin names left-to-right (they would print reversed in RTL).
+pw.Widget _text(String data, {pw.TextStyle? style}) {
+  final arabic = _arabicChars.hasMatch(data);
+  final fonts = _fonts;
+  // Arabic is shaped correctly only when an Arabic font is the primary font.
+  final fontStyle = arabic && fonts != null
+      ? pw.TextStyle(
+          font: fonts.arabic,
+          fontBold: fonts.arabicBold,
+          fontFallback: [fonts.latin, fonts.latinBold],
+        )
+      : null;
+  return pw.Builder(
+    builder: (context) => pw.Text(
+      data,
+      style: fontStyle == null ? style : fontStyle.merge(style),
+      textDirection: arabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+      // Line up with the page (right side on Arabic tickets).
+      textAlign: pw.Directionality.of(context) == pw.TextDirection.rtl
+          ? pw.TextAlign.right
+          : pw.TextAlign.left,
+    ),
+  );
+}
 
 /// Builds one PDF with a page per traveler and the booking total on every
 /// page footer (so each printed page is complete on its own).
@@ -73,23 +142,14 @@ Future<Uint8List> buildTicketsPdf({
   String locale = 'en',
 }) async {
   await initializeDateFormatting(locale);
-  pw.ThemeData theme;
-  try {
-    // Noto covers Latin and Arabic names; fall back to the built-in font
-    // if the fonts cannot be fetched (offline).
-    final base = await PdfGoogleFonts.notoSansRegular();
-    final bold = await PdfGoogleFonts.notoSansBold();
-    final arabic = await PdfGoogleFonts.notoSansArabicRegular();
-    final arabicBold = await PdfGoogleFonts.notoSansArabicBold();
-    theme = pw.ThemeData.withFont(
-      base: base,
-      bold: bold,
-      fontFallback: [arabic, arabicBold],
-    );
-  } catch (_) {
-    theme = pw.ThemeData.base();
-  }
-
+  final fonts = _fonts = await _loadFonts();
+  final theme = fonts == null
+      ? pw.ThemeData.base()
+      : pw.ThemeData.withFont(
+          base: fonts.latin,
+          bold: fonts.latinBold,
+          fontFallback: [fonts.arabic, fonts.arabicBold],
+        );
   final doc = pw.Document(
     title: '${labels.title} $reference',
     author: 'Zentrip',
@@ -120,7 +180,7 @@ Future<Uint8List> buildTicketsPdf({
               child: pw.Row(
                 children: [
                   pw.Expanded(
-                    child: pw.Text(
+                    child: _text(
                       flight.airline,
                       style: pw.TextStyle(
                         color: PdfColors.white,
@@ -129,10 +189,20 @@ Future<Uint8List> buildTicketsPdf({
                       ),
                     ),
                   ),
-                  pw.Text(
-                    labels.ticketOf(i + 1, tickets.length),
+                  // Word and number are separate pieces: the PDF engine
+                  // drops the space between Arabic text and digits.
+                  _text(
+                    labels.ticket,
                     style: const pw.TextStyle(
                         color: PdfColors.white, fontSize: 10),
+                  ),
+                  pw.SizedBox(width: 4),
+                  _text(
+                    '${i + 1}/${tickets.length}',
+                    style: pw.TextStyle(
+                        color: PdfColors.white,
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold),
                   ),
                 ],
               ),
@@ -144,9 +214,9 @@ Future<Uint8List> buildTicketsPdf({
                 _airport(flight.originCode, flight.originCity,
                     clock(flight.departureTime)),
                 pw.Column(children: [
-                  pw.Text(duration,
+                  _text(duration,
                       style: const pw.TextStyle(color: _muted, fontSize: 9)),
-                  pw.Text('->',
+                  _text(rtl ? '<-' : '->',
                       style: pw.TextStyle(
                           color: _navy,
                           fontSize: 16,
@@ -176,16 +246,16 @@ Future<Uint8List> buildTicketsPdf({
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text(labels.reference,
+                      _text(labels.reference,
                           style:
                               const pw.TextStyle(color: _muted, fontSize: 9)),
-                      pw.Text(reference,
+                      _text(reference,
                           style: pw.TextStyle(
                               color: _ink,
                               fontSize: 16,
                               fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 4),
-                      pw.Text(ticket.code,
+                      _text(ticket.code,
                           style:
                               const pw.TextStyle(color: _muted, fontSize: 9)),
                     ],
@@ -216,10 +286,10 @@ Future<Uint8List> buildTicketsPdf({
               child: pw.Row(
                 children: [
                   pw.Expanded(
-                    child: pw.Text(labels.total,
+                    child: _text(labels.total,
                         style: const pw.TextStyle(color: _muted, fontSize: 9)),
                   ),
-                  pw.Text(totalText,
+                  _text(totalText,
                       style: pw.TextStyle(
                           color: _navy,
                           fontSize: 12,
@@ -240,11 +310,11 @@ pw.Widget _airport(String code, String city, String time, {bool end = false}) =>
       crossAxisAlignment:
           end ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
       children: [
-        pw.Text(code,
+        _text(code,
             style: pw.TextStyle(
                 color: _ink, fontSize: 26, fontWeight: pw.FontWeight.bold)),
-        pw.Text(city, style: const pw.TextStyle(color: _muted, fontSize: 9)),
-        pw.Text(time,
+        _text(city, style: const pw.TextStyle(color: _muted, fontSize: 9)),
+        _text(time,
             style: pw.TextStyle(
                 color: _ink, fontSize: 12, fontWeight: pw.FontWeight.bold)),
       ],
@@ -267,9 +337,9 @@ pw.Widget _cell(String label, String value, {bool end = false}) => pw.Column(
           end ? pw.CrossAxisAlignment.end : pw.CrossAxisAlignment.start,
       children: [
         if (label.isNotEmpty)
-          pw.Text(label.toUpperCase(),
+          _text(label.toUpperCase(),
               style: const pw.TextStyle(color: _muted, fontSize: 8)),
-        pw.Text(value.isEmpty ? '-' : value,
+        _text(value.isEmpty ? '-' : value,
             style: pw.TextStyle(
                 color: _ink, fontSize: 11, fontWeight: pw.FontWeight.bold)),
       ],
