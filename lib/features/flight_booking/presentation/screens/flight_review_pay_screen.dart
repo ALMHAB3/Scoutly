@@ -4,7 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_model.dart';
 import 'flight_checkout_shared_components.dart';
-import 'flight_passengers_screen.dart';
+import '../../logic/flight_checkout_passenger.dart';
 
 class FlightReviewPayScreen extends StatefulWidget {
   final FlightModel flight;
@@ -86,7 +86,7 @@ class _FlightReviewPayScreenState extends State<FlightReviewPayScreen> {
     return CheckoutScaffold(
       header: FlightBookingFlowHeader(
         title: labels.reviewPay,
-        activeStep: 3,
+        activeStep: 1,
         onBack: onBack,
       ),
       footer: CheckoutFooter(

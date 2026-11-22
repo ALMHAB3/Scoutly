@@ -5,10 +5,11 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/utils/money_format.dart';
+import '../../../../core/utils/price_format.dart';
 import '../../../../features/price_alerts/logic/price_alerts_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_model.dart';
+import '../../../../models/flight_price_breakdown.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/flight_controller.dart';
 import 'flight_search_screen.dart';
@@ -152,31 +153,6 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
     unawaited(_search(updated));
   }
 
-  void _selectSeatClass(String seatClass) {
-    final current = _params;
-    if (current == null || current.seatClass == seatClass) return;
-    final updated = FlightSearchParams(
-      originCode: current.originCode,
-      originCity: current.originCity,
-      destinationCode: current.destinationCode,
-      destinationCity: current.destinationCity,
-      departureDate: current.departureDate,
-      returnDate: current.returnDate,
-      passengers: current.passengers,
-      seatClass: seatClass,
-      isRoundTrip: current.isRoundTrip,
-      flexibleDepartureMonths: current.flexibleDepartureMonths,
-      flexibleTripDurationDays: current.flexibleTripDurationDays,
-      flexibleWeekendsOnly: current.flexibleWeekendsOnly,
-    );
-    setState(() {
-      _params = updated;
-      _error = null;
-      _priceAlertsChecked = false;
-    });
-    unawaited(_search(updated));
-  }
-
   Future<void> _showFlightFilters() async {
     final controller = _controller;
     if (controller == null) return;
@@ -264,7 +240,6 @@ class _SearchFlightScreenState extends State<SearchFlightScreen> {
         onBack: () => Navigator.of(context).maybePop(),
         onSelect: _selectFlight,
         onSelectDepartureDate: _selectDepartureDate,
-        onSelectSeatClass: _selectSeatClass,
         onRetry: _retry,
         error: _error,
         l10n: l10n,
@@ -288,7 +263,6 @@ class _FlightResults extends StatelessWidget {
   final VoidCallback onBack;
   final ValueChanged<FlightModel> onSelect;
   final ValueChanged<DateTime> onSelectDepartureDate;
-  final ValueChanged<String> onSelectSeatClass;
   final VoidCallback onRetry;
   final String? error;
   final AppLocalizations l10n;
@@ -301,7 +275,6 @@ class _FlightResults extends StatelessWidget {
     required this.onBack,
     required this.onSelect,
     required this.onSelectDepartureDate,
-    required this.onSelectSeatClass,
     required this.onRetry,
     required this.error,
     required this.l10n,
@@ -353,15 +326,6 @@ class _FlightResults extends StatelessWidget {
                               ? AppColors.darkTextPrimary
                               : AppColors.textPrimary,
                         ),
-                  ),
-                ),
-                _CabinSelectorChip(
-                  label: _seatClassLabel(params.seatClass, l10n),
-                  onTap: () => _showCabinSelector(
-                    context,
-                    params.seatClass,
-                    onSelectSeatClass,
-                    l10n,
                   ),
                 ),
               ],
@@ -899,79 +863,6 @@ class _FlightDateCard extends StatelessWidget {
   }
 }
 
-class _CabinSelectorChip extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _CabinSelectorChip({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => Material(
-        color: AppColors.primarySurface,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.grid_view_rounded,
-                    size: 14, color: AppColors.primary),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(width: 3),
-                const Icon(Icons.keyboard_arrow_down_rounded,
-                    size: 15, color: AppColors.primary),
-              ],
-            ),
-          ),
-        ),
-      );
-}
-
-Future<void> _showCabinSelector(
-  BuildContext context,
-  String selected,
-  ValueChanged<String> onSelected,
-  AppLocalizations l10n,
-) async {
-  await showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    builder: (sheetContext) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final option in [
-            ('economy', l10n.economy),
-            ('business', l10n.business),
-            ('first', l10n.firstClass),
-          ])
-            ListTile(
-              title: Text(option.$2),
-              trailing: selected.toLowerCase() == option.$1
-                  ? const Icon(Icons.check_rounded, color: AppColors.primary)
-                  : null,
-              onTap: () {
-                Navigator.pop(sheetContext);
-                onSelected(option.$1);
-              },
-            ),
-        ],
-      ),
-    ),
-  );
-}
-
 class _FlightCard extends StatelessWidget {
   final FlightModel flight;
   final FlightSearchParams params;
@@ -987,19 +878,17 @@ class _FlightCard extends StatelessWidget {
     required this.l10n,
   });
 
-  double get _fare => switch (params.seatClass.toLowerCase()) {
-        'business' => flight.businessPrice ?? flight.economyPrice,
-        'first' => flight.firstPrice ?? flight.economyPrice,
-        _ => flight.economyPrice,
-      };
-
   @override
   Widget build(BuildContext context) {
-    final baseTotal =
-        flight.priceIsTotal ? flight.economyPrice : _fare * params.passengers;
-    final total =
-        flight.priceIsTotal ? baseTotal : baseTotal + (baseTotal * 0.12) + 12.0;
-    final perPerson = total / params.passengers;
+    // نفس تقدير السعر المستخدم في الترتيب (الضرائب والرسوم من النموذج المشترك)
+    // لكل شخص، ويُعرض بعملة المستخدم.
+    final passengers = params.passengers < 1 ? 1 : params.passengers;
+    final total = FlightPriceBreakdown.forSearch(
+      flight: flight,
+      passengers: passengers,
+      seatClass: params.seatClass,
+    ).total;
+    final perPerson = total / passengers;
     final available =
         flight.isDuffelOffer || flight.seatsAvailable >= params.passengers;
     final surface = isDark ? AppColors.darkSurface : AppColors.surface;
@@ -1132,26 +1021,18 @@ class _FlightCard extends StatelessWidget {
                                         value: flight.flightNumber,
                                       ),
                                     ),
-                                    Expanded(
-                                      child: _TicketMetadata(
-                                        label: l10n.travelClass.toUpperCase(),
-                                        value: _seatClassLabel(
-                                          params.seatClass,
-                                          l10n,
+                                    // CLASS يتحدد في Trip Details؛ وعمود
+                                    // المقاعد يختفي لو العدد غير معروف.
+                                    if (flight.seatsAvailable >= 0)
+                                      Expanded(
+                                        child: _TicketMetadata(
+                                          label: l10n.flightSeatsLabel
+                                              .toUpperCase(),
+                                          value: l10n.seatsLeft(
+                                            flight.seatsAvailable,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Expanded(
-                                      child: _TicketMetadata(
-                                        label:
-                                            l10n.flightSeatsLabel.toUpperCase(),
-                                        value: flight.seatsAvailable < 0
-                                            ? '—'
-                                            : l10n.seatsLeft(
-                                                flight.seatsAvailable,
-                                              ),
-                                      ),
-                                    ),
                                   ],
                                 ),
                               ],
@@ -1178,11 +1059,10 @@ class _FlightCard extends StatelessWidget {
                                 FittedBox(
                                   fit: BoxFit.scaleDown,
                                   child: Text(
-                                    formatProviderMoney(
+                                    formatPrice(
+                                      context,
                                       perPerson,
-                                      flight.priceCurrencyCode,
-                                      locale: Localizations.localeOf(context)
-                                          .languageCode,
+                                      from: flight.priceCurrencyCode,
                                     ),
                                     style: const TextStyle(
                                       color: AppColors.primary,

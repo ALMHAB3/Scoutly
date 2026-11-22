@@ -1,3 +1,4 @@
+import '../../../../core/utils/price_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -496,13 +497,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                                 .formatMediumDate(
                                           transfer.pickupTime,
                                         ),
-                                        priceLabel:
-                                            CurrencyService.instance.format(
-                                          total,
-                                          locale:
-                                              Localizations.localeOf(context)
-                                                  .languageCode,
-                                        ),
+                                        priceLabel: formatPrice(context, total),
                                         serviceIcon: Icons.local_taxi_rounded,
                                       ),
                                     ),

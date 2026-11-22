@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/constants/app_theme.dart';
 import 'core/services/api_service.dart';
 import 'core/services/currency_service.dart';
+import 'core/utils/price_format.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'features/favorites/logic/favorites_controller.dart';
@@ -92,6 +93,8 @@ class ZentripApp extends StatelessWidget {
           themeMode: ThemeController.instance.themeMode,
           initialRoute: AppRoutes.splash,
           onGenerateRoute: AppRoutes.onGenerateRoute,
+          builder: (context, child) =>
+              CurrencyScope(child: child ?? const SizedBox.shrink()),
           locale: LocaleController.instance.locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: const [

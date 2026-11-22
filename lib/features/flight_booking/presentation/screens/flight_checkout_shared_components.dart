@@ -6,12 +6,16 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_model.dart';
 import 'flight_primary_button.dart';
 
-/// Shared blue-gradient title bar and four-step progress indicator.
+/// Shared blue-gradient title bar and step progress indicator. The booking
+/// flow has two steps: Details (fare, travelers, seats) and Pay.
 class FlightBookingFlowHeader extends StatelessWidget {
   final String title;
   final int activeStep;
   final VoidCallback? onBack;
   final VoidCallback? onSkip;
+
+  /// Step names; defaults to the two booking steps (Details, Pay).
+  final List<String>? steps;
 
   const FlightBookingFlowHeader({
     super.key,
@@ -19,13 +23,14 @@ class FlightBookingFlowHeader extends StatelessWidget {
     required this.activeStep,
     this.onBack,
     this.onSkip,
-  }) : assert(activeStep >= 0 && activeStep <= 3);
+    this.steps,
+  }) : assert(activeStep >= 0);
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final copy = CheckoutLabels(l10n);
-    final labels = [copy.fare, l10n.passengers, copy.seats, copy.pay];
+    final labels = steps ?? [copy.details, copy.pay];
     return Column(
       children: [
         Container(
@@ -242,6 +247,60 @@ class CheckoutLabels {
       ? 'دفع مشفّر تجريبياً · $currency'
       : 'Secure simulated payment · charged in $currency';
   String get nameLabel => l10n.nameLabel;
+
+  // ── Trip Details (merged fare + travelers + seats) ──────────────────────
+  String get tripDetails => _ar ? 'تفاصيل الرحلة' : 'Trip Details';
+  String get details => _ar ? 'التفاصيل' : 'Details';
+  String get perTraveler => _ar ? 'لكل مسافر' : 'per traveler';
+  String get adults => _ar ? 'البالغون' : 'Adults';
+  String get adultsHint => _ar ? '12 سنة فأكثر' : '12+ years';
+  String get children => _ar ? 'الأطفال' : 'Children';
+  String get childrenHint => _ar ? 'من 2 إلى 11 سنة' : '2–11 years';
+  String get infants => _ar ? 'الرضّع' : 'Infants';
+  String get infantsHint =>
+      _ar ? 'أقل من سنتين · في الحضن بدون مقعد' : 'Under 2 · on lap, no seat';
+  String get adult => _ar ? 'بالغ' : 'Adult';
+  String get child => _ar ? 'طفل' : 'Child';
+  String get infant => _ar ? 'رضيع' : 'Infant';
+  String get infantsNeedAdults => _ar
+      ? 'كل رضيع يجب أن يسافر مع بالغ.'
+      : 'Each infant must travel with an adult.';
+  String notEnoughSeats(int count) => _ar
+      ? 'تبقّى $count مقاعد فقط بهذه الدرجة.'
+      : 'Only $count seats are left at this fare.';
+  String get fieldRequired =>
+      _ar ? 'هذا الحقل مطلوب' : 'This field is required';
+  String get invalidName => _ar ? 'استخدم الحروف فقط' : 'Use letters only';
+  String get invalidPassport =>
+      _ar ? 'استخدم من 5 إلى 20 حرفًا أو رقمًا' : 'Use 5–20 letters or digits';
+  String get invalidEmail =>
+      _ar ? 'أدخل بريدًا إلكترونيًا صحيحًا' : 'Enter a valid email';
+  String get invalidPhone =>
+      _ar ? 'أدخل رقم هاتف صحيحًا' : 'Enter a valid phone number';
+  String get passportExpired => _ar
+      ? 'يجب أن يكون الجواز ساريًا في تاريخ السفر'
+      : 'Passport must be valid on the travel date';
+  String ageMismatch(String type) =>
+      _ar ? 'العمر لا يطابق فئة $type' : 'Age doesn’t match the $type category';
+  String get seatNotAvailable =>
+      _ar ? 'اختيار المقاعد غير متاح' : 'Seat selection not available';
+  String get seatNotAvailableBody => _ar
+      ? 'تعذّر تحميل خريطة المقاعد لهذه الرحلة. حاول مرة أخرى.'
+      : 'We couldn’t load the seat map for this flight. Please try again.';
+  String chooseSeatFor(String traveller) =>
+      _ar ? 'اختر مقعدًا لـ $traveller' : 'Tap a seat for $traveller';
+  String get seatsMissing =>
+      _ar ? 'اختر مقعدًا لكل مسافر' : 'Choose a seat for every traveler';
+  String get skipSeats => _ar ? 'تخطَّ اختيار المقاعد' : 'Skip seat selection';
+  String get seatsSkipped => _ar
+      ? 'سيتم تخصيص المقاعد عند تسجيل الوصول.'
+      : 'Seats will be assigned at check-in.';
+  String get chooseSeatsAgain => _ar ? 'اختر المقاعد' : 'Choose seats';
+  String get onLap => _ar ? 'في الحضن' : 'On lap';
+  String get seatFees => _ar ? 'مقاعد بمساحة إضافية' : 'Extra-legroom seats';
+  String get extrasLabel => _ar ? 'الإضافات' : 'Extras';
+  String travellerOfType(int index, String type) =>
+      _ar ? 'مسافر ${index + 1} · $type' : 'Traveler ${index + 1} · $type';
 }
 
 class CheckoutScaffold extends StatelessWidget {

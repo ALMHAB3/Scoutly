@@ -17,6 +17,10 @@ class FlightSeatMapView extends StatelessWidget {
   final Set<String> occupiedSeats;
   final Set<String> selectedSeats;
   final bool showPassengerNumbers;
+
+  /// Optional seat → traveler number. When given, numbers follow the
+  /// traveler order instead of the order the seats were tapped.
+  final Map<String, int>? seatNumbers;
   final bool enabled;
   final ValueChanged<String> onSeatTap;
 
@@ -28,6 +32,7 @@ class FlightSeatMapView extends StatelessWidget {
     required this.occupiedSeats,
     required this.selectedSeats,
     this.showPassengerNumbers = false,
+    this.seatNumbers,
     required this.enabled,
     required this.onSeatTap,
   });
@@ -38,10 +43,12 @@ class FlightSeatMapView extends StatelessWidget {
     final split = seatLetters.length ~/ 2;
     final upper = seatLetters.take(split).toList();
     final lower = seatLetters.skip(split).toList();
-    final selectedSeatNumbers = <String, int>{};
-    var passengerNumber = 1;
-    for (final seat in selectedSeats) {
-      selectedSeatNumbers[seat] = passengerNumber++;
+    final selectedSeatNumbers = <String, int>{...?seatNumbers};
+    if (seatNumbers == null) {
+      var passengerNumber = 1;
+      for (final seat in selectedSeats) {
+        selectedSeatNumbers[seat] = passengerNumber++;
+      }
     }
     return Container(
       decoration: BoxDecoration(

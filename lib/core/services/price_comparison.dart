@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../constants/currency_rates.dart';
 import '../../models/exchange_rates.dart';
+import 'currency_service.dart';
 
 /// Shared by result controllers; no booking or settlement code depends on this.
 class PriceComparison extends ChangeNotifier {
@@ -20,14 +21,38 @@ class PriceComparison extends ChangeNotifier {
   bool failed = false;
   bool _disposed = false;
 
+  /// When true, [currency] always mirrors the user's profile currency
+  /// ([CurrencyService]) — the single source of truth for displayed prices.
+  final bool followsProfileCurrency;
+
   PriceComparison({
     required this.loadRates,
     DateTime Function()? clock,
     String initialCurrency = 'USD',
+    this.followsProfileCurrency = false,
   })  : clock = clock ?? DateTime.now,
         currency = supportedCurrencies.contains(initialCurrency.toUpperCase())
             ? initialCurrency.toUpperCase()
-            : 'USD';
+            : 'USD' {
+    if (followsProfileCurrency) {
+      _syncWithProfile();
+      CurrencyService.instance.addListener(_syncWithProfile);
+    }
+  }
+
+  /// Comparison that follows Profile → Preferences → Currency.
+  factory PriceComparison.forProfile({
+    required Future<ExchangeRates> Function() loadRates,
+  }) =>
+      PriceComparison(loadRates: loadRates, followsProfileCurrency: true);
+
+  void _syncWithProfile() {
+    final code = CurrencyService.instance.selected.code;
+    if (supportedCurrencies.contains(code) && currency != code) {
+      currency = code;
+      if (!_disposed) notifyListeners();
+    }
+  }
 
   Future<void> refresh() async {
     if (isLoading || _disposed) return;
@@ -92,6 +117,9 @@ class PriceComparison extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    if (followsProfileCurrency) {
+      CurrencyService.instance.removeListener(_syncWithProfile);
+    }
     super.dispose();
   }
 }

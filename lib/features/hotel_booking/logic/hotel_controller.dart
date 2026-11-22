@@ -64,7 +64,9 @@ class HotelController extends ChangeNotifier {
     this.searchHotels,
     this.loadDestinations,
   }) : comparison = comparison ??
-            PriceComparison(loadRates: ApiService.instance.exchangeRates) {
+            PriceComparison.forProfile(
+              loadRates: ApiService.instance.exchangeRates,
+            ) {
     _lastServerFilterCurrency = this.comparison.currency;
     this.comparison.addListener(_comparisonChanged);
   }

@@ -1,3 +1,4 @@
+import '../../../../core/utils/price_format.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -330,11 +331,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                                 ? l10n.free
                                 : a.entryFee == null
                                     ? '—'
-                                    : CurrencyService.instance.format(
-                                        a.entryFee!,
-                                        locale: Localizations.localeOf(context)
-                                            .languageCode,
-                                      )),
+                                    : formatPrice(context, a.entryFee!)),
                       ]).animate().fade(delay: 200.ms),
                   const SizedBox(height: 28),
                 ],
@@ -354,11 +351,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                         ? l10n.attractionBooking
                         : l10n.attractionBookTicket(a.entryFee == null
                             ? '—'
-                            : CurrencyService.instance.format(
-                                a.entryFee!,
-                                locale: Localizations.localeOf(context)
-                                    .languageCode,
-                              ))),
+                            : formatPrice(context, a.entryFee!))),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentPurple),
                   ).animate().fade(delay: 250.ms)

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -9,6 +10,7 @@ import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_booking_model.dart';
+import '../../logic/flight_checkout_passenger.dart';
 import '../../../../models/flight_model.dart';
 import 'flight_primary_button.dart';
 import 'flight_checkout_shared_components.dart';
@@ -141,6 +143,24 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
     );
   }
 
+  String _ticketHeading(
+    AppLocalizations l10n,
+    List<FlightCheckoutPassenger> travelers,
+    int index,
+  ) {
+    final labels = CheckoutLabels(l10n);
+    final type = switch (travelers[index].type) {
+      FlightTravelerType.adult => labels.adult,
+      FlightTravelerType.child => labels.child,
+      FlightTravelerType.infant => labels.infant,
+    };
+    final ar = l10n.localeName.startsWith('ar');
+    final heading = ar
+        ? 'التذكرة ${index + 1} من ${travelers.length}'
+        : 'Ticket ${index + 1} of ${travelers.length}';
+    return '$heading · $type';
+  }
+
   Widget _receipt(
     BuildContext context,
     FlightBookingConfirmation confirmation,
@@ -151,6 +171,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
         confirmation.seats.isEmpty ? widget.draft.seats : confirmation.seats;
     final extras =
         confirmation.extras.isEmpty ? widget.draft.extras : confirmation.extras;
+    final travelers = widget.draft.travelers;
     final passengerName =
         ApiService.instance.currentUser?.name.trim().isNotEmpty == true
             ? ApiService.instance.currentUser!.name
@@ -199,15 +220,103 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
             ),
           ),
           const SizedBox(height: 18),
-          FlightTicketCard(
-            flight: flight,
-            reference: confirmation.reference,
-            seats: seats,
-            seatClass: widget.draft.seatClass,
-            totalPrice: confirmation.totalPrice,
-            currencyCode: confirmation.trip.bookingCurrencyCode,
-            passengerName: passengerName,
-          ),
+          if (travelers.length <= 1)
+            FlightTicketCard(
+              flight: flight,
+              reference: confirmation.reference,
+              seats: seats,
+              seatClass: widget.draft.seatClass,
+              totalPrice: confirmation.totalPrice,
+              currencyCode: confirmation.trip.bookingCurrencyCode,
+              passengerName:
+                  travelers.isNotEmpty && travelers.first.name.trim().isNotEmpty
+                      ? travelers.first.name
+                      : passengerName,
+            )
+          else ...[
+            // A ticket for every traveler (own name, seat and code) under
+            // one booking reference; the total is shown once below.
+            for (var i = 0; i < travelers.length; i++) ...[
+              if (i > 0) const SizedBox(height: 22),
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 4, bottom: 8),
+                child: Text(
+                  _ticketHeading(l10n, travelers, i),
+                  style: const TextStyle(
+                    color: AppColors.darkTextSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              FlightTicketCard(
+                key: ValueKey('ticket-$i'),
+                flight: flight,
+                reference: confirmation.reference,
+                ticketCode: '${confirmation.reference}-${i + 1}',
+                seats: [
+                  travelers[i].seat ??
+                      (travelers[i].type == FlightTravelerType.infant
+                          ? CheckoutLabels(l10n).onLap
+                          : '—'),
+                ],
+                seatClass: widget.draft.seatClass,
+                totalPrice: null,
+                currencyCode: confirmation.trip.bookingCurrencyCode,
+                passengerName: travelers[i].name,
+              ),
+            ],
+            const SizedBox(height: 22),
+            Container(
+              key: const ValueKey('booking-total'),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.flightBookingReferenceLabel,
+                            style: const TextStyle(
+                                color: AppColors.textSecondary, fontSize: 11)),
+                        Text(confirmation.reference,
+                            style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800)),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '${l10n.flightTotal} · '
+                        '${CheckoutLabels(l10n).travellerPrice(travelers.length)}',
+                        style: const TextStyle(
+                            color: AppColors.textSecondary, fontSize: 11),
+                      ),
+                      Text(
+                        checkoutMoney(
+                          confirmation.trip.bookingCurrencyCode,
+                          confirmation.totalPrice,
+                          locale: Localizations.localeOf(context).languageCode,
+                        ),
+                        style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (widget.draft.packageOffer case final offer?) ...[
             const SizedBox(height: 16),
             Container(
@@ -283,9 +392,14 @@ class FlightTicketCard extends StatelessWidget {
   final String reference;
   final List<String> seats;
   final String seatClass;
-  final double totalPrice;
+
+  /// Null on a per-traveler ticket: the booking total is shown once below.
+  final double? totalPrice;
   final String currencyCode;
   final String? passengerName;
+
+  /// Code encoded in this ticket's QR/barcode; defaults to the reference.
+  final String? ticketCode;
 
   const FlightTicketCard({
     super.key,
@@ -296,7 +410,10 @@ class FlightTicketCard extends StatelessWidget {
     required this.totalPrice,
     required this.currencyCode,
     this.passengerName,
+    this.ticketCode,
   });
+
+  String get _code => ticketCode ?? reference;
 
   @override
   Widget build(BuildContext context) {
@@ -529,25 +646,27 @@ class FlightTicketCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    _TicketDetail(
-                      label: l10n.flightTotal,
-                      value: checkoutMoney(
-                        currencyCode,
-                        totalPrice,
-                        locale: Localizations.localeOf(context).languageCode,
+                    if (totalPrice != null) ...[
+                      _TicketDetail(
+                        label: l10n.flightTotal,
+                        value: checkoutMoney(
+                          currencyCode,
+                          totalPrice!,
+                          locale: Localizations.localeOf(context).languageCode,
+                        ),
+                        valueSize: 17,
+                        alignEnd: true,
                       ),
-                      valueSize: 17,
-                      alignEnd: true,
-                    ),
-                    const SizedBox(width: 10),
+                      const SizedBox(width: 10),
+                    ],
                     Semantics(
                       button: true,
-                      label: '${l10n.yourTicket}: $reference',
+                      label: '${l10n.yourTicket}: $_code',
                       child: InkWell(
                         borderRadius: BorderRadius.circular(4),
-                        onTap: () => _showTicketQr(context, reference, l10n),
+                        onTap: () => _showTicketQr(context, _code, l10n),
                         child: QrImageView(
-                          data: reference,
+                          data: _code,
                           size: 54,
                           padding: EdgeInsets.zero,
                           backgroundColor: Colors.white,
@@ -562,7 +681,7 @@ class FlightTicketCard extends StatelessWidget {
                   height: 58,
                   width: double.infinity,
                   child: CustomPaint(
-                    painter: _BarcodePainter(reference),
+                    painter: _BarcodePainter(_code),
                   ),
                 ),
               ],
@@ -724,30 +843,42 @@ class _TicketFlightLine extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 5),
-          Row(
-            children: [
-              const _TicketRouteDot(),
-              Expanded(
-                child: Container(height: 1, color: AppColors.border),
-              ),
-              Container(
-                width: 30,
-                height: 30,
-                decoration: const BoxDecoration(
+          // On narrow phones (long localized times) keep only the plane so
+          // the ticket never overflows.
+          LayoutBuilder(
+            builder: (context, constraints) {
+              const plane = DecoratedBox(
+                decoration: BoxDecoration(
                   color: AppColors.primary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.flight_rounded,
-                  color: Colors.white,
-                  size: 16,
+                child: SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: Icon(
+                    Icons.flight_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Container(height: 1, color: AppColors.border),
-              ),
-              const _TicketRouteDot(),
-            ],
+              );
+              if (constraints.maxWidth < 60) {
+                return const FittedBox(fit: BoxFit.scaleDown, child: plane);
+              }
+              return Row(
+                children: [
+                  const _TicketRouteDot(),
+                  Expanded(
+                    child: Container(height: 1, color: AppColors.border),
+                  ),
+                  plane,
+                  Expanded(
+                    child: Container(height: 1, color: AppColors.border),
+                  ),
+                  const _TicketRouteDot(),
+                ],
+              );
+            },
           ),
         ],
       );
@@ -788,12 +919,14 @@ class _BarcodePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (seed.isEmpty || size.isEmpty) return;
     final paint = Paint()..color = AppColors.textPrimary;
-    var state = seed.hashCode & 0x7fffffff;
+    // Seeded Random: same bars for the same code on every platform. The old
+    // LCG multiply exceeded JavaScript number precision on web and drew a
+    // single bar.
+    final random = math.Random(seed.hashCode & 0x7fffffff);
     var x = 0.0;
     while (x < size.width) {
-      state = (state * 1103515245 + 12345) & 0x7fffffff;
-      final width = 1.2 + (state % 3).toDouble();
-      if ((state & 4) != 0) {
+      final width = 1.2 + random.nextInt(3).toDouble();
+      if (random.nextBool()) {
         canvas.drawRect(
           Rect.fromLTWH(x, 0, width, size.height),
           paint,

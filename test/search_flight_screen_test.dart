@@ -24,7 +24,7 @@ void main() {
       SearchFlightScreen(controller: controller),
       routes: {
         AppRoutes.flightBooking: (_) =>
-            const Scaffold(body: Text('Choose fare route')),
+            const Scaffold(body: Text('Trip details route')),
       },
     ));
     await tester.pumpAndSettle();
@@ -35,11 +35,12 @@ void main() {
     expect(find.text('Flight Date'), findsOneWidget);
     expect(find.text('Calendar'), findsOneWidget);
     expect(find.text('1 airline'), findsOneWidget);
-    expect(find.text('Economy'), findsNWidgets(2));
+    // Class is chosen in Trip Details: no cabin dropdown, no CLASS column.
+    expect(find.text('Economy'), findsNothing);
     expect(find.text('Zentrip Air'), findsOneWidget);
     expect(find.text('ZA 204'), findsOneWidget);
     expect(find.text('FLIGHT NUMBER'), findsOneWidget);
-    expect(find.text('CLASS'), findsOneWidget);
+    expect(find.text('CLASS'), findsNothing);
     expect(find.text('SEATS'), findsOneWidget);
     expect(find.text('\$146.40'), findsOneWidget);
     expect(
@@ -51,7 +52,7 @@ void main() {
     await tester.tap(find.text('Zentrip Air'));
     await tester.pumpAndSettle();
     expect(controller.selectedFlight?.id, 'flight-1');
-    expect(find.text('Choose fare route'), findsOneWidget);
+    expect(find.text('Trip details route'), findsOneWidget);
   });
 
   testWidgets('shows skeleton tickets while a search is pending',

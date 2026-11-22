@@ -47,9 +47,8 @@ class FlightController extends ChangeNotifier {
 
   FlightController({PriceComparison? comparison, this.searchFlights})
       : comparison = comparison ??
-            PriceComparison(
+            PriceComparison.forProfile(
               loadRates: ApiService.instance.exchangeRates,
-              initialCurrency: CurrencyService.instance.selected.code,
             ) {
     this.comparison.addListener(_comparisonChanged);
   }

@@ -1,3 +1,4 @@
+import '../features/flight_booking/logic/flight_checkout_passenger.dart';
 import 'flight_model.dart';
 import 'trip_model.dart';
 import 'travel_package_model.dart';
@@ -14,6 +15,9 @@ class FlightBookingDraft {
   final int? paymentAttemptId;
   final TravelPackage? packageOffer;
 
+  /// Travelers entered in Trip Details, in order (adults, children, infants).
+  final List<FlightCheckoutPassenger> travelers;
+
   const FlightBookingDraft({
     required this.flight,
     required this.passengerCount,
@@ -25,6 +29,7 @@ class FlightBookingDraft {
     this.extras = const [],
     this.paymentAttemptId,
     this.packageOffer,
+    this.travelers = const [],
   });
 }
 

@@ -51,8 +51,10 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime _departureDate = DateTime.now().add(const Duration(days: 7));
   DateTime? _returnDate = DateTime.now().add(const Duration(days: 14));
   FlexibleFlightSelection? _flexibleFlightSelection;
-  int _passengers = 1;
-  String _seatClass = 'economy';
+  // عدد المسافرين والدرجة بيتختاروا في شاشة Trip Details بعد اختيار الرحلة؛
+  // البحث بيتبعت بالقيم الافتراضية اللي الـ API محتاجها (adults=1, economy).
+  static const int _passengers = 1;
+  static const String _seatClass = 'economy';
   bool _isSearchingFlights = false;
   bool _isLoadingCurrentLocation = false;
   bool _originEdited = false;
@@ -357,74 +359,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _choosePassengers() async {
-    var selected = _passengers;
-    final result = await showDialog<int>(
-      context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(AppLocalizations.of(context).passengers),
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                onPressed: selected > 1
-                    ? () => setDialogState(() => selected--)
-                    : null,
-                icon: const Icon(Icons.remove_circle_outline),
-              ),
-              Text('$selected'),
-              IconButton(
-                onPressed: selected < 9
-                    ? () => setDialogState(() => selected++)
-                    : null,
-                icon: const Icon(Icons.add_circle_outline),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(dialogContext, selected),
-              child: Text(MaterialLocalizations.of(context).okButtonLabel),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (result != null && mounted) setState(() => _passengers = result);
-  }
-
-  Future<void> _chooseSeatClass() async {
-    final l10n = AppLocalizations.of(context);
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (sheetContext) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final option in [
-            ('economy', l10n.economy),
-            ('business', l10n.business),
-            ('first', l10n.firstClass),
-          ])
-            ListTile(
-              title: Text(option.$2),
-              trailing: _seatClass == option.$1
-                  ? const Icon(Icons.check_rounded)
-                  : null,
-              onTap: () => Navigator.pop(sheetContext, option.$1),
-            ),
-        ],
-      ),
-    );
-    if (selected != null && mounted) setState(() => _seatClass = selected);
-  }
-
   Future<void> _searchFlights() async {
     final l10n = AppLocalizations.of(context);
     if (_fromCode == _toCode) {
@@ -518,13 +452,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         departureDate: _departureDate,
                         returnDate: _returnDate,
                         flexibleSelection: _flexibleFlightSelection,
-                        passengers: _passengers,
-                        seatClass: _seatClass,
                         onPickDepartureDate: () => _chooseDate(departure: true),
                         onPickReturnDate: () => _chooseDate(departure: false),
                         onFlexibleDatesChanged: _setFlexibleFlightSelection,
-                        onPickPassengers: _choosePassengers,
-                        onPickSeatClass: _chooseSeatClass,
                         isSearching: _isSearchingFlights,
                         onSearch: _searchFlights,
                       ),
@@ -1087,13 +1017,9 @@ class _SearchCard extends StatelessWidget {
     required this.departureDate,
     required this.returnDate,
     required this.flexibleSelection,
-    required this.passengers,
-    required this.seatClass,
     required this.onPickDepartureDate,
     required this.onPickReturnDate,
     required this.onFlexibleDatesChanged,
-    required this.onPickPassengers,
-    required this.onPickSeatClass,
     required this.isSearching,
     required this.onSearch,
   });
@@ -1106,11 +1032,8 @@ class _SearchCard extends StatelessWidget {
   final DateTime departureDate;
   final DateTime? returnDate;
   final FlexibleFlightSelection? flexibleSelection;
-  final int passengers;
-  final String seatClass;
   final VoidCallback onPickDepartureDate, onPickReturnDate;
   final ValueChanged<FlexibleFlightSelection?> onFlexibleDatesChanged;
-  final VoidCallback onPickPassengers, onPickSeatClass;
   final bool isSearching;
   final VoidCallback onSearch;
 
@@ -1251,32 +1174,6 @@ class _SearchCard extends StatelessWidget {
             selection: flexibleSelection,
             onChanged: onFlexibleDatesChanged,
             compact: false,
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _SelectField(
-                  label: l10n.passengers,
-                  icon: Icons.people_outline_rounded,
-                  value: '$passengers',
-                  onTap: onPickPassengers,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _SelectField(
-                  label: l10n.travelClass,
-                  icon: Icons.grid_view_rounded,
-                  value: switch (seatClass) {
-                    'business' => l10n.business,
-                    'first' => l10n.firstClass,
-                    _ => l10n.economy,
-                  },
-                  onTap: onPickSeatClass,
-                ),
-              ),
-            ],
           ),
           const SizedBox(height: 14),
 

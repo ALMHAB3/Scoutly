@@ -1,3 +1,4 @@
+import '../../../../core/utils/price_format.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -136,10 +137,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
           reference: ref,
           dateLabel:
               MaterialLocalizations.of(context).formatMediumDate(pickupDate),
-          priceLabel: CurrencyService.instance.format(
-            totalPrice,
-            locale: Localizations.localeOf(context).languageCode,
-          ),
+          priceLabel: formatPrice(context, totalPrice),
           serviceIcon: Icons.directions_car_rounded,
         ),
       ),
@@ -256,40 +254,19 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                               ? AppColors.darkBorder
                               : AppColors.border)),
                   child: Column(children: [
-                    _PriceRow(
-                        l10n.carPricePerDay,
-                        CurrencyService.instance.format(
-                          car.pricePerDay,
-                          locale: Localizations.localeOf(context).languageCode,
-                        )),
-                    _PriceRow(
-                        l10n.carSubtotal,
-                        CurrencyService.instance.format(
-                          pricing.subtotal,
-                          locale: Localizations.localeOf(context).languageCode,
-                        )),
+                    _PriceRow(l10n.carPricePerDay,
+                        formatPrice(context, car.pricePerDay)),
+                    _PriceRow(l10n.carSubtotal,
+                        formatPrice(context, pricing.subtotal)),
                     _PriceRow(l10n.carNumberOfDays, l10n.carDaysCount(days)),
-                    _PriceRow(
-                        l10n.carInsurance,
-                        CurrencyService.instance.format(
-                          car.insuranceFee,
-                          locale: Localizations.localeOf(context).languageCode,
-                        )),
-                    _PriceRow(
-                        l10n.carServiceFee,
-                        CurrencyService.instance.format(
-                          car.serviceFee,
-                          locale: Localizations.localeOf(context).languageCode,
-                        )),
+                    _PriceRow(l10n.carInsurance,
+                        formatPrice(context, car.insuranceFee)),
+                    _PriceRow(l10n.carServiceFee,
+                        formatPrice(context, car.serviceFee)),
                     const Divider(height: 20),
-                    _PriceRow(
-                        l10n.carTotal,
-                        CurrencyService.instance.format(
-                          car.totalPriceForDays(days),
-                          locale: Localizations.localeOf(context).languageCode,
-                        ),
-                        isBold: true,
-                        color: AppColors.primary),
+                    _PriceRow(l10n.carTotal,
+                        formatPrice(context, car.totalPriceForDays(days)),
+                        isBold: true, color: AppColors.primary),
                   ]),
                 ).animate().fade(delay: 150.ms),
                 const SizedBox(height: 28),

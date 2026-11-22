@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zentrip/core/services/api_result.dart';
 import 'package:zentrip/features/flight_booking/presentation/screens/flight_primary_button.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/flight_seat_selection.dart';
 import 'package:zentrip/global_widgets/payment_checkout_screen.dart';
 import 'package:zentrip/l10n/app_localizations.dart';
 import 'package:zentrip/models/flight_model.dart';
 import 'package:zentrip/models/payment_session.dart';
 import 'package:zentrip/models/trip_model.dart';
+
+import 'support/trip_details_harness.dart';
 
 FlightModel _duffelFlight() => FlightModel(
       id: 'duffel-off_example',
@@ -57,51 +58,51 @@ void main() {
   });
 
   testWidgets(
-      'Duffel simulation uses offer currency and persists only after success',
+      'Duffel simulation charges the profile currency and saves only after payment',
       (tester) async {
+    usePhoneViewport(tester);
+    // Profile currency = offer currency: the quote is charged unchanged.
+    await setProfileCurrency('EUR');
     TripModel? savedTrip;
     var paymentAmount = 0.0;
     var paymentCurrency = '';
-    final flight = _duffelFlight();
+    final controller = tripController(_duffelFlight(), passengers: 2);
+    addTearDown(controller.dispose);
 
-    await tester.pumpWidget(
-      _localizedApp(
-        FlightSeatSelectionScreen(
-          flight: flight,
-          passengerCount: 2,
-          seatClass: 'economy',
-          returnDate: null,
-          seatsPerSide: 3,
-          rowCount: 0,
-          paymentLauncher: (
-            context, {
-            required amount,
-            required currencyCode,
-            required description,
-            required referenceId,
-          }) async {
-            paymentAmount = amount;
-            paymentCurrency = currencyCode;
-            return true;
-          },
-          tripCreator: (trip) async {
-            savedTrip = trip;
-            return ApiResult.success(trip);
-          },
-        ),
-      ),
-    );
+    await tester.pumpWidget(tripApp(
+      controller: controller,
+      paymentLauncher: (
+        context, {
+        required amount,
+        required currencyCode,
+        required description,
+        required referenceId,
+      }) async {
+        paymentAmount = amount;
+        paymentCurrency = currencyCode;
+        return true;
+      },
+      tripCreator: (trip) async {
+        savedTrip = trip;
+        return ApiResult.success(trip);
+      },
+    ));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Simulated seat map'), findsOneWidget);
+    await fillTraveler(tester, 0, contact: true);
+    await fillTraveler(tester, 1, name: 'Second Traveler');
     for (final seat in ['seat-1A', 'seat-1B']) {
       final finder = find.byKey(ValueKey(seat));
       await tester.ensureVisible(finder);
       await tester.tap(finder);
       await tester.pumpAndSettle();
     }
-    final button = find.byType(FlightPrimaryButton);
-    await tester.tap(button);
+    await tester.tap(find.widgetWithText(FlightPrimaryButton, 'Continue'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(CheckboxListTile));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FlightPrimaryButton));
     await tester.pumpAndSettle();
 
     expect(paymentAmount, 240);
@@ -109,44 +110,60 @@ void main() {
     expect(savedTrip?.source, 'duffel');
     expect(savedTrip?.sourceOfferId, 'off_example');
     expect(savedTrip?.priceCurrencyCode, 'EUR');
+    expect(savedTrip?.passengerCount, 2);
     expect(savedTrip?.isSimulated, isTrue);
     expect(savedTrip?.bookingRef, startsWith('ZT-SIM-DUF-'));
     expect(find.text('Simulation'), findsOneWidget);
+    expect(find.text('Ticket 1 of 2 · Adult'), findsOneWidget);
     expect(find.text('€240.00'), findsOneWidget);
+  });
+
+  testWidgets('Duffel price follows the profile currency', (tester) async {
+    usePhoneViewport(tester);
+    await setProfileCurrency('USD');
+    final controller = tripController(_duffelFlight());
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(tripApp(controller: controller));
+    await tester.pumpAndSettle();
+    // 240 EUR / 0.92 = 260.87 USD (app's fallback reference rates).
+    expect(find.text('\$260.87'), findsWidgets);
+    await setProfileCurrency('EUR');
+    await tester.pumpAndSettle();
+    expect(find.text('€240.00'), findsWidgets);
   });
 
   testWidgets('failed Duffel simulator payment does not save a trip',
       (tester) async {
+    usePhoneViewport(tester);
+    await setProfileCurrency('EUR');
     var saveCalls = 0;
-    await tester.pumpWidget(
-      _localizedApp(
-        FlightSeatSelectionScreen(
-          flight: _duffelFlight(),
-          passengerCount: 1,
-          seatClass: 'economy',
-          returnDate: null,
-          seatsPerSide: 3,
-          rowCount: 0,
-          paymentLauncher: (
-            context, {
-            required amount,
-            required currencyCode,
-            required description,
-            required referenceId,
-          }) async =>
-              false,
-          tripCreator: (trip) async {
-            saveCalls++;
-            return ApiResult.success(trip);
-          },
-        ),
-      ),
-    );
+    final controller = tripController(_duffelFlight());
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(tripApp(
+      controller: controller,
+      paymentLauncher: (
+        context, {
+        required amount,
+        required currencyCode,
+        required description,
+        required referenceId,
+      }) async =>
+          false,
+      tripCreator: (trip) async {
+        saveCalls++;
+        return ApiResult.success(trip);
+      },
+    ));
     await tester.pumpAndSettle();
 
+    await fillTraveler(tester, 0, contact: true);
     final seat = find.byKey(const ValueKey('seat-1A'));
     await tester.ensureVisible(seat);
     await tester.tap(seat);
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FlightPrimaryButton, 'Continue'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(CheckboxListTile));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(FlightPrimaryButton));
     await tester.pumpAndSettle();

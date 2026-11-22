@@ -57,7 +57,7 @@ void main() {
   });
 
   testWidgets(
-      'home flight card edits airports, trip type, passengers and class',
+      'home flight card edits airports and trip type; no passenger/class fields',
       (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1;
@@ -86,21 +86,11 @@ void main() {
     await tester.pump();
     expect(find.text('—'), findsOneWidget);
 
-    await tester.tap(find.text(l10n.passengers).first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.add_circle_outline));
-    await tester.tap(find.text(
-      MaterialLocalizations.of(tester.element(find.byType(HomeScreen)))
-          .okButtonLabel,
-    ));
-    await tester.pumpAndSettle();
-    expect(find.text('2'), findsOneWidget);
-
-    await tester.tap(find.text(l10n.travelClass));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.business));
-    await tester.pumpAndSettle();
-    expect(find.text(l10n.business), findsOneWidget);
+    // Passengers and class are chosen in Trip Details after picking a
+    // flight; the search card no longer shows them.
+    expect(find.text(l10n.passengers), findsNothing);
+    expect(find.text(l10n.travelClass), findsNothing);
+    expect(find.text(l10n.searchFlightsBtn), findsOneWidget);
   });
 
   testWidgets('home hotel, car, and transfer actions open existing searches',

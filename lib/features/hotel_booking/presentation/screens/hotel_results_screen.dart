@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../core/services/currency_service.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/money_format.dart';
 import '../../../../global_widgets/app_network_image.dart';
@@ -89,6 +90,8 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                 comparison: ctrl.comparison,
                 sourceCurrencies: ctrl.sourceCurrencies,
                 unpricedCount: ctrl.unpricedCount,
+                // يغيّر عملة الملف الشخصي نفسها (المصدر الوحيد للعملة).
+                onCurrencyChanged: CurrencyService.instance.selectCode,
               ),
             ),
             Expanded(
