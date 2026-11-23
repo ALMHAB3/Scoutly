@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// بطاقة البرنامج السياحي المُنشأ بواسطة زن AI.
 class ItineraryCard extends StatelessWidget {
@@ -58,7 +59,8 @@ class ItineraryCard extends StatelessWidget {
                         Text(l10n.chatItineraryBudget(budget),
                             style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.white.withValues(alpha: 0.85))),
+                                color:
+                                    AppColors.white.withValues(alpha: 0.85))),
                     ],
                   ),
                 ),
@@ -72,7 +74,8 @@ class ItineraryCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(l10n.chatItineraryReady,
-                  style: TextStyle(color: AppColors.white.withValues(alpha: 0.9))),
+                  style:
+                      TextStyle(color: AppColors.white.withValues(alpha: 0.9))),
             )
           else
             ...days.asMap().entries.map((e) {
@@ -83,7 +86,7 @@ class ItineraryCard extends StatelessWidget {
           // ── Save button ──────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: OutlinedButton.icon(
+            child: AppButton.icon(
               onPressed: isSaved ? null : onSave,
               icon: Icon(
                 isSaved
@@ -102,6 +105,7 @@ class ItineraryCard extends StatelessWidget {
                 side: BorderSide(color: AppColors.white.withValues(alpha: 0.5)),
                 minimumSize: const Size(double.infinity, 42),
               ),
+              variant: AppButtonVariant.secondary,
             ),
           ),
         ],

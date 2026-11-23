@@ -4,7 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/money_format.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/flight_model.dart';
-import 'flight_primary_button.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Shared blue-gradient title bar and step progress indicator. The booking
 /// flow has two steps: Details (fare, travelers, seats) and Pay.
@@ -46,8 +46,8 @@ class FlightBookingFlowHeader extends StatelessWidget {
                 IconButton(
                   tooltip: l10n.goBack,
                   onPressed: onBack,
-                  icon:
-                      const Icon(Icons.arrow_back_rounded, color: AppColors.white),
+                  icon: const Icon(Icons.arrow_back_rounded,
+                      color: AppColors.white),
                 )
               else
                 const SizedBox(width: 48),
@@ -68,7 +68,7 @@ class FlightBookingFlowHeader extends StatelessWidget {
                 width: 48,
                 child: onSkip == null
                     ? null
-                    : TextButton(
+                    : AppButton(
                         onPressed: onSkip,
                         child: Text(
                           copy.skip,
@@ -78,6 +78,7 @@ class FlightBookingFlowHeader extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
+                        variant: AppButtonVariant.text,
                       ),
               ),
             ],
@@ -405,8 +406,8 @@ class _CheckoutFooterState extends State<CheckoutFooter> {
                 const SizedBox(width: 12),
                 Expanded(
                   flex: 4,
-                  child: FlightPrimaryButton(
-                    label: widget.buttonLabel,
+                  child: AppButton.label(
+                    text: widget.buttonLabel,
                     loading: widget.loading || _busy,
                     onPressed: _busy
                         ? null

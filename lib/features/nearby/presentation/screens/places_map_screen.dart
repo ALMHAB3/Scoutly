@@ -11,6 +11,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/attraction_map_viewport.dart';
 import '../../../../models/attraction_model.dart';
 import '../../../../models/map_search_result.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 typedef AttractionViewportLoader = Future<AttractionMapViewport> Function({
   required double south,
@@ -386,7 +387,7 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                         : FavoritePlace.fromMapSearchResult(place.result!).id;
                     final isSaved = favoriteId != null &&
                         FavoritesController.instance.isFavorite(favoriteId);
-                    return FilledButton.tonalIcon(
+                    return AppButton.icon(
                       onPressed: favoriteId == null
                           ? null
                           : () async {
@@ -405,6 +406,8 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                           ? Icons.bookmark_rounded
                           : Icons.bookmark_add_outlined),
                       label: Text(isSaved ? l10n.savedPlace : l10n.savePlace),
+                      variant: AppButtonVariant.secondary,
+                      expand: false,
                     );
                   },
                 ),
@@ -455,13 +458,14 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
-                        OutlinedButton.icon(
+                        AppButton.icon(
                           onPressed: () {
                             setState(() => _isLoading = true);
                             _load();
                           },
                           icon: const Icon(Icons.refresh_rounded),
                           label: Text(l10n.retry),
+                          variant: AppButtonVariant.secondary,
                         ),
                       ],
                     ),
@@ -510,12 +514,12 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                 decoration: BoxDecoration(
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
-                                  border:
-                                      Border.all(color: AppColors.white, width: 3),
+                                  border: Border.all(
+                                      color: AppColors.white, width: 3),
                                   boxShadow: [
                                     BoxShadow(
-                                        color:
-                                            AppColors.black.withValues(alpha: 0.3),
+                                        color: AppColors.black
+                                            .withValues(alpha: 0.3),
                                         blurRadius: 6)
                                   ],
                                 ),

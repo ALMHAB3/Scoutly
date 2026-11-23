@@ -3,6 +3,7 @@ import '../core/constants/app_colors.dart';
 import '../core/services/api_service.dart';
 import '../l10n/app_localizations.dart';
 import 'app_snackbar.dart';
+import 'ui/ui.dart';
 
 /// نافذة كتابة تقييم حقيقي لعنصر (فندق/سيارة/نشاط/عرض) — بعد ما المستخدم
 /// يكون حجزه فعلاً. استخدمها هكذا:
@@ -30,7 +31,8 @@ class ReviewFormSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       builder: (_) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: ReviewFormSheet(
           itemId: itemId,
           itemType: itemType,
@@ -66,7 +68,8 @@ class _ReviewFormSheetState extends State<ReviewFormSheet> {
     if (!mounted) return;
     setState(() => _isSubmitting = false);
     if (result.isSuccess) {
-      AppSnackbar.success(context, AppLocalizations.of(context).reviewSubmittedSuccess);
+      AppSnackbar.success(
+          context, AppLocalizations.of(context).reviewSubmittedSuccess);
       widget.onSubmitted?.call();
       Navigator.pop(context);
     } else {
@@ -84,7 +87,9 @@ class _ReviewFormSheetState extends State<ReviewFormSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.writeAReview, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(l10n.writeAReview,
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -92,7 +97,12 @@ class _ReviewFormSheetState extends State<ReviewFormSheet> {
                 final starIndex = i + 1;
                 return IconButton(
                   onPressed: () => setState(() => _rating = starIndex),
-                  icon: Icon(starIndex <= _rating ? Icons.star_rounded : Icons.star_border_rounded, color: AppColors.amber, size: 32),
+                  icon: Icon(
+                      starIndex <= _rating
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
+                      color: AppColors.amber,
+                      size: 32),
                 );
               }),
             ),
@@ -104,16 +114,22 @@ class _ReviewFormSheetState extends State<ReviewFormSheet> {
                 hintText: l10n.reviewCommentHint,
                 filled: true,
                 fillColor: AppColors.surfaceSecondary,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none),
               ),
             ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: AppButton(
                 onPressed: _isSubmitting ? null : _submit,
                 child: _isSubmitting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: AppColors.white))
                     : Text(l10n.submitReview),
               ),
             ),

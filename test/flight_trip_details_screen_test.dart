@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zentrip/core/constants/app_colors.dart';
 import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/flight_primary_button.dart';
+import 'package:zentrip/global_widgets/ui/ui.dart';
 import 'package:zentrip/features/flight_booking/presentation/screens/flight_seat_widgets.dart';
 import 'package:zentrip/models/flight_model.dart';
 import 'package:zentrip/models/flight_seat_map.dart';
@@ -89,7 +89,7 @@ Future<void> _tapSeat(WidgetTester tester, String seat) async {
 }
 
 Future<void> _tapContinue(WidgetTester tester) async {
-  await tester.tap(find.widgetWithText(FlightPrimaryButton, 'Continue'));
+  await tester.tap(find.widgetWithText(AppButton, 'Continue'));
   await tester.pumpAndSettle();
 }
 
@@ -289,17 +289,13 @@ void main() {
     expect(find.text('Taxes & Fees'), findsOneWidget);
     expect(find.text('Service Fee'), findsOneWidget);
     expect(
-      tester
-          .widget<FlightPrimaryButton>(find.byType(FlightPrimaryButton))
-          .onPressed,
+      tester.widget<AppButton>(find.byType(AppButton)).onPressed,
       isNull,
     );
     await tester.tap(find.byType(CheckboxListTile));
     await tester.pumpAndSettle();
     expect(
-      tester
-          .widget<FlightPrimaryButton>(find.byType(FlightPrimaryButton))
-          .onPressed,
+      tester.widget<AppButton>(find.byType(AppButton)).onPressed,
       isNotNull,
     );
     expect(tester.takeException(), isNull);

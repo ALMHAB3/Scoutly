@@ -7,6 +7,7 @@ import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/travel_package_model.dart';
 import '../../../trips/presentation/screens/package_detail_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// نوع القائمة: "أفكار جديدة" (كل الوجهات) أو "العروض" (المميّزة أولاً).
 enum PackagesListKind { ideas, deals }
@@ -123,7 +124,8 @@ class _PackagesListScreenState extends State<PackagesListScreen> {
                     onSelected: (_) => setState(() => _category = c),
                     selectedColor: AppColors.primary,
                     labelStyle: TextStyle(
-                      color: selected ? AppColors.white : AppColors.textSecondary,
+                      color:
+                          selected ? AppColors.white : AppColors.textSecondary,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                       fontSize: 12,
                     ),
@@ -169,7 +171,11 @@ class _PackagesListScreenState extends State<PackagesListScreen> {
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 16),
-                  OutlinedButton(onPressed: _reload, child: Text(l10n.retry)),
+                  AppButton(
+                    onPressed: _reload,
+                    child: Text(l10n.retry),
+                    variant: AppButtonVariant.secondary,
+                  ),
                 ],
               ),
             ),
@@ -296,7 +302,8 @@ class _PackageTile extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: AppColors.white.withValues(alpha: 0.85),
+                                  color:
+                                      AppColors.white.withValues(alpha: 0.85),
                                   fontSize: 11)),
                         ),
                       ]),

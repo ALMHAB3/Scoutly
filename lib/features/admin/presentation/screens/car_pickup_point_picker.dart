@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/current_location_service.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Lets a car partner place the car's pickup point: tap the map where the
 /// car is, or use the device's current location (when standing at the car).
@@ -148,7 +149,7 @@ class _CarPickupPointPickerState extends State<CarPickupPointPicker> {
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
-              OutlinedButton.icon(
+              AppButton.icon(
                 key: const ValueKey('pickup-use-location'),
                 onPressed: _locating ? null : _useCurrentLocation,
                 icon: _locating
@@ -160,9 +161,10 @@ class _CarPickupPointPickerState extends State<CarPickupPointPicker> {
                     : const Icon(Icons.my_location_rounded),
                 label: Text(
                     ar ? 'استخدم موقعي الحالي' : 'Use my current location'),
+                variant: AppButtonVariant.secondary,
               ),
               const SizedBox(height: 8),
-              ElevatedButton(
+              AppButton(
                 key: const ValueKey('pickup-confirm'),
                 onPressed:
                     pin == null ? null : () => Navigator.pop(context, pin),

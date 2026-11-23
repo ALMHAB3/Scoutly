@@ -7,6 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/admin_dashboard_model.dart';
 import '../../../../models/legacy_attraction_review_model.dart';
 import 'admin_legacy_attraction_review_dialog.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class AdminPartnersManagement extends StatefulWidget {
   const AdminPartnersManagement({super.key});
@@ -86,13 +87,15 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
         title: Text(l10n.adminDisablePartner),
         content: Text(l10n.adminDisablePartnerConfirmation),
         actions: [
-          TextButton(
+          AppButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(l10n.cancel),
+            variant: AppButtonVariant.text,
           ),
-          FilledButton(
+          AppButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.adminDisablePartner),
+            expand: false,
           ),
         ],
       ),
@@ -129,7 +132,8 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
     final placesResult = await ApiService.instance.getAdminMonuments();
     if (!mounted) return;
     if (placesResult.isFailure || placesResult.data == null) {
-      AppSnackbar.error(context, placesResult.errorMessage ?? l10n.genericError);
+      AppSnackbar.error(
+          context, placesResult.errorMessage ?? l10n.genericError);
       return;
     }
     final decisions = await showDialog<List<Map<String, dynamic>>>(
@@ -146,13 +150,15 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
         title: Text(l10n.adminLegacyAttractionConfirmTitle),
         content: Text(l10n.adminLegacyAttractionConfirmBody),
         actions: [
-          TextButton(
+          AppButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(l10n.cancel),
+            variant: AppButtonVariant.text,
           ),
-          FilledButton(
+          AppButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.adminLegacyAttractionApproveRetire),
+            expand: false,
           ),
         ],
       ),
@@ -192,10 +198,11 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
             children: [
               Text(_error!, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              FilledButton.icon(
+              AppButton.icon(
                 onPressed: reload,
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(l10n.adminRefresh),
+                expand: false,
               ),
             ],
           ),
@@ -210,7 +217,7 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
         children: [
           Align(
             alignment: AlignmentDirectional.centerEnd,
-            child: FilledButton.icon(
+            child: AppButton.icon(
               onPressed: _saving || _loading ? null : _addPartner,
               icon: _saving
                   ? const SizedBox.square(
@@ -222,6 +229,7 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
                     )
                   : const Icon(Icons.person_add_alt_1_rounded),
               label: Text(l10n.adminAddPartner),
+              expand: false,
             ),
           ),
           const SizedBox(height: 14),
@@ -268,9 +276,8 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
                   .isEmpty &&
               _legacyAttractions.isEmpty)
             _PartnerEmptyState(text: l10n.adminNoPartners),
-          for (final partner
-              in _partners.where(
-                  (p) => p.serviceType.toLowerCase() != 'attraction'))
+          for (final partner in _partners
+              .where((p) => p.serviceType.toLowerCase() != 'attraction'))
             _PartnerCard(
               partner: partner,
               serviceLabel: _serviceLabel(partner.serviceType, l10n),
@@ -326,8 +333,8 @@ class _LegacyAttractionCard extends StatelessWidget {
               children: [
                 const CircleAvatar(
                   backgroundColor: AppColors.primarySurface,
-                  child: Icon(Icons.attractions_rounded,
-                      color: AppColors.primary),
+                  child:
+                      Icon(Icons.attractions_rounded, color: AppColors.primary),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -401,7 +408,7 @@ class _LegacyAttractionCard extends StatelessWidget {
                       ),
                       style: Theme.of(context).textTheme.bodySmall,
                     )
-                  : FilledButton.icon(
+                  : AppButton.icon(
                       onPressed: saving ? null : onReview,
                       icon: saving
                           ? const SizedBox.square(
@@ -412,6 +419,7 @@ class _LegacyAttractionCard extends StatelessWidget {
                             )
                           : const Icon(Icons.fact_check_outlined),
                       label: Text(l10n.adminLegacyAttractionReviewAction),
+                      expand: false,
                     ),
             ),
           ],
@@ -518,12 +526,13 @@ class _PartnerCard extends StatelessWidget {
             const Divider(height: 24),
             Align(
               alignment: AlignmentDirectional.centerEnd,
-              child: TextButton.icon(
+              child: AppButton.icon(
                 onPressed: onStatusAction,
                 icon: Icon(partner.isActive
                     ? Icons.person_off_outlined
                     : Icons.person_add_alt_1_outlined),
                 label: Text(statusActionLabel),
+                variant: AppButtonVariant.text,
               ),
             ),
           ],
@@ -684,11 +693,12 @@ class _AddPartnerDialogState extends State<_AddPartnerDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        AppButton(
           onPressed: () => Navigator.pop(context),
           child: Text(l10n.cancel),
+          variant: AppButtonVariant.text,
         ),
-        FilledButton(
+        AppButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) return;
             Navigator.pop(
@@ -701,6 +711,7 @@ class _AddPartnerDialogState extends State<_AddPartnerDialog> {
             );
           },
           child: Text(l10n.adminAddPartner),
+          expand: false,
         ),
       ],
     );

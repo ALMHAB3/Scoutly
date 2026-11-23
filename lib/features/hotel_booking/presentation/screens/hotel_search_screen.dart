@@ -549,10 +549,11 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                       ),
                     ),
                     if (_locationError != null)
-                      TextButton.icon(
+                      AppButton.icon(
                         onPressed: _openLocationSettings,
                         icon: const Icon(Icons.settings_outlined, size: 16),
                         label: Text(l10n.openLocationSettings),
+                        variant: AppButtonVariant.text,
                       ),
                   ],
                 ),
@@ -647,7 +648,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                   const SizedBox(height: 10),
                   SizedBox(
                     height: 50,
-                    child: OutlinedButton.icon(
+                    child: AppButton.icon(
                       onPressed: _ctrl.isLoading || _isLoadingNearby
                           ? null
                           : _searchNearby,
@@ -663,6 +664,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
+                      variant: AppButtonVariant.secondary,
                     ),
                   ),
                 ],

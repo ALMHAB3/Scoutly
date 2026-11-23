@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/auth_controller.dart';
 import 'auth_shared.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   final AuthController? authController;
@@ -84,8 +85,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         AuthTitle(
           line1: AppLocalizations.of(context).forgotTitleLine1,
           line2: AppLocalizations.of(context).forgotTitleLine2,
-          subtitle:
-              AppLocalizations.of(context).forgotSubtitle,
+          subtitle: AppLocalizations.of(context).forgotSubtitle,
         ),
         const SizedBox(height: 24),
         AuthInput(
@@ -100,7 +100,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           },
         ),
         const SizedBox(height: 20),
-        AuthButton(label: AppLocalizations.of(context).sendResetCode, loading: _loading, onTap: _send),
+        AppButton.label(
+            text: AppLocalizations.of(context).sendResetCode,
+            loading: _loading,
+            onPressed: _send),
         const SizedBox(height: 18),
         AuthFooterLink(
           text: AppLocalizations.of(context).rememberedIt,

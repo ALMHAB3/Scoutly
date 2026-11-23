@@ -23,6 +23,7 @@ import 'flight_checkout_shared_components.dart';
 import 'flight_review_pay_screen.dart';
 import 'flight_seat_map_view.dart';
 import 'flight_seat_widgets.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 typedef FlightSeatMapLoader = Future<ApiResult<FlightSeatMap>> Function(String);
 typedef FlightPaymentLauncher = Future<bool> Function(
@@ -1145,9 +1146,10 @@ class _FlightTripDetailsScreenState extends State<FlightTripDetailsScreen>
                   style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 12)),
             ),
-            TextButton(
+            AppButton(
               onPressed: () => setState(() => _seatsSkipped = false),
               child: Text(labels.chooseSeatsAgain),
+              variant: AppButtonVariant.text,
             ),
           ],
         ),
@@ -1226,7 +1228,7 @@ class _FlightTripDetailsScreenState extends State<FlightTripDetailsScreen>
           if (_isDuffel)
             Align(
               alignment: AlignmentDirectional.centerEnd,
-              child: TextButton(
+              child: AppButton(
                 onPressed: _submitting
                     ? null
                     : () => setState(() {
@@ -1236,6 +1238,7 @@ class _FlightTripDetailsScreenState extends State<FlightTripDetailsScreen>
                           }
                         }),
                 child: Text(labels.skipSeats),
+                variant: AppButtonVariant.text,
               ),
             ),
         ],
@@ -1420,11 +1423,12 @@ class _TravelerCard extends StatelessWidget {
                   ],
                 ),
               ),
-              TextButton(
+              AppButton(
                 onPressed: enabled ? onToggle : null,
                 child: Text(traveler.editing ? l10n.done : l10n.edit,
                     style: const TextStyle(
                         color: AppColors.primary, fontWeight: FontWeight.w700)),
+                variant: AppButtonVariant.text,
               ),
             ],
           ),

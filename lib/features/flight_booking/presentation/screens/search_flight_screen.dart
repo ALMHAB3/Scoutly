@@ -13,6 +13,7 @@ import '../../../../models/flight_price_breakdown.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/flight_controller.dart';
 import 'flight_search_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class SearchFlightScreen extends StatefulWidget {
   final FlightSearchParams? initialSearch;
@@ -710,7 +711,7 @@ class FlightDateSelector extends StatelessWidget {
                       ),
                 ),
               ),
-              TextButton(
+              AppButton(
                 onPressed: () async {
                   final picked = await showDatePicker(
                     context: context,
@@ -729,6 +730,7 @@ class FlightDateSelector extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                 ),
                 child: Text(l10n.flightCalendar),
+                variant: AppButtonVariant.text,
               ),
             ],
           ),
@@ -1477,9 +1479,10 @@ class _NoFlights extends StatelessWidget {
                     ),
               ),
               const SizedBox(height: 10),
-              TextButton(
+              AppButton(
                 onPressed: onEdit,
                 child: Text(l10n.searchFlightsBtn),
+                variant: AppButtonVariant.text,
               ),
             ],
           ),
@@ -1567,16 +1570,18 @@ class _MessageState extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(height: 18),
-                    FilledButton(
+                    AppButton(
                       onPressed: onPressed,
                       child: Text(buttonLabel),
+                      expand: false,
                     ),
                     if (secondaryLabel != null &&
                         onSecondaryPressed != null) ...[
                       const SizedBox(height: 8),
-                      TextButton(
+                      AppButton(
                         onPressed: onSecondaryPressed,
                         child: Text(secondaryLabel!),
+                        variant: AppButtonVariant.text,
                       ),
                     ],
                   ],

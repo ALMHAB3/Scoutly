@@ -12,6 +12,7 @@ import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/destination_info_model.dart';
 import '../../../../models/travel_package_model.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class PackageDetailScreen extends StatefulWidget {
   final TravelPackage package;
@@ -315,7 +316,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 // ── زرار حجز واحد للعرض بالكامل ─────────────────────
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
+                  child: AppButton.icon(
                     onPressed: _isBooking ||
                             package.flight == null ||
                             !package.flight!.isActive

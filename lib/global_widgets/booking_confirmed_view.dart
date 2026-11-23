@@ -167,7 +167,7 @@ class BookingConfirmedView extends StatelessWidget {
               const SizedBox(height: 12),
               SizedBox(
                 height: 52,
-                child: OutlinedButton(
+                child: AppButton(
                   key: const ValueKey('booking-view-details'),
                   onPressed: () => AppDockBar.leaveTo(context, _tripsTab),
                   style: OutlinedButton.styleFrom(
@@ -184,6 +184,7 @@ class BookingConfirmedView extends StatelessWidget {
                     ),
                   ),
                   child: Text(viewDetailsLabel),
+                  variant: AppButtonVariant.secondary,
                 ),
               ),
             ],

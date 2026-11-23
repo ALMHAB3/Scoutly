@@ -6,7 +6,7 @@ import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../models/flight_model.dart';
 import '../../../../models/flight_seat_map.dart';
 import '../../../../core/constants/app_colors.dart';
-
+import '../../../../global_widgets/ui/ui.dart';
 
 class FlightCabinSelector extends StatelessWidget {
   final FlightSeatCabin cabin;
@@ -142,10 +142,10 @@ class FlightSeatLegend extends StatelessWidget {
             color: AppColors.white,
             border: AppColors.seatNavy,
             label: isArabic ? 'مساحة إضافية للأرجل' : 'Extra legroom'),
-        _LegendItem(color: AppColors.seatNavy, label: isArabic ? 'مقعدك' : 'Your seat'),
         _LegendItem(
-            color: AppColors.seatTaken,
-            label: isArabic ? 'محجوز' : 'Taken'),
+            color: AppColors.seatNavy, label: isArabic ? 'مقعدك' : 'Your seat'),
+        _LegendItem(
+            color: AppColors.seatTaken, label: isArabic ? 'محجوز' : 'Taken'),
       ],
     );
   }
@@ -175,7 +175,9 @@ class _LegendItem extends StatelessWidget {
           const SizedBox(width: 6),
           Text(label,
               style: const TextStyle(
-                  color: AppColors.seatMuted, fontSize: 11, fontWeight: FontWeight.w600)),
+                  color: AppColors.seatMuted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600)),
         ],
       );
 }
@@ -209,7 +211,8 @@ class FlightExtrasPanel extends StatelessWidget {
         childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
         iconColor: AppColors.seatNavy,
         title: Text(AppLocalizations.of(context).optionalExtras,
-            style: const TextStyle(color: AppColors.seatInk, fontWeight: FontWeight.w800)),
+            style: const TextStyle(
+                color: AppColors.seatInk, fontWeight: FontWeight.w800)),
         subtitle: Text(AppLocalizations.of(context).optionalExtrasSubtitle,
             style: const TextStyle(color: AppColors.seatMuted, fontSize: 12)),
         children: [
@@ -306,18 +309,20 @@ class FlightSeatErrorPanel extends StatelessWidget {
         ),
         child: Column(
           children: [
-            const Icon(Icons.event_seat_outlined, color: AppColors.seatMuted, size: 27),
+            const Icon(Icons.event_seat_outlined,
+                color: AppColors.seatMuted, size: 27),
             const SizedBox(height: 9),
             Text(message,
                 textAlign: TextAlign.center,
-                style:
-                    const TextStyle(color: AppColors.seatInk, fontWeight: FontWeight.w600)),
+                style: const TextStyle(
+                    color: AppColors.seatInk, fontWeight: FontWeight.w600)),
             if (onRetry != null) ...[
               const SizedBox(height: 8),
-              TextButton.icon(
+              AppButton.icon(
                 onPressed: retrying ? null : onRetry,
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(AppLocalizations.of(context).retryShort),
+                variant: AppButtonVariant.text,
               ),
             ],
           ],

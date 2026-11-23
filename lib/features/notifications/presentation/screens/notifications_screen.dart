@@ -6,6 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../global_widgets/app_shell.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -36,9 +37,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             animation: _store,
             builder: (context, _) {
               if (!_store.hasUnread) return const SizedBox.shrink();
-              return TextButton(
+              return AppButton(
                 onPressed: _store.markAllRead,
                 child: Text(l10n.notifMarkAllRead),
+                variant: AppButtonVariant.text,
               );
             },
           ),
@@ -167,7 +169,9 @@ class _NotificationCard extends StatelessWidget {
       child: Material(
         color: notification.isRead
             ? (isDark ? AppColors.darkSurface : AppColors.surface)
-            : (isDark ? AppColors.darkSurfaceSecondary : AppColors.primarySurface),
+            : (isDark
+                ? AppColors.darkSurfaceSecondary
+                : AppColors.primarySurface),
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -274,6 +278,7 @@ class _NotificationCard extends StatelessWidget {
     if (elapsed.inHours < 1) return l10n.notifTimeAgoMinutes(elapsed.inMinutes);
     if (elapsed.inHours < 24) return l10n.notifTimeAgoHours(elapsed.inHours);
     if (elapsed.inDays < 7) return l10n.notifTimeAgoDays(elapsed.inDays);
-    return MaterialLocalizations.of(context).formatMediumDate(createdAt.toLocal());
+    return MaterialLocalizations.of(context)
+        .formatMediumDate(createdAt.toLocal());
   }
 }

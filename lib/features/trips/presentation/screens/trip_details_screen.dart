@@ -12,6 +12,7 @@ import '../../../../global_widgets/ticket_qr_screen.dart';
 import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/trip_model.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class TripDetailsScreen extends StatefulWidget {
   final TripModel trip;
@@ -191,7 +192,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                 const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
+                  child: AppButton.icon(
                     onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -217,12 +218,13 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                         softWrap: false,
                       ),
                     ),
+                    variant: AppButtonVariant.secondary,
                   ),
                 ).animate().fade(delay: 420.ms),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
+                  child: AppButton.icon(
                     onPressed: _shareTrip,
                     icon: const Icon(Icons.share_rounded, size: 16),
                     label: Text(l10n.share),
@@ -232,7 +234,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                   const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
+                    child: AppButton.icon(
                       onPressed: _isCancelling ? null : _cancelTrip,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.accentRed,
@@ -253,6 +255,7 @@ class _TripDetailsScreenState extends State<TripDetailsScreen> {
                           softWrap: false,
                         ),
                       ),
+                      variant: AppButtonVariant.secondary,
                     ),
                   ).animate().fade(delay: 500.ms),
                 ],

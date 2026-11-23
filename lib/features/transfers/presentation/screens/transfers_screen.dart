@@ -18,6 +18,7 @@ import '../../../../models/transfer_model.dart';
 import '../../logic/transfers_controller.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../global_widgets/payment_checkout_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class TransferSearchRouteArgs {
   final String initialFromLocation;
@@ -349,7 +350,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                 width: double.infinity,
                 child: ListenableBuilder(
                   listenable: _ctrl,
-                  builder: (_, __) => ElevatedButton.icon(
+                  builder: (_, __) => AppButton.icon(
                     onPressed: _ctrl.isLoading ? null : _search,
                     icon: _ctrl.isLoading
                         ? const SizedBox(
@@ -703,7 +704,7 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
                               Wrap(
                                 spacing: 8,
                                 children: [
-                                  OutlinedButton.icon(
+                                  AppButton.icon(
                                     onPressed: _loadCurrentLocation,
                                     icon: const Icon(Icons.refresh_rounded),
                                     label: FittedBox(
@@ -714,10 +715,11 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
                                         softWrap: false,
                                       ),
                                     ),
+                                    variant: AppButtonVariant.secondary,
                                   ),
                                   if (_locationError ==
                                       widget.permissionDeniedForeverMessage)
-                                    OutlinedButton.icon(
+                                    AppButton.icon(
                                       onPressed:
                                           LocationSettingsService.isSupported
                                               ? LocationSettingsService
@@ -732,10 +734,11 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
                                           softWrap: false,
                                         ),
                                       ),
+                                      variant: AppButtonVariant.secondary,
                                     ),
                                   if (_locationError ==
                                       widget.serviceDisabledMessage)
-                                    OutlinedButton.icon(
+                                    AppButton.icon(
                                       onPressed:
                                           LocationSettingsService.isSupported
                                               ? LocationSettingsService
@@ -750,6 +753,7 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
                                           softWrap: false,
                                         ),
                                       ),
+                                      variant: AppButtonVariant.secondary,
                                     ),
                                 ],
                               ),
@@ -836,12 +840,13 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
             padding: const EdgeInsets.all(16),
             child: SizedBox(
               width: double.infinity,
-              child: FilledButton.icon(
+              child: AppButton.icon(
                 onPressed: _selectedPoint == null
                     ? null
                     : () => Navigator.pop(context, _selectedPoint),
                 icon: const Icon(Icons.check_rounded),
                 label: Text(widget.confirmLabel),
+                expand: false,
               ),
             ),
           ),
@@ -892,7 +897,7 @@ class _SelectionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return OutlinedButton(
+    return AppButton(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -930,6 +935,7 @@ class _SelectionButton extends StatelessWidget {
           ),
         ],
       ),
+      variant: AppButtonVariant.secondary,
     );
   }
 }
@@ -1152,7 +1158,7 @@ class _TransferCard extends StatelessWidget {
                   ],
                 ),
               ),
-              FilledButton(
+              AppButton(
                 onPressed: isBooking ? null : onBook,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -1169,6 +1175,7 @@ class _TransferCard extends StatelessWidget {
                             strokeWidth: 2, color: AppColors.white))
                     : Text(l10n.book,
                         style: const TextStyle(fontWeight: FontWeight.w700)),
+                expand: false,
               ),
             ],
           ),

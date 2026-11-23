@@ -5,6 +5,7 @@ import '../core/constants/app_colors.dart';
 import '../global_widgets/app_shell.dart';
 import '../l10n/app_localizations.dart';
 import '../routes/app_routes.dart';
+import 'ui/ui.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
   final String serviceName;
@@ -96,7 +97,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                     totalFieldLabel: l10n.flightTotal,
                   ),
                   const SizedBox(height: 18),
-                  FilledButton.icon(
+                  AppButton.icon(
                     onPressed: () => _returnHome(context),
                     icon: const Icon(Icons.home_rounded),
                     label: Text(l10n.done),
@@ -108,6 +109,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
+                    expand: false,
                   ),
                 ],
               ),

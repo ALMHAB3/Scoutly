@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/attraction_model.dart';
 import '../../../../models/legacy_attraction_review_model.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class AdminLegacyAttractionReviewDialog extends StatefulWidget {
   final LegacyAttractionPartner partner;
@@ -25,8 +26,8 @@ class _AdminLegacyAttractionReviewDialogState
   final Map<int, String> _choices = {};
 
   List<Map<String, dynamic>> get _decisions => widget.partner.listings
-      .where((listing) => listing.canMapToPlace)
-      .map((listing) {
+          .where((listing) => listing.canMapToPlace)
+          .map((listing) {
         final choice = _choices[listing.id] ?? 'omit';
         if (choice.startsWith('existing:')) {
           return <String, dynamic>{
@@ -128,7 +129,9 @@ class _AdminLegacyAttractionReviewDialogState
                                       listing.active
                                           ? l10n.adminPartnerStatusActive
                                           : l10n.adminPartnerStatusInactive,
-                                    ].where((part) => part.isNotEmpty).join(' • '),
+                                    ]
+                                        .where((part) => part.isNotEmpty)
+                                        .join(' • '),
                                     style:
                                         Theme.of(context).textTheme.bodySmall,
                                   ),
@@ -173,18 +176,16 @@ class _AdminLegacyAttractionReviewDialogState
                                       ],
                                       onChanged: (value) {
                                         if (value != null) {
-                                          setState(
-                                              () => _choices[listing.id] = value);
+                                          setState(() =>
+                                              _choices[listing.id] = value);
                                         }
                                       },
                                     )
                                   else
                                     Text(
-                                      l10n
-                                          .adminLegacyAttractionNonPlaceListing,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall,
+                                      l10n.adminLegacyAttractionNonPlaceListing,
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
                                     ),
                                 ],
                               ),
@@ -193,8 +194,7 @@ class _AdminLegacyAttractionReviewDialogState
                         if (attractionListings.isEmpty)
                           Padding(
                             padding: const EdgeInsets.all(8),
-                            child: Text(
-                                l10n.adminLegacyAttractionNoListings),
+                            child: Text(l10n.adminLegacyAttractionNoListings),
                           ),
                       ],
                     ),
@@ -205,15 +205,17 @@ class _AdminLegacyAttractionReviewDialogState
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
+                  AppButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(l10n.cancel),
+                    variant: AppButtonVariant.text,
                   ),
                   const SizedBox(width: 8),
-                  FilledButton.icon(
+                  AppButton.icon(
                     onPressed: () => Navigator.pop(context, _decisions),
                     icon: const Icon(Icons.fact_check_outlined),
                     label: Text(l10n.adminLegacyAttractionApproveRetire),
+                    expand: false,
                   ),
                 ],
               ),

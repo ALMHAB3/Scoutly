@@ -12,6 +12,7 @@ import '../../../../models/admin_dashboard_model.dart';
 import '../../../../routes/app_routes.dart';
 import 'admin_catalog_management.dart';
 import 'admin_partners_management.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 enum _AdminSection {
   overview,
@@ -742,9 +743,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       {bool compact = false}) {
     return _Panel(
       title: l10n.adminRecentReservations,
-      trailing: TextButton(
+      trailing: AppButton(
         onPressed: () => _selectSection(_AdminSection.reservations),
         child: Text(l10n.viewAll),
+        variant: AppButtonVariant.text,
       ),
       child: reservations.isEmpty
           ? _EmptyText(l10n.adminNoReservations)
@@ -1294,10 +1296,11 @@ class _ErrorState extends StatelessWidget {
               const SizedBox(height: 12),
               Text(message, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              FilledButton.icon(
+              AppButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(AppLocalizations.of(context).adminRefresh),
+                expand: false,
               ),
             ],
           ),
@@ -1324,10 +1327,11 @@ class _AccessDenied extends StatelessWidget {
                   const SizedBox(height: 14),
                   Text(message, textAlign: TextAlign.center),
                   const SizedBox(height: 18),
-                  FilledButton(
+                  AppButton(
                     onPressed: () =>
                         Navigator.pushReplacementNamed(context, AppRoutes.home),
                     child: Text(AppLocalizations.of(context).adminBackToApp),
+                    expand: false,
                   ),
                 ],
               ),

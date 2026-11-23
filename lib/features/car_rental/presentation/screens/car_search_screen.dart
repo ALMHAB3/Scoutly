@@ -156,7 +156,11 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: _reset, child: Text(labels.reset)),
+          AppButton(
+            onPressed: _reset,
+            child: Text(labels.reset),
+            variant: AppButtonVariant.text,
+          ),
         ],
       ),
       body: ListView(

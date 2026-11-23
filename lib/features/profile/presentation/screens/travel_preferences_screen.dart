@@ -5,6 +5,7 @@ import '../../../../core/services/api_service.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/travel_preferences.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class TravelPreferencesScreen extends StatefulWidget {
   const TravelPreferencesScreen({super.key});
@@ -112,13 +113,14 @@ class _TravelPreferencesScreenState extends State<TravelPreferencesScreen> {
                       style: const TextStyle(color: AppColors.accentRed)),
                   Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: TextButton.icon(
+                    child: AppButton.icon(
                       onPressed: () {
                         setState(() => _isLoading = true);
                         _load();
                       },
                       icon: const Icon(Icons.refresh_rounded),
                       label: Text(l10n.retry),
+                      variant: AppButtonVariant.text,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -282,7 +284,7 @@ class _TravelPreferencesScreenState extends State<TravelPreferencesScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                FilledButton.icon(
+                AppButton.icon(
                   onPressed: _isSaving ? null : _save,
                   icon: _isSaving
                       ? const SizedBox(
@@ -292,6 +294,7 @@ class _TravelPreferencesScreenState extends State<TravelPreferencesScreen> {
                         )
                       : const Icon(Icons.save_rounded),
                   label: Text(l10n.saveChanges),
+                  expand: false,
                 ),
               ],
             ),

@@ -103,12 +103,16 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fullWidth = expand ?? variant != AppButtonVariant.text;
+    // A style with its own size (minimumSize / fixedSize) keeps that size.
+    final customSize = style?.minimumSize != null || style?.fixedSize != null;
+    final fullWidth =
+        !customSize && (expand ?? variant != AppButtonVariant.text);
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(radius),
     );
-    final h =
-        height ?? (variant == AppButtonVariant.text ? null : defaultHeight);
+    final h = customSize
+        ? null
+        : height ?? (variant == AppButtonVariant.text ? null : defaultHeight);
     final minimumSize = Size(fullWidth ? double.infinity : 0, h ?? 40);
     const textStyle = TextStyle(fontSize: 15, fontWeight: FontWeight.w700);
 

@@ -3,6 +3,7 @@ import '../core/constants/app_colors.dart';
 import '../core/services/price_comparison.dart';
 import '../core/utils/money_format.dart';
 import '../l10n/app_localizations.dart';
+import 'ui/ui.dart';
 
 /// Currency and reference-rate controls shared by the flight and hotel results.
 class PriceComparisonControls extends StatelessWidget {
@@ -96,7 +97,7 @@ class PriceComparisonControls extends StatelessWidget {
                         },
                 ),
               ),
-              OutlinedButton.icon(
+              AppButton.icon(
                 onPressed:
                     comparison.isLoading ? null : () => comparison.refresh(),
                 icon: comparison.isLoading
@@ -113,6 +114,7 @@ class PriceComparisonControls extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 ),
+                variant: AppButtonVariant.secondary,
               ),
               if (showBudget && onBudgetChanged != null)
                 SizedBox(

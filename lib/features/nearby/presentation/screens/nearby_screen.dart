@@ -7,6 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/map_search_result.dart';
 import '../../logic/nearby_controller.dart';
 import 'places_map_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 IconData _nearbyCategoryIcon(String category) =>
     switch (category.toLowerCase()) {
@@ -294,8 +295,9 @@ class _FilterChips extends StatelessWidget {
                         fontSize: 13,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color:
-                            isSelected ? AppColors.white : AppColors.textSecondary,
+                        color: isSelected
+                            ? AppColors.white
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -473,10 +475,11 @@ class _PlacesLoadError extends StatelessWidget {
                   style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 12)),
             ),
-            TextButton.icon(
+            AppButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded, size: 16),
               label: Text(l10n.retry),
+              variant: AppButtonVariant.text,
             ),
           ],
         ),
@@ -495,10 +498,11 @@ class _PlacesLoadError extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 16),
-            OutlinedButton.icon(
+            AppButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
               label: Text(l10n.retry),
+              variant: AppButtonVariant.secondary,
             ),
           ],
         ),
@@ -542,11 +546,12 @@ class _LocationErrorView extends StatelessWidget {
                   style: const TextStyle(
                       color: AppColors.textSecondary, fontSize: 12)),
             ),
-            TextButton(
+            AppButton(
               onPressed: LocationSettingsService.isSupported
                   ? LocationSettingsService.openLocationSettings
                   : null,
               child: Text(l10n.openSettings),
+              variant: AppButtonVariant.text,
             ),
           ],
         ),
@@ -568,7 +573,7 @@ class _LocationErrorView extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
+            AppButton.icon(
               onPressed: LocationSettingsService.isSupported
                   ? LocationSettingsService.openLocationSettings
                   : null,

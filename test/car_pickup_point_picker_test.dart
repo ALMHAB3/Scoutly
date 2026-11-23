@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:zentrip/core/services/current_location_service.dart';
 import 'package:zentrip/features/admin/presentation/screens/car_pickup_point_picker.dart';
+import 'package:zentrip/global_widgets/ui/ui.dart';
 import 'package:zentrip/l10n/app_localizations.dart';
 
 class _AtTheCar extends CurrentLocationService {
@@ -57,7 +58,7 @@ void main() {
     await open(tester);
     // Nothing chosen yet: cannot confirm.
     final confirm = find.byKey(const ValueKey('pickup-confirm'));
-    expect(tester.widget<ElevatedButton>(confirm).onPressed, isNull);
+    expect(tester.widget<AppButton>(confirm).onPressed, isNull);
 
     await tester.tap(find.byKey(const ValueKey('pickup-use-location')));
     await tester.pumpAndSettle();

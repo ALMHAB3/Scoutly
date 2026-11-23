@@ -20,6 +20,7 @@ import '../../../nearby/presentation/screens/places_map_screen.dart';
 import '../../../../models/booking_model.dart';
 import '../../../../routes/app_routes.dart';
 import '../attraction_category.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class AttractionDetailScreen extends StatefulWidget {
   const AttractionDetailScreen({super.key});
@@ -206,7 +207,10 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [AppColors.overlayLight, AppColors.overlayStrong],
+                        colors: [
+                          AppColors.overlayLight,
+                          AppColors.overlayStrong
+                        ],
                       ),
                     ),
                   ),
@@ -338,7 +342,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
 
                 // Book ticket
                 if (!a.isFree)
-                  ElevatedButton.icon(
+                  AppButton.icon(
                     onPressed: _isBooking ? null : _bookTicket,
                     icon: _isBooking
                         ? const SizedBox(
@@ -356,7 +360,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                         backgroundColor: AppColors.accentPurple),
                   ).animate().fade(delay: 250.ms)
                 else
-                  ElevatedButton.icon(
+                  AppButton.icon(
                     onPressed: () => _openOnMap(a, l10n),
                     icon: const Icon(Icons.map_rounded),
                     label: Text(l10n.attractionOpenOnMap),

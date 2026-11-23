@@ -14,8 +14,8 @@ import '../../logic/flight_checkout_passenger.dart';
 import '../../logic/tickets_pdf.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../models/flight_model.dart';
-import 'flight_primary_button.dart';
 import 'flight_checkout_shared_components.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class BookingConfirmedScreen extends StatefulWidget {
   final FlightBookingDraft draft;
@@ -466,7 +466,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
           ],
           const SizedBox(height: 24),
           Center(
-            child: OutlinedButton.icon(
+            child: AppButton.icon(
               key: const ValueKey('save-tickets-pdf'),
               onPressed: _savingPdf
                   ? null
@@ -504,10 +504,15 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                 minimumSize: const Size(260, 50),
                 shape: const StadiumBorder(),
               ),
+              variant: AppButtonVariant.secondary,
             ),
           ),
           const SizedBox(height: 14),
-          _BackHomeButton(label: l10n.flightBackToHome, onPressed: _backToHome),
+          AppButton.label(
+            text: l10n.flightBackToHome,
+            onPressed: _backToHome,
+            iconData: Icons.home_rounded,
+          ),
         ],
       ),
     );
@@ -1101,49 +1106,6 @@ class _TicketExtraChip extends StatelessWidget {
       );
 }
 
-class _BackHomeButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onPressed;
-
-  const _BackHomeButton({required this.label, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) => Center(
-        child: SizedBox(
-          width: 260,
-          height: 56,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.35),
-                  blurRadius: 18,
-                  offset: const Offset(0, 7),
-                ),
-              ],
-            ),
-            child: ElevatedButton.icon(
-              onPressed: onPressed,
-              icon: const Icon(Icons.home_rounded, size: 20),
-              label: Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.w700),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.transparent,
-                foregroundColor: AppColors.white,
-                shadowColor: AppColors.transparent,
-                elevation: 0,
-                shape: const StadiumBorder(),
-              ),
-            ),
-          ),
-        ),
-      );
-}
-
 class _ConfirmationError extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -1173,15 +1135,16 @@ class _ConfirmationError extends StatelessWidget {
               style: const TextStyle(color: AppColors.white),
             ),
             const SizedBox(height: 20),
-            FlightPrimaryButton(
-              label: l10n.retry,
-              icon: Icons.refresh_rounded,
+            AppButton.label(
+              text: l10n.retry,
+              iconData: Icons.refresh_rounded,
               onPressed: onRetry,
             ),
             const SizedBox(height: 10),
-            TextButton(
+            AppButton(
               onPressed: onBack,
               child: Text(l10n.flightBackToHome),
+              variant: AppButtonVariant.text,
             ),
           ],
         ),

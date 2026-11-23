@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/travel_package_model.dart';
 import '../../../flight_booking/presentation/screens/flight_search_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// شاشة وسيطة قبل البحث عن الطيران: بتقترح وجهة جاهزة بدل ما تسيب المستخدم
 /// يكتب كل حاجة من الصفر — إما من باقة سياحية مفتوحة، أو من آخر بحث محفوظ.
@@ -93,7 +94,7 @@ class _SearchFlightsScreenState extends State<SearchFlightsScreen> {
                       ),
                     ).animate().fade().slideY(begin: 0.05, end: 0),
                   const SizedBox(height: 20),
-                  OutlinedButton.icon(
+                  AppButton.icon(
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -101,6 +102,7 @@ class _SearchFlightsScreenState extends State<SearchFlightsScreen> {
                     ),
                     icon: const Icon(Icons.search_rounded),
                     label: Text(l10n.tripsGoToFlightSearch),
+                    variant: AppButtonVariant.secondary,
                   ).animate().fade(delay: 100.ms),
                 ],
               ),
@@ -184,7 +186,7 @@ class _SuggestionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
+          AppButton.icon(
             onPressed: onTap,
             icon: const Icon(Icons.arrow_forward_rounded, size: 18),
             label: Text(buttonLabel),

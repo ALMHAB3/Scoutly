@@ -8,6 +8,7 @@ import '../../../../routes/app_routes.dart';
 import '../../logic/auth_controller.dart';
 import 'auth_shared.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -199,10 +200,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           ),
         ],
         const SizedBox(height: 20),
-        AuthButton(
-          label: l10n.resetPasswordButton,
+        AppButton.label(
+          text: l10n.resetPasswordButton,
           loading: _loading,
-          onTap: _loading ? null : _resetPassword,
+          onPressed: _loading ? null : _resetPassword,
         ),
       ],
     );
@@ -233,10 +234,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               : l10n.passwordResetSuccess,
         ),
         const SizedBox(height: 20),
-        AuthButton(
-          label: l10n.backToLogin,
+        AppButton.label(
+          text: l10n.backToLogin,
           loading: false,
-          onTap: _goToLogin,
+          onPressed: _goToLogin,
         ),
       ],
     );

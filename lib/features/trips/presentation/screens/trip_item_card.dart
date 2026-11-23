@@ -10,6 +10,7 @@ import '../../../../global_widgets/review_form_sheet.dart';
 import '../../../../core/utils/money_format.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../logic/trips_controller.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 extension TripKindStyle on TripKind {
   IconData get icon => switch (this) {
@@ -128,7 +129,10 @@ class TripItemCard extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [AppColors.overlayMedium, AppColors.overlayClear],
+                          colors: [
+                            AppColors.overlayMedium,
+                            AppColors.overlayClear
+                          ],
                         ),
                       ),
                     ),
@@ -361,7 +365,7 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                   if (booking != null && item.canReview) ...[
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
+                      child: AppButton.icon(
                         onPressed: () {
                           Navigator.pop(context);
                           ReviewFormSheet.show(context,
@@ -369,6 +373,7 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                         },
                         icon: const Icon(Icons.rate_review_outlined, size: 16),
                         label: Text(l10n.writeAReview),
+                        variant: AppButtonVariant.secondary,
                       ),
                     ),
                   ],
@@ -376,7 +381,7 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                     const SizedBox(height: 10),
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton.icon(
+                      child: AppButton.icon(
                         onPressed: isCancelling
                             ? null
                             : () async {
@@ -414,6 +419,7 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                         label: Text(isCancelling
                             ? l10n.cancellingTrip
                             : l10n.cancelBooking),
+                        variant: AppButtonVariant.secondary,
                       ),
                     ),
                   ],

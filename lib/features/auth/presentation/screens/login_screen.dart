@@ -6,8 +6,9 @@ import '../../../../core/utils/auth_fonts.dart'
 import '../../../../core/services/api_service.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/auth_controller.dart';
-import 'auth_shared.dart' show AuthScaffold;
+import 'auth_shared.dart' show AuthScaffold, GoogleG;
 import '../../../../core/constants/app_colors.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 // ───────────────────────── Colors ─────────────────────────
 
@@ -206,10 +207,10 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 18),
 
-        _PressableButton(
-          label: AppLocalizations.of(context).loginButton,
+        AppButton.label(
+          text: AppLocalizations.of(context).loginButton,
           loading: _loading,
-          onTap: _submitLogin,
+          onPressed: _submitLogin,
         ),
         if (ApiService.socialAuthConfigured) ...[
           const SizedBox(height: 16),
@@ -233,18 +234,21 @@ class _LoginScreenState extends State<LoginScreen> {
           Row(
             children: [
               Expanded(
-                child: _SocialButton(
-                  label: 'Google',
-                  icon: const _GoogleG(),
-                  onTap: () => _socialLogin(withApple: false),
+                child: AppButton.icon(
+                  label: Text('Google'),
+                  icon: const GoogleG(),
+                  onPressed: () => _socialLogin(withApple: false),
+                  variant: AppButtonVariant.secondary,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _SocialButton(
-                  label: 'Apple',
-                  icon: const Icon(Icons.apple, size: 22, color: AppColors.black),
-                  onTap: () => _socialLogin(withApple: true),
+                child: AppButton.icon(
+                  label: Text('Apple'),
+                  icon:
+                      const Icon(Icons.apple, size: 22, color: AppColors.black),
+                  onPressed: () => _socialLogin(withApple: true),
+                  variant: AppButtonVariant.secondary,
                 ),
               ),
             ],
@@ -260,7 +264,8 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Text.rich(
             TextSpan(
               text: AppLocalizations.of(context).noAccountPrompt,
-              style: GoogleFonts.poppins(fontSize: 12, color: AppColors.authText),
+              style:
+                  GoogleFonts.poppins(fontSize: 12, color: AppColors.authText),
               children: [
                 TextSpan(
                   text: AppLocalizations.of(context).createAnAccount,
@@ -320,142 +325,6 @@ class _InputField extends StatelessWidget {
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.authNavy, width: 1.4),
-        ),
-      ),
-    );
-  }
-}
-
-class _PressableButton extends StatefulWidget {
-  final String label;
-  final VoidCallback onTap;
-  final bool loading;
-  const _PressableButton({
-    required this.label,
-    required this.onTap,
-    this.loading = false,
-  });
-
-  @override
-  State<_PressableButton> createState() => _PressableButtonState();
-}
-
-class _PressableButtonState extends State<_PressableButton> {
-  bool _down = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _down = true),
-      onTapCancel: () => setState(() => _down = false),
-      onTapUp: (_) {
-        setState(() => _down = false);
-        if (!widget.loading) widget.onTap();
-      },
-      child: AnimatedScale(
-        scale: _down ? 0.97 : 1,
-        duration: const Duration(milliseconds: 120),
-        child: Container(
-          height: 52,
-          width: double.infinity,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.authNavy,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.authNavy.withValues(alpha: 0.35),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: widget.loading
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    color: AppColors.white,
-                  ),
-                )
-              : Text(
-                  widget.label,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.white,
-                  ),
-                ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  final String label;
-  final Widget icon;
-  final VoidCallback onTap;
-  const _SocialButton(
-      {required this.label, required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.authLine),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              icon,
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.authText,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GoogleG extends StatelessWidget {
-  const _GoogleG();
-
-  @override
-  Widget build(BuildContext context) {
-    return ShaderMask(
-      shaderCallback: (r) => const SweepGradient(
-        colors: [
-          AppColors.googleRed,
-          AppColors.googleYellow,
-          AppColors.googleGreen,
-          AppColors.googleBlue,
-          AppColors.googleRed,
-        ],
-      ).createShader(r),
-      child: Text(
-        'G',
-        style: GoogleFonts.poppins(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: AppColors.white,
         ),
       ),
     );

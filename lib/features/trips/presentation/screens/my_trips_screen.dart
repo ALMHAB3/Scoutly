@@ -7,6 +7,7 @@ import '../../logic/trips_controller.dart';
 import 'trip_details_screen.dart';
 import 'trip_item_card.dart';
 import 'itinerary_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class MyTripsScreen extends StatefulWidget {
   final TripsController? controller;
@@ -82,7 +83,7 @@ class _MyTripsScreenState extends State<MyTripsScreen> {
                       icon: const Icon(Icons.route_rounded),
                       tooltip: l10n.itineraryTitle,
                     ),
-                    ElevatedButton.icon(
+                    AppButton.icon(
                       onPressed: () =>
                           Navigator.pushNamed(context, AppRoutes.searchFlights),
                       icon: const Icon(Icons.add_rounded, size: 16),
@@ -259,7 +260,11 @@ class _FilterBar extends StatelessWidget {
       (TripFilter.hotels, l10n.tripsFilterHotels, Icons.hotel_rounded),
       (TripFilter.cars, l10n.tripsFilterCars, Icons.directions_car_rounded),
       (TripFilter.tours, l10n.tripsFilterTours, Icons.local_activity_rounded),
-      (TripFilter.transfers, l10n.tripsFilterTransfers, Icons.local_taxi_rounded),
+      (
+        TripFilter.transfers,
+        l10n.tripsFilterTransfers,
+        Icons.local_taxi_rounded
+      ),
     ];
     return SizedBox(
       height: 52,
@@ -366,7 +371,7 @@ class _EmptyTrips extends StatelessWidget {
             ],
             if (tab == TripTab.upcoming && !filtered) ...[
               const SizedBox(height: 24),
-              ElevatedButton.icon(
+              AppButton.icon(
                 onPressed: () =>
                     Navigator.pushNamed(context, AppRoutes.searchFlights),
                 icon: const Icon(Icons.flight_takeoff_rounded),
@@ -393,8 +398,8 @@ class _PastTripsPainter extends CustomPainter {
     final frame = RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset.zero, width: 190, height: 150),
         const Radius.circular(6));
-    canvas.drawShadow(
-        Path()..addRRect(frame), AppColors.black.withValues(alpha: 0.3), 8, false);
+    canvas.drawShadow(Path()..addRRect(frame),
+        AppColors.black.withValues(alpha: 0.3), 8, false);
     canvas.drawRRect(frame, Paint()..color = AppColors.illustrationPaper);
 
     // الخريطة الزرقاء
@@ -552,7 +557,8 @@ class _CancelledTripsPainter extends CustomPainter {
           pinCenter.dx, pinCenter.dy + 44, pinCenter.dx + 12, pinCenter.dy + 16)
       ..close();
     canvas.drawPath(pin, Paint()..color = AppColors.illustrationPinOrange);
-    canvas.drawCircle(pinCenter, 7.5, Paint()..color = AppColors.illustrationPinShadow);
+    canvas.drawCircle(
+        pinCenter, 7.5, Paint()..color = AppColors.illustrationPinShadow);
 
     // خيط زخرفي متعرج أسفل الدبوس
     final squiggle = Paint()

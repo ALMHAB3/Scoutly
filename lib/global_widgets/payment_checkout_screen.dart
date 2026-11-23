@@ -6,6 +6,7 @@ import '../core/utils/money_format.dart';
 import '../l10n/app_localizations.dart';
 import '../models/payment_session.dart';
 import '../models/payment_attempt_receipt.dart';
+import 'ui/ui.dart';
 
 /// بتفتح صفحة دفع (Hosted Checkout) وترجع true/false حسب نجاح الدفع من
 /// عدمه. استخدمها هكذا:
@@ -145,7 +146,7 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: AppButton(
                       onPressed: _mockLoading ? null : () => _mockPay(true),
                       child: Text(l10n.simulateSuccessfulPayment),
                     ),
@@ -153,9 +154,10 @@ class _PaymentCheckoutScreenState extends State<PaymentCheckoutScreen> {
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton(
+                    child: AppButton(
                       onPressed: _mockLoading ? null : () => _mockPay(false),
                       child: Text(l10n.simulateFailedPayment),
+                      variant: AppButtonVariant.secondary,
                     ),
                   ),
                 ],

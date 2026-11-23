@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:zentrip/features/flight_booking/logic/flexible_flight_selection.dart';
 import 'package:zentrip/features/flight_booking/presentation/widgets/flexible_flight_dates_button.dart';
 import 'package:zentrip/l10n/app_localizations.dart';
+import 'package:zentrip/global_widgets/ui/ui.dart';
 
 void main() {
   Widget app(ValueChanged<FlexibleFlightSelection?> onChanged) => MaterialApp(
@@ -30,7 +31,7 @@ void main() {
     await tester.tap(find.text('A weekend'));
     await tester.tap(find.byIcon(Icons.calendar_month_rounded).first);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Select dates'));
+    await tester.tap(find.widgetWithText(AppButton, 'Select dates'));
     await tester.pumpAndSettle();
 
     expect(selected, isNotNull);
@@ -51,13 +52,13 @@ void main() {
     await tester.enterText(find.byType(TextField), '0');
     await tester.pump();
 
-    final disabledButton = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, 'Select dates'),
+    final disabledButton = tester.widget<AppButton>(
+      find.widgetWithText(AppButton, 'Select dates'),
     );
     expect(disabledButton.onPressed, isNull);
     await tester.enterText(find.byType(TextField), '12');
     await tester.pump();
-    await tester.tap(find.widgetWithText(FilledButton, 'Select dates'));
+    await tester.tap(find.widgetWithText(AppButton, 'Select dates'));
     await tester.pumpAndSettle();
 
     expect(selected!.tripDurationDays, 12);

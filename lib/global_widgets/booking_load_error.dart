@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 import '../l10n/app_localizations.dart';
+import 'ui/ui.dart';
 
 /// شاشة خطأ بديلة للـ Spinner اللانهائي اللي كان بيظهر لو وصلت الشاشة
 /// من غير الموديل/الكنترولر المطلوب (مثلاً navigation من غير الـ arguments
@@ -19,13 +20,18 @@ class BookingLoadError extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline_rounded, size: 56, color: AppColors.accentRed),
+              const Icon(Icons.error_outline_rounded,
+                  size: 56, color: AppColors.accentRed),
               const SizedBox(height: 16),
-              Text(l10n.bookingLoadError, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+              Text(l10n.bookingLoadError,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, fontSize: 16)),
               const SizedBox(height: 6),
-              Text(l10n.bookingLoadErrorSubtitle, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textSecondary)),
+              Text(l10n.bookingLoadErrorSubtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: AppColors.textSecondary)),
               const SizedBox(height: 24),
-              ElevatedButton.icon(
+              AppButton.icon(
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.arrow_back_rounded),
                 label: Text(l10n.goBack),

@@ -435,7 +435,8 @@ class AuthInput extends StatelessWidget {
         hintText: hint,
         hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.authHint),
         errorText: errorText,
-        errorStyle: GoogleFonts.poppins(fontSize: 11, color: AppColors.authError),
+        errorStyle:
+            GoogleFonts.poppins(fontSize: 11, color: AppColors.authError),
         prefixIcon: Icon(icon, size: 20, color: AppColors.authHint),
         suffixIcon: suffix,
         filled: true,
@@ -452,118 +453,6 @@ class AuthInput extends StatelessWidget {
 }
 
 // ───────────────────────── Buttons ─────────────────────────
-class AuthButton extends StatefulWidget {
-  final String label;
-  final VoidCallback? onTap;
-  final bool loading;
-  const AuthButton(
-      {super.key,
-      required this.label,
-      required this.onTap,
-      this.loading = false});
-
-  @override
-  State<AuthButton> createState() => _AuthButtonState();
-}
-
-class _AuthButtonState extends State<AuthButton> {
-  bool _down = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _down = true),
-      onTapCancel: () => setState(() => _down = false),
-      onTapUp: (_) {
-        setState(() => _down = false);
-        if (!widget.loading) widget.onTap?.call();
-      },
-      child: AnimatedScale(
-        scale: _down ? 0.97 : 1,
-        duration: const Duration(milliseconds: 120),
-        child: Container(
-          height: 52,
-          width: double.infinity,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.authNavy,
-            borderRadius: BorderRadius.circular(30),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.authNavy.withValues(alpha: 0.35),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: widget.loading
-                ? const SizedBox(
-                    key: ValueKey('l'),
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                        strokeWidth: 2.4, color: AppColors.white),
-                  )
-                : Text(
-                    widget.label,
-                    key: const ValueKey('t'),
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.white,
-                    ),
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SocialButton extends StatelessWidget {
-  final String label;
-  final Widget icon;
-  final VoidCallback onTap;
-  const SocialButton(
-      {super.key,
-      required this.label,
-      required this.icon,
-      required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.authLine),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              icon,
-              const SizedBox(width: 8),
-              Text(label,
-                  style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.authText)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class GoogleG extends StatelessWidget {
   const GoogleG({super.key});
 
@@ -579,7 +468,9 @@ class GoogleG extends StatelessWidget {
       ]).createShader(r),
       child: Text('G',
           style: GoogleFonts.poppins(
-              fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.white)),
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.white)),
     );
   }
 }
@@ -596,7 +487,8 @@ class OrDivider extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(text ?? AppLocalizations.of(context).orSignUpWith,
-              style: GoogleFonts.poppins(fontSize: 11, color: AppColors.authHint)),
+              style:
+                  GoogleFonts.poppins(fontSize: 11, color: AppColors.authHint)),
         ),
         const Expanded(child: Divider(color: AppColors.authLine)),
       ],

@@ -25,6 +25,7 @@ import '../../../../models/admin_dashboard_model.dart';
 import '../../../../models/flight_model.dart';
 import '../../../../models/partner_dashboard_model.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 enum _PartnerSection { overview, listings, reservations, customers }
 
@@ -462,10 +463,12 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
           children: [
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 12),
-            FilledButton.icon(
-                onPressed: _refresh,
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text(AppLocalizations.of(context).adminRefresh)),
+            AppButton.icon(
+              onPressed: _refresh,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text(AppLocalizations.of(context).adminRefresh),
+              expand: false,
+            ),
           ],
         ),
       );
@@ -541,10 +544,11 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
           children: [
             Expanded(child: _sectionHeading(l10n.partnerManageListings)),
             const SizedBox(width: 12),
-            FilledButton.icon(
+            AppButton.icon(
               onPressed: _editListing,
               icon: const Icon(Icons.add_rounded),
               label: Text(l10n.partnerCreateListing),
+              expand: false,
             ),
           ],
         ),
@@ -769,16 +773,18 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
             alignment: WrapAlignment.end,
             spacing: 8,
             children: [
-              TextButton.icon(
+              AppButton.icon(
                 onPressed: () => _editListing(listing),
                 icon: const Icon(Icons.edit_outlined, size: 18),
                 label: Text(l10n.partnerEditListing),
+                variant: AppButtonVariant.text,
               ),
-              OutlinedButton(
+              AppButton(
                 onPressed: () => _setListingActive(listing, !listing.active),
                 child: Text(listing.active
                     ? l10n.partnerStatusPaused
                     : l10n.partnerStatusActive),
+                variant: AppButtonVariant.secondary,
               ),
             ],
           ),
@@ -1822,12 +1828,13 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
+                  AppButton(
                     onPressed: _saving ? null : () => Navigator.pop(context),
                     child: Text(l10n.partnerCancel),
+                    variant: AppButtonVariant.text,
                   ),
                   const SizedBox(width: 8),
-                  FilledButton(
+                  AppButton(
                     onPressed: _saving ? null : _save,
                     child: _saving
                         ? const SizedBox(
@@ -1836,6 +1843,7 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(l10n.partnerSave),
+                    expand: false,
                   ),
                 ],
               ),
@@ -1880,10 +1888,11 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
             ),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          AppButton.icon(
             onPressed: _saving ? null : _pickHotelMainImage,
             icon: const Icon(Icons.image_outlined),
             label: Text(l10n.partnerChooseMainPhoto),
+            variant: AppButtonVariant.secondary,
           ),
           const SizedBox(height: 10),
           Text(
@@ -1929,10 +1938,11 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
             ),
           ],
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          AppButton.icon(
             onPressed: _saving ? null : _pickHotelGalleryImages,
             icon: const Icon(Icons.add_photo_alternate_outlined),
             label: Text(l10n.partnerAddHotelPhotos),
+            variant: AppButtonVariant.secondary,
           ),
           if (!hasMainImage)
             Padding(
@@ -1971,7 +1981,8 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                     onTap: onRemove,
                     child: const Padding(
                       padding: EdgeInsets.all(4),
-                      child: Icon(Icons.close, size: 16, color: AppColors.white),
+                      child:
+                          Icon(Icons.close, size: 16, color: AppColors.white),
                     ),
                   ),
                 ),
@@ -2211,7 +2222,7 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: AppButton.icon(
                       key: const ValueKey('partner-car-pin-here'),
                       onPressed: _saving
                           ? null
@@ -2234,11 +2245,12 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                             },
                       icon: const Icon(Icons.my_location_rounded, size: 18),
                       label: Text(_carText(l10n, 'use_location')),
+                      variant: AppButtonVariant.secondary,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: OutlinedButton.icon(
+                    child: AppButton.icon(
                       key: const ValueKey('partner-car-pin-map'),
                       onPressed: _saving
                           ? null
@@ -2260,6 +2272,7 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                             },
                       icon: const Icon(Icons.map_outlined, size: 18),
                       label: Text(_carText(l10n, 'choose_on_map')),
+                      variant: AppButtonVariant.secondary,
                     ),
                   ),
                 ],
@@ -2317,11 +2330,12 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
             ),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          AppButton.icon(
             key: const ValueKey('partner-car-photo'),
             onPressed: _saving ? null : _pickHotelMainImage,
             icon: const Icon(Icons.image_outlined),
             label: Text(ar ? 'اختيار صورة' : 'Choose photo'),
+            variant: AppButtonVariant.secondary,
           ),
         ],
       ),

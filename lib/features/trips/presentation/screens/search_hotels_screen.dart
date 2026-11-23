@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/travel_package_model.dart';
 import '../../../hotel_booking/presentation/screens/hotel_search_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// شاشة وسيطة قبل البحث عن الفنادق: بتقترح وجهة جاهزة بدل ما تسيب المستخدم
 /// يكتب كل حاجة من الصفر — إما من باقة سياحية مفتوحة، أو من آخر بحث محفوظ.
@@ -86,7 +87,7 @@ class _SearchHotelsScreenState extends State<SearchHotelsScreen> {
                       ),
                     ).animate().fade().slideY(begin: 0.05, end: 0),
                   const SizedBox(height: 20),
-                  OutlinedButton.icon(
+                  AppButton.icon(
                     onPressed: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -94,6 +95,7 @@ class _SearchHotelsScreenState extends State<SearchHotelsScreen> {
                     ),
                     icon: const Icon(Icons.search_rounded),
                     label: Text(l10n.tripsGoToHotelSearch),
+                    variant: AppButtonVariant.secondary,
                   ).animate().fade(delay: 100.ms),
                 ],
               ),
@@ -177,7 +179,7 @@ class _SuggestionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
+          AppButton.icon(
             onPressed: onTap,
             icon: const Icon(Icons.arrow_forward_rounded, size: 18),
             label: Text(buttonLabel),

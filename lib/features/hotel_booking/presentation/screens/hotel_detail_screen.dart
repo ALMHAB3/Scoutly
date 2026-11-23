@@ -400,10 +400,11 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
         Row(
           children: [
             Expanded(child: AppSectionTitle(l10n.hotelGuestReviews)),
-            TextButton.icon(
+            AppButton.icon(
               onPressed: () => _writeHotelReview(hotel),
               icon: const Icon(Icons.star_rate_rounded),
               label: Text(l10n.writeAReview),
+              variant: AppButtonVariant.text,
             ),
           ],
         ),

@@ -12,6 +12,7 @@ import '../models/country_phone_option.dart';
 import 'auth_shared.dart';
 import '../widgets/photo_picker_avatar.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -203,12 +204,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         hintText: AppLocalizations.of(context).phoneHint,
         hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.authHint),
         errorText: _phoneErr,
-        errorStyle: GoogleFonts.poppins(fontSize: 11, color: AppColors.authError),
+        errorStyle:
+            GoogleFonts.poppins(fontSize: 11, color: AppColors.authError),
         prefixIcon: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(width: 14),
-            const Icon(Icons.phone_outlined, size: 20, color: AppColors.authHint),
+            const Icon(Icons.phone_outlined,
+                size: 20, color: AppColors.authHint),
             const SizedBox(width: 8),
             InkWell(
               borderRadius: BorderRadius.circular(8),
@@ -412,10 +415,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           const SizedBox(height: 18),
 
-          AuthButton(
-              label: AppLocalizations.of(context).createAccountButton,
+          AppButton.label(
+              text: AppLocalizations.of(context).createAccountButton,
               loading: _loading,
-              onTap: _submit),
+              onPressed: _submit),
           if (ApiService.socialAuthConfigured) ...[
             const SizedBox(height: 16),
             const OrDivider(),
@@ -423,19 +426,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Row(
               children: [
                 Expanded(
-                  child: SocialButton(
-                    label: 'Google',
+                  child: AppButton.icon(
+                    label: Text('Google'),
                     icon: const GoogleG(),
-                    onTap: () => _socialLogin(withApple: false),
+                    onPressed: () => _socialLogin(withApple: false),
+                    variant: AppButtonVariant.secondary,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: SocialButton(
-                    label: 'Apple',
-                    icon:
-                        const Icon(Icons.apple, size: 22, color: AppColors.black),
-                    onTap: () => _socialLogin(withApple: true),
+                  child: AppButton.icon(
+                    label: Text('Apple'),
+                    icon: const Icon(Icons.apple,
+                        size: 22, color: AppColors.black),
+                    onPressed: () => _socialLogin(withApple: true),
+                    variant: AppButtonVariant.secondary,
                   ),
                 ),
               ],

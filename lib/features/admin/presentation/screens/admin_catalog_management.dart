@@ -9,6 +9,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/attraction_model.dart';
 import '../../../../models/flight_model.dart';
 import '../../../../models/travel_package_model.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 enum AdminCatalogKind { monuments, offers }
 
@@ -118,13 +119,15 @@ class AdminCatalogManagementState extends State<AdminCatalogManagement> {
         title: Text(l10n.adminDeleteCatalogEntry),
         content: Text(l10n.adminDeleteConfirmation),
         actions: [
-          TextButton(
+          AppButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(l10n.partnerCancel),
+            variant: AppButtonVariant.text,
           ),
-          FilledButton(
+          AppButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(l10n.adminDelete),
+            expand: false,
           ),
         ],
       ),
@@ -158,10 +161,11 @@ class AdminCatalogManagementState extends State<AdminCatalogManagement> {
             children: [
               Text(_error!, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              FilledButton.icon(
+              AppButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(l10n.adminRefresh),
+                expand: false,
               ),
             ],
           ),
@@ -179,11 +183,12 @@ class AdminCatalogManagementState extends State<AdminCatalogManagement> {
         children: [
           Align(
             alignment: AlignmentDirectional.centerEnd,
-            child: FilledButton.icon(
+            child: AppButton.icon(
               onPressed: () => _edit(),
               icon: const Icon(Icons.add_rounded),
               label:
                   Text(_isOffer ? l10n.adminAddOffer : l10n.adminAddMonument),
+              expand: false,
             ),
           ),
           const SizedBox(height: 14),
@@ -419,16 +424,19 @@ class _CatalogCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton.icon(
+                AppButton.icon(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline_rounded),
                   label: Text(l10n.adminDelete),
+                  variant: AppButtonVariant.text,
                 ),
                 const SizedBox(width: 8),
-                FilledButton.tonalIcon(
+                AppButton.icon(
                   onPressed: onEdit,
                   icon: const Icon(Icons.edit_outlined),
                   label: Text(l10n.partnerEditListing),
+                  variant: AppButtonVariant.secondary,
+                  expand: false,
                 ),
               ],
             ),
@@ -1031,15 +1039,17 @@ class _CatalogEditorState extends State<_CatalogEditor> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
+                  AppButton(
                     onPressed: () => Navigator.pop(context),
                     child: Text(l10n.partnerCancel),
+                    variant: AppButtonVariant.text,
                   ),
                   const SizedBox(width: 8),
-                  FilledButton.icon(
+                  AppButton.icon(
                     onPressed: _save,
                     icon: const Icon(Icons.save_outlined),
                     label: Text(l10n.partnerSave),
+                    expand: false,
                   ),
                 ],
               ),

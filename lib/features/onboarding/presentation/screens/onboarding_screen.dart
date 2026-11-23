@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../routes/app_routes.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class OnboardingScreen extends StatefulWidget {
   static const String seenKey = 'onboarding_seen';
@@ -61,7 +62,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _next() {
     if (_finishing) return;
     if (_currentPage < _pages.length - 1) {
-      _controller.nextPage(duration: const Duration(milliseconds: 650), curve: Curves.easeOutCubic);
+      _controller.nextPage(
+          duration: const Duration(milliseconds: 650),
+          curve: Curves.easeOutCubic);
     } else {
       _finish();
     }
@@ -86,9 +89,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           SafeArea(
             child: Align(
               alignment: AlignmentDirectional.topEnd,
-              child: TextButton(
+              child: AppButton(
                 onPressed: _finish,
-                child: Text(l10n.onboardingSkip, style: const TextStyle(color: AppColors.textSecondary)),
+                child: Text(l10n.onboardingSkip,
+                    style: const TextStyle(color: AppColors.textSecondary)),
+                variant: AppButtonVariant.text,
               ),
             ),
           ),
@@ -104,16 +109,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           // ── Indicators ──────────────────────────────────────────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(pages.length, (i) => AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: _currentPage == i ? 24 : 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: _currentPage == i ? AppColors.primary : AppColors.border,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            )),
+            children: List.generate(
+                pages.length,
+                (i) => AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == i ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == i
+                            ? AppColors.primary
+                            : AppColors.border,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    )),
           ),
           const SizedBox(height: 32),
           // ── Button ──────────────────────────────────────────────────────
@@ -122,12 +131,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               width: double.infinity,
-              child: ElevatedButton(
+              child: AppButton(
                 onPressed: _next,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isLast ? AppColors.accentGreen : AppColors.primary,
+                  backgroundColor:
+                      isLast ? AppColors.accentGreen : AppColors.primary,
                 ),
-                child: Text(isLast ? l10n.onboardingStart : l10n.onboardingNext),
+                child:
+                    Text(isLast ? l10n.onboardingStart : l10n.onboardingNext),
               ),
             ),
           ),
@@ -142,7 +153,11 @@ class _Page {
   final LinearGradient gradient;
   final String title;
   final String desc;
-  const _Page({required this.icon, required this.gradient, required this.title, required this.desc});
+  const _Page(
+      {required this.icon,
+      required this.gradient,
+      required this.title,
+      required this.desc});
 }
 
 class _OnboardingPage extends StatelessWidget {
@@ -159,21 +174,36 @@ class _OnboardingPage extends StatelessWidget {
           Container(
             width: 130,
             height: 130,
-            decoration: BoxDecoration(gradient: page.gradient, shape: BoxShape.circle, boxShadow: [
-              BoxShadow(color: page.gradient.colors.first.withValues(alpha: 0.35), blurRadius: 40, offset: const Offset(0, 16)),
-            ]),
+            decoration: BoxDecoration(
+                gradient: page.gradient,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                      color: page.gradient.colors.first.withValues(alpha: 0.35),
+                      blurRadius: 40,
+                      offset: const Offset(0, 16)),
+                ]),
             child: Icon(page.icon, size: 60, color: AppColors.white),
-          )
-              .animate(key: ValueKey(page.icon))
-              .fade(duration: 650.ms)
-              .scale(begin: const Offset(0.8, 0.8), duration: 650.ms, curve: Curves.easeOutBack),
+          ).animate(key: ValueKey(page.icon)).fade(duration: 650.ms).scale(
+              begin: const Offset(0.8, 0.8),
+              duration: 650.ms,
+              curve: Curves.easeOutBack),
           const SizedBox(height: 40),
-          Text(page.title, textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800))
-              .animate(key: ValueKey('${page.icon}t')).fade(delay: 280.ms, duration: 450.ms).slideY(begin: 0.2, end: 0),
+          Text(page.title,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800))
+              .animate(key: ValueKey('${page.icon}t'))
+              .fade(delay: 280.ms, duration: 450.ms)
+              .slideY(begin: 0.2, end: 0),
           const SizedBox(height: 14),
-          Text(page.desc, textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium)
-              .animate(key: ValueKey('${page.icon}d')).fade(delay: 460.ms, duration: 450.ms),
+          Text(page.desc,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium)
+              .animate(key: ValueKey('${page.icon}d'))
+              .fade(delay: 460.ms, duration: 450.ms),
         ],
       ),
     );

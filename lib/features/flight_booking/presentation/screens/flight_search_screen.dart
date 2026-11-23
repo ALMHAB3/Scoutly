@@ -12,6 +12,7 @@ import '../../../../routes/app_routes.dart';
 import '../../logic/flight_controller.dart';
 import '../../logic/flexible_flight_selection.dart';
 import '../widgets/flexible_flight_dates_button.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// مفتاح تخزين آخر وجهة تم البحث عنها، يُستخدم من شاشة SearchFlightsScreen
 /// (لعرض اقتراح "كرر آخر بحث") ومن هذه الشاشة نفسها.
@@ -574,7 +575,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                 ),
                 const SizedBox(height: 16),
                 // ── Search button ─────────────────────────────────────
-                ElevatedButton.icon(
+                AppButton.icon(
                   onPressed: _search,
                   icon: const Icon(Icons.search_rounded),
                   label: Text(l10n.searchFlightsBtn),

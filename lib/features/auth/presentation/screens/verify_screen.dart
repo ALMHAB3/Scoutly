@@ -9,6 +9,7 @@ import '../../../../routes/app_routes.dart';
 import '../../logic/auth_controller.dart';
 import 'auth_shared.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class VerifyScreen extends StatefulWidget {
   final String email;
@@ -212,10 +213,10 @@ class _VerifyScreenState extends State<VerifyScreen> {
           },
         ),
         const SizedBox(height: 20),
-        AuthButton(
-          label: AppLocalizations.of(context).verifyCodeButton,
+        AppButton.label(
+          text: AppLocalizations.of(context).verifyCodeButton,
           loading: _loading,
-          onTap: _loading ? null : _verify,
+          onPressed: _loading ? null : _verify,
         ),
         const SizedBox(height: 18),
         AuthFooterLink(
@@ -270,10 +271,10 @@ class _VerifyScreenState extends State<VerifyScreen> {
           ),
         ),
         const SizedBox(height: 20),
-        AuthButton(
-          label: AppLocalizations.of(context).resetPasswordAction,
+        AppButton.label(
+          text: AppLocalizations.of(context).resetPasswordAction,
           loading: _loading,
-          onTap: _loading ? null : _resetPassword,
+          onPressed: _loading ? null : _resetPassword,
         ),
       ],
     );
@@ -318,9 +319,9 @@ class _VerifyScreenState extends State<VerifyScreen> {
           ),
         ),
         const SizedBox(height: 26),
-        AuthButton(
-          label: AppLocalizations.of(context).backToLoginButton,
-          onTap: _goToLogin,
+        AppButton.label(
+          text: AppLocalizations.of(context).backToLoginButton,
+          onPressed: _goToLogin,
         ),
       ],
     );

@@ -6,6 +6,7 @@ import '../../../../core/constants/currency_rates.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/currency_service.dart';
 import '../../../../global_widgets/app_snackbar.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Admin control for the USD -> LYD reference rate used to show prices in
 /// Libyan dinars across the app (the rate provider has no LYD).
@@ -142,7 +143,7 @@ class _AdminLydRatePanelState extends State<AdminLydRatePanel> {
                 const SizedBox(width: 10),
                 Padding(
                   padding: const EdgeInsets.only(top: 4),
-                  child: FilledButton(
+                  child: AppButton(
                     onPressed: _saving ? null : _save,
                     child: _saving
                         ? const SizedBox(
@@ -151,6 +152,7 @@ class _AdminLydRatePanelState extends State<AdminLydRatePanel> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(_ar ? 'حفظ' : 'Save'),
+                    expand: false,
                   ),
                 ),
               ],

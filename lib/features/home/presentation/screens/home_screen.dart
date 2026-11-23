@@ -23,7 +23,7 @@ import '../../../../models/travel_package_model.dart';
 import '../../../../routes/app_routes.dart';
 import 'packages_list_screen.dart';
 import '../../../../core/constants/app_colors.dart';
-
+import '../../../../global_widgets/ui/ui.dart';
 
 class HomeScreen extends StatefulWidget {
   final CurrentLocationService locationService;
@@ -561,7 +561,11 @@ class _HomeSectionHeader extends StatelessWidget {
               ),
             ),
           ),
-          TextButton(onPressed: onViewAll, child: Text(l10n.viewAll)),
+          AppButton(
+            onPressed: onViewAll,
+            child: Text(l10n.viewAll),
+            variant: AppButtonVariant.text,
+          ),
         ],
       ),
     );
@@ -736,7 +740,8 @@ class _HomeOffersSection extends StatelessWidget {
                                   vertical: 5,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.white.withValues(alpha: 0.94),
+                                  color:
+                                      AppColors.white.withValues(alpha: 0.94),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -826,7 +831,11 @@ class _HomeSectionMessage extends StatelessWidget {
           children: [
             Text(message, textAlign: TextAlign.center),
             if (retryLabel != null)
-              TextButton(onPressed: onRetry, child: Text(retryLabel!)),
+              AppButton(
+                onPressed: onRetry,
+                child: Text(retryLabel!),
+                variant: AppButtonVariant.text,
+              ),
           ],
         ),
       ),
@@ -862,8 +871,8 @@ class _Header extends StatelessWidget {
               children: [
                 Text(
                   l10n.greeting,
-                  style:
-                      const TextStyle(fontSize: 13, color: AppColors.homeGreeting),
+                  style: const TextStyle(
+                      fontSize: 13, color: AppColors.homeGreeting),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -1172,7 +1181,7 @@ class _SearchCard extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 50,
-            child: ElevatedButton.icon(
+            child: AppButton.icon(
               onPressed: isSearching ? null : onSearch,
               icon: isSearching
                   ? const SizedBox(
@@ -1285,8 +1294,8 @@ class _AirportRow extends StatelessWidget {
                 children: [
                   Text(
                     caption,
-                    style:
-                        const TextStyle(fontSize: 11, color: AppColors.homeMuted),
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.homeMuted),
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -1724,7 +1733,8 @@ class _ServiceButtonState extends State<_ServiceButton> {
                   color: AppColors.homeTint,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(widget.icon, size: 22, color: AppColors.homePrimary),
+                child:
+                    Icon(widget.icon, size: 22, color: AppColors.homePrimary),
               ),
               const SizedBox(height: 8),
               Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 import '../l10n/app_localizations.dart';
+import 'ui/ui.dart';
 
 Future<bool> showAppConfirmDialog(
   BuildContext context, {
@@ -63,11 +64,15 @@ class _AppConfirmDialog extends StatelessWidget {
                   color: AppColors.accentRed.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.warning_amber_rounded, color: AppColors.accentRed, size: 28),
+                child: const Icon(Icons.warning_amber_rounded,
+                    color: AppColors.accentRed, size: 28),
               ),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(fontWeight: FontWeight.w700),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
@@ -80,12 +85,16 @@ class _AppConfirmDialog extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: AppButton(
                     onPressed: () => Navigator.pop(context, false),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(0, 48),
-                      foregroundColor: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                      side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.border),
+                      foregroundColor: isDark
+                          ? AppColors.darkTextSecondary
+                          : AppColors.textSecondary,
+                      side: BorderSide(
+                          color:
+                              isDark ? AppColors.darkBorder : AppColors.border),
                     ),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
@@ -95,11 +104,12 @@ class _AppConfirmDialog extends StatelessWidget {
                         softWrap: false,
                       ),
                     ),
+                    variant: AppButtonVariant.secondary,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: AppButton(
                     onPressed: () => Navigator.pop(context, true),
                     style: ElevatedButton.styleFrom(
                       minimumSize: const Size(0, 48),

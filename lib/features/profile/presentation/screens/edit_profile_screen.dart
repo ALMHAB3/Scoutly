@@ -8,8 +8,8 @@ import '../../../../global_widgets/phone_field.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../auth/presentation/widgets/auth_text_field.dart';
 import '../../../auth/presentation/widgets/photo_picker_avatar.dart';
-import '../../../auth/presentation/widgets/primary_button.dart';
 import '../../logic/profile_controller.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -88,9 +88,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 28),
               ListenableBuilder(
                 listenable: _ctrl,
-                builder: (_, __) => PrimaryButton(
-                    label: l10n.saveChanges,
-                    isLoading: _ctrl.isLoading,
+                builder: (_, __) => AppButton.label(
+                    text: l10n.saveChanges,
+                    loading: _ctrl.isLoading,
                     onPressed: _save),
               ),
             ],

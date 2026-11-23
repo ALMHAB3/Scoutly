@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../logic/flexible_flight_selection.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class FlexibleFlightDatesButton extends StatelessWidget {
   final FlexibleFlightSelection? selection;
@@ -44,7 +45,7 @@ class FlexibleFlightDatesButton extends StatelessWidget {
 
     return Align(
       alignment: AlignmentDirectional.centerStart,
-      child: TextButton.icon(
+      child: AppButton.icon(
         onPressed: () => _openSheet(context),
         icon: const Icon(Icons.date_range_rounded, size: 18),
         label: Text(
@@ -59,6 +60,7 @@ class FlexibleFlightDatesButton extends StatelessWidget {
             vertical: 8,
           ),
         ),
+        variant: AppButtonVariant.text,
       ),
     );
   }
@@ -343,7 +345,7 @@ class _FlexibleFlightDatesSheetState extends State<_FlexibleFlightDatesSheet> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-              child: FilledButton(
+              child: AppButton(
                 onPressed: _selectedMonths.isEmpty ||
                         (_otherSelected && !_customDurationIsValid)
                     ? null
@@ -353,6 +355,7 @@ class _FlexibleFlightDatesSheetState extends State<_FlexibleFlightDatesSheet> {
                   backgroundColor: AppColors.primary,
                 ),
                 child: Text(l10n.flightSelectDates),
+                expand: false,
               ),
             ),
           ],

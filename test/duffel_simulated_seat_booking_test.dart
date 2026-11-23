@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/flight_primary_button.dart';
+import 'package:zentrip/global_widgets/ui/ui.dart';
 import 'package:zentrip/global_widgets/payment_checkout_screen.dart';
 import 'package:zentrip/l10n/app_localizations.dart';
 import 'package:zentrip/models/flight_model.dart';
@@ -98,11 +98,11 @@ void main() {
       await tester.tap(finder);
       await tester.pumpAndSettle();
     }
-    await tester.tap(find.widgetWithText(FlightPrimaryButton, 'Continue'));
+    await tester.tap(find.widgetWithText(AppButton, 'Continue'));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(CheckboxListTile));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(FlightPrimaryButton));
+    await tester.tap(find.byType(AppButton));
     await tester.pumpAndSettle();
 
     expect(paymentAmount, 240);
@@ -161,11 +161,11 @@ void main() {
     await tester.ensureVisible(seat);
     await tester.tap(seat);
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FlightPrimaryButton, 'Continue'));
+    await tester.tap(find.widgetWithText(AppButton, 'Continue'));
     await tester.pumpAndSettle();
     await tester.tap(find.byType(CheckboxListTile));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(FlightPrimaryButton));
+    await tester.tap(find.byType(AppButton));
     await tester.pumpAndSettle();
 
     expect(saveCalls, 0);
