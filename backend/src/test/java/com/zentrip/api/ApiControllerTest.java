@@ -1003,6 +1003,25 @@ class ApiControllerTest {
     }
 
     @Test
+    void bookingDetailsKeepThePaidCurrencyAndAmount() {
+        java.time.OffsetDateTime end = java.time.OffsetDateTime.parse("2026-11-27T00:00:00Z");
+        ApiController.PaidDisplay paid = ApiController.paidDisplay(
+                Map.of("booking_currency", "lyd", "booking_display_amount", 1984.0));
+        String json = ApiController.bookingDetailsJson(end, null, 0, false, true, paid);
+
+        assertEquals("LYD", paid.currency());
+        assertTrue(json.contains("\"booking_currency\":\"LYD\""), json);
+        assertTrue(json.contains("\"booking_display_amount\":1984"), json);
+        assertEquals(null, ApiController.paidDisplay(Map.of("title", "BMW X5")));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> ApiController.paidDisplay(
+                        Map.of("booking_currency", "dinar", "booking_display_amount", 10)));
+        assertThrows(org.springframework.web.server.ResponseStatusException.class,
+                () -> ApiController.paidDisplay(
+                        Map.of("booking_currency", "LYD", "booking_display_amount", -5)));
+    }
+
+    @Test
     void hotelBookingRejectsWhenRequestedRoomsExceedListingInventory() {
         when(jdbc.queryForList(contains("FROM partner_listings l"), eq(42L)))
                 .thenReturn(List.of(Map.of(

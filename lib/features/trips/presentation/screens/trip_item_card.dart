@@ -230,7 +230,12 @@ class TripItemCard extends StatelessWidget {
                         const Spacer(),
                       if (item.price != null)
                         Text(
-                            item.priceCurrencyCode.toUpperCase() == 'LYD'
+                            // Paid in another currency (LYD, EUR...): show it
+                            // as paid, never relabelled as dollars.
+                            item.priceCurrencyCode.toUpperCase() == 'LYD' ||
+                                    (!item.isSimulated &&
+                                        item.priceCurrencyCode.toUpperCase() !=
+                                            'USD')
                                 ? formatProviderMoney(
                                     item.price!,
                                     item.priceCurrencyCode,
@@ -328,7 +333,21 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                   if (booking?.refCode != null)
                     _DetailLine(
                         Icons.confirmation_num_rounded, booking!.refCode!),
-                  if ((booking?.price ?? transfer?.price) != null)
+                  if (booking?.bookingDisplayAmount != null &&
+                      booking?.bookingCurrencyCode != null)
+                    _DetailLine(
+                      Icons.attach_money_rounded,
+                      '',
+                      trailing: Text(
+                        formatBookingCurrencyAmount(
+                          booking!.bookingDisplayAmount!,
+                          booking.bookingCurrencyCode!,
+                          locale: locale,
+                        ),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    )
+                  else if ((booking?.price ?? transfer?.price) != null)
                     _DetailLine(
                       Icons.attach_money_rounded,
                       '',

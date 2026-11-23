@@ -75,10 +75,6 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final navBg = isDark ? app_colors.AppColors.darkSurface : Colors.white;
-
     return Scaffold(
       body: Column(
         children: [
@@ -94,102 +90,133 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
           ),
         ],
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: SizedBox(
-            height: 84,
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 68,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: navBg,
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black
-                              .withValues(alpha: isDark ? 0.3 : 0.1),
-                          blurRadius: 28,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        _dockItem(
-                          icon: Icons.explore_outlined,
-                          activeIcon: Icons.explore_rounded,
-                          label: l10n.navHome,
-                          index: 0,
-                          isDark: isDark,
-                        ),
-                        _dockItem(
-                          icon: Icons.place_outlined,
-                          activeIcon: Icons.place_rounded,
-                          label: l10n.navNearby,
-                          index: 1,
-                          isDark: isDark,
-                        ),
-                        const Expanded(child: SizedBox()),
-                        _dockItem(
-                          icon: Icons.card_travel_outlined,
-                          activeIcon: Icons.card_travel_rounded,
-                          label: l10n.navTrips,
-                          index: 3,
-                          isDark: isDark,
-                        ),
-                        _dockItem(
-                          icon: Icons.person_outline_rounded,
-                          activeIcon: Icons.person_rounded,
-                          label: l10n.navProfile,
-                          index: 4,
-                          isDark: isDark,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FloatingActionButton(
-                        heroTag: 'app-shell-ai-hub',
-                        tooltip: l10n.navChatbot,
-                        onPressed: () => _onItemTapped(2),
-                        backgroundColor: app_colors.AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        child: const Icon(Icons.auto_awesome_rounded),
+      bottomNavigationBar: AppDockBar(
+        selectedIndex: _selectedIndex,
+        onSelected: _onItemTapped,
+      ),
+    );
+  }
+}
+
+/// The app's bottom navigation bar (Home, Nearby, AI hub, Trips, Profile).
+/// Used by [AppShell] and by full-screen flows that keep the bar visible
+/// (e.g. car rental); there, [AppDockBar.leaveTo] returns to the shell.
+class AppDockBar extends StatelessWidget {
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  const AppDockBar({
+    super.key,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  /// For screens pushed above the shell: closes them and opens [index].
+  static void leaveTo(BuildContext context, int index) {
+    AppShellTabController.goToTab(index);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navBg = isDark ? app_colors.AppColors.darkSurface : Colors.white;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+        child: SizedBox(
+          height: 84,
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 68,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: navBg,
+                    borderRadius: BorderRadius.circular(22),
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                        blurRadius: 28,
+                        offset: const Offset(0, 8),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        l10n.navChatbot,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: _selectedIndex == 2
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: _selectedIndex == 2
-                              ? app_colors.AppColors.primary
-                              : isDark
-                                  ? app_colors.AppColors.darkTextSecondary
-                                  : app_colors.AppColors.textSecondary,
-                        ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      _dockItem(
+                        icon: Icons.explore_outlined,
+                        activeIcon: Icons.explore_rounded,
+                        label: l10n.navHome,
+                        index: 0,
+                        isDark: isDark,
+                      ),
+                      _dockItem(
+                        icon: Icons.place_outlined,
+                        activeIcon: Icons.place_rounded,
+                        label: l10n.navNearby,
+                        index: 1,
+                        isDark: isDark,
+                      ),
+                      const Expanded(child: SizedBox()),
+                      _dockItem(
+                        icon: Icons.card_travel_outlined,
+                        activeIcon: Icons.card_travel_rounded,
+                        label: l10n.navTrips,
+                        index: 3,
+                        isDark: isDark,
+                      ),
+                      _dockItem(
+                        icon: Icons.person_outline_rounded,
+                        activeIcon: Icons.person_rounded,
+                        label: l10n.navProfile,
+                        index: 4,
+                        isDark: isDark,
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FloatingActionButton(
+                      heroTag: 'app-shell-ai-hub',
+                      tooltip: l10n.navChatbot,
+                      onPressed: () => onSelected(2),
+                      backgroundColor: app_colors.AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 4,
+                      child: const Icon(Icons.auto_awesome_rounded),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l10n.navChatbot,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: selectedIndex == 2
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: selectedIndex == 2
+                            ? app_colors.AppColors.primary
+                            : isDark
+                                ? app_colors.AppColors.darkTextSecondary
+                                : app_colors.AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -203,7 +230,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
     required int index,
     required bool isDark,
   }) {
-    final isSelected = _selectedIndex == index;
+    final isSelected = selectedIndex == index;
     final color = isSelected
         ? app_colors.AppColors.primary
         : isDark
@@ -215,7 +242,7 @@ class _AppShellState extends State<AppShell> with TickerProviderStateMixin {
         selected: isSelected,
         label: label,
         child: InkWell(
-          onTap: () => _onItemTapped(index),
+          onTap: () => onSelected(index),
           borderRadius: BorderRadius.circular(18),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 7),

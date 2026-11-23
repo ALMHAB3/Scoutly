@@ -24,6 +24,9 @@ class CarModel {
   final int? partnerListingId;
   final String? partnerName;
 
+  /// Partner's description of the car ("About the car"); may be empty.
+  final String description;
+
   const CarModel({
     required this.id,
     required this.brand,
@@ -49,6 +52,7 @@ class CarModel {
     this.distanceMeters,
     this.partnerListingId,
     this.partnerName,
+    this.description = '',
   });
 
   static String _stringFromDynamic(dynamic value, [String fallback = '']) {
@@ -132,6 +136,7 @@ class CarModel {
         distanceMeters: distance,
         partnerListingId: partnerListingId,
         partnerName: partnerName,
+        description: description,
       );
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
@@ -189,6 +194,7 @@ class CarModel {
           ? null
           : _intFromDynamic(json['partner_listing_id']),
       partnerName: json['partner_name']?.toString(),
+      description: _stringFromDynamic(json['description']).trim(),
     );
   }
 }

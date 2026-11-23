@@ -2357,6 +2357,8 @@ class ApiService {
           imageUrl: existing.imageUrl,
           partnerListingId: existing.partnerListingId,
           rooms: existing.rooms,
+          bookingCurrencyCode: existing.bookingCurrencyCode,
+          bookingDisplayAmount: existing.bookingDisplayAmount,
         );
         await _saveLocalBookings(all);
       });

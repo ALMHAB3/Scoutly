@@ -1,32 +1,28 @@
-import '../../../../core/utils/price_format.dart';
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/services/api_service.dart';
-import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/booking_load_error.dart';
-import '../../../../global_widgets/booking_loading_overlay.dart';
-import '../../../../global_widgets/booking_confirmation_screen.dart';
-import '../../../../global_widgets/payment_checkout_screen.dart';
-import '../../../../core/services/currency_service.dart';
-import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../../models/booking_model.dart';
+import '../../../../models/car_model.dart';
+import '../../../favorites/logic/favorites_controller.dart';
 import '../../logic/car_controller.dart';
 import '../car_labels.dart';
+import '../widgets/car_widgets.dart';
+import 'car_booking_screen.dart';
+import 'car_rental_screen.dart' show CarDailyPrice;
 
+/// Car details: photo, price per day, features, about and specs, Book Now.
 class CarDetailScreen extends StatefulWidget {
   const CarDetailScreen({super.key});
+
   @override
   State<CarDetailScreen> createState() => _CarDetailScreenState();
 }
 
 class _CarDetailScreenState extends State<CarDetailScreen> {
   CarController? _ctrl;
-  bool _isBooking = false;
 
   @override
   void didChangeDependencies() {
@@ -34,314 +30,303 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
     _ctrl ??= ModalRoute.of(context)?.settings.arguments as CarController?;
   }
 
-  Future<void> _book() async {
-    final car = _ctrl?.selectedCar;
-    if (car == null) {
-      AppSnackbar.error(context, AppLocalizations.of(context).genericError);
-      return;
-    }
-    if (car.availableVehicles < 1) {
-      AppSnackbar.error(context, AppLocalizations.of(context).carSoldOut);
-      return;
-    }
-    final days = _ctrl?.searchParams?.days ?? 1;
-    final pricing = car.pricingForDays(days);
-    final pickupDate = _ctrl?.searchParams?.pickupDate ?? DateTime.now();
-    final returnDate = _ctrl?.searchParams?.returnDate ??
-        pickupDate.add(const Duration(days: 1));
-    final totalPrice = pricing.totalPrice;
-    final ref =
-        'ZT-C-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-    final l10n = AppLocalizations.of(context);
+  String _favoriteId(CarModel car) => 'car:${car.id}';
 
-    final availability = await ApiService.instance.checkBookingAvailability(
-      type: BookingType.car,
-      title: '${car.brand} ${car.model}',
-      startDate: pickupDate,
-      endDate: returnDate,
-    );
-    if (!mounted) return;
-    if (availability.isFailure || availability.data != true) {
-      AppSnackbar.error(
-        context,
-        availability.isFailure
-            ? availability.errorMessage ?? l10n.genericError
-            : l10n.bookingScheduleConflict,
-      );
-      return;
-    }
-
-    final payment = await PaymentCheckoutScreen.start(context,
-        amountUsd: totalPrice,
-        description: '${car.brand} ${car.model}',
-        referenceId: ref);
-    if (!mounted) return;
-    if (payment?.paid != true) {
-      AppSnackbar.error(context, l10n.paymentFailedMessage);
-      return;
-    }
-
-    setState(() => _isBooking = true);
-    await Future.delayed(const Duration(seconds: 1));
-    if (!mounted) return;
-    final booking = BookingModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: BookingType.car,
-      title: '${car.brand} ${car.model}',
+  Future<void> _toggleFavorite(CarModel car, CarLabels labels) async {
+    final favorites = FavoritesController.instance;
+    final wasFavorite = favorites.isFavorite(_favoriteId(car));
+    await favorites.toggle(FavoritePlace(
+      id: _favoriteId(car),
+      title: '${car.brand} ${car.model}'.trim(),
       subtitle: car.pickupLocation,
-      date: pickupDate,
-      endDate: returnDate,
-      price: totalPrice,
-      refCode: ref,
-      status: 'upcoming',
+      type: 'car',
       imageUrl: car.imageUrl,
-      partnerListingId: car.partnerListingId,
-    );
-    final createResult = await BookingLoadingOverlay.run(
-      context,
-      title: AppLocalizations.of(context).hotelBookingInProgress,
-      subtitle: '${car.brand} ${car.model}',
-      serviceIcon: Icons.directions_car_rounded,
-      action: () => ApiService.instance.createBooking(
-        booking,
-        paymentAttemptId: payment?.attemptId,
-      ),
-    );
-    if (createResult.isFailure) {
-      if (!mounted) return;
-      setState(() => _isBooking = false);
-      AppSnackbar.error(
-        context,
-        createResult.errorMessage == 'BOOKING_SCHEDULE_CONFLICT'
-            ? l10n.bookingScheduleConflict
-            : createResult.errorMessage ?? l10n.genericError,
-      );
-      return;
-    }
-    if (!mounted) return;
-    setState(() => _isBooking = false);
-    AppSnackbar.success(context, l10n.carBookedSuccess);
-    unawaited(NotificationsStore.instance.refreshAfterBooking(
-      title: l10n.notifBookingConfirmedTitle,
-      subtitle: '${car.brand} ${car.model}',
-      bookingRef: ref,
+      latitude: car.latitude,
+      longitude: car.longitude,
     ));
     if (!mounted) return;
+    AppSnackbar.success(
+      context,
+      wasFavorite ? labels.removedFromFavorites : labels.savedToFavorites,
+    );
+  }
+
+  void _book(CarModel car) {
+    final ctrl = _ctrl!;
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => BookingConfirmationScreen(
-          serviceName: AppLocalizations.of(context).quickActionCars,
-          primaryText: '${car.brand} ${car.model}',
-          secondaryText: car.pickupLocation,
-          reference: ref,
-          dateLabel:
-              MaterialLocalizations.of(context).formatMediumDate(pickupDate),
-          priceLabel: formatPrice(context, totalPrice),
-          serviceIcon: Icons.directions_car_rounded,
+        builder: (_) => CarBookingScreen(car: car, params: ctrl.searchParams),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final car = _ctrl?.selectedCar;
+    if (car == null) return const BookingLoadError();
+    final labels = CarLabels(AppLocalizations.of(context));
+    final name = '${car.brand} ${car.model}'.trim();
+    final soldOut = car.availableVehicles < 1;
+    final features = [
+      for (final feature in CarFeature.values)
+        if (carHasFeature(car, feature)) feature,
+    ];
+
+    return Scaffold(
+      backgroundColor: carPageBackground(context),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Stack(
+              children: [
+                CarPhoto(car: car, height: 300, fit: BoxFit.cover),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Row(
+                      children: [
+                        _RoundIconButton(
+                          icon: Icons.arrow_back_rounded,
+                          tooltip: MaterialLocalizations.of(context)
+                              .backButtonTooltip,
+                          onPressed: () => Navigator.maybePop(context),
+                        ),
+                        const Spacer(),
+                        ListenableBuilder(
+                          listenable: FavoritesController.instance,
+                          builder: (context, _) {
+                            final saved = FavoritesController.instance
+                                .isFavorite(_favoriteId(car));
+                            return _RoundIconButton(
+                              icon: saved
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              color: saved ? AppColors.accentRed : null,
+                              tooltip: saved
+                                  ? labels.removedFromFavorites
+                                  : labels.savedToFavorites,
+                              onPressed: () => _toggleFavorite(car, labels),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  end: 16,
+                  bottom: 16,
+                  child: CarRatingBadge(rating: car.rating),
+                ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: BoxDecoration(
+                color: carSurface(context),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              transform: Matrix4.translationValues(0, -18, 0),
+              padding: const EdgeInsets.fromLTRB(20, 22, 20, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: carInk(context),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      CarDailyPrice(car: car, labels: labels, fontSize: 20),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    carSpecLine(labels, car),
+                    style: TextStyle(fontSize: 12.5, color: carMuted(context)),
+                  ),
+                  if (features.isNotEmpty) ...[
+                    const SizedBox(height: 18),
+                    Row(
+                      children: [
+                        for (var i = 0; i < features.length; i++) ...[
+                          if (i > 0) const SizedBox(width: 10),
+                          Expanded(
+                            child: CarFeatureTile(
+                              icon: carFeatureIcon(features[i]),
+                              label: labels.feature(features[i]),
+                            ),
+                          ),
+                        ],
+                        // Keep tiles the same width as in a full row of 4.
+                        for (var i = features.length; i < 4; i++) ...[
+                          const SizedBox(width: 10),
+                          const Expanded(child: SizedBox()),
+                        ],
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 22),
+                  Text(
+                    labels.aboutCar,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: carInk(context),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    car.description.isNotEmpty
+                        ? car.description
+                        : labels.about(name, car.pickupLocation),
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      height: 1.5,
+                      color: carMuted(context),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  CarCard(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        children: [
+                          _Spec(
+                            value: car.year > 0 ? '${car.year}' : '—',
+                            label: labels.year,
+                          ),
+                          _divider(context),
+                          _Spec(
+                            value: labels.transmission(car.transmission),
+                            label: labels.transmissionTitle,
+                          ),
+                          _divider(context),
+                          _Spec(value: '${car.seats}', label: labels.seats),
+                          _divider(context),
+                          _Spec(value: '${car.bags}', label: labels.bags),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (car.partnerName != null &&
+                      car.partnerName!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.storefront_outlined,
+                          size: 16,
+                          color: carMuted(context),
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            '${car.partnerName} · ${car.pickupLocation}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: carMuted(context),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ).animate().fade(duration: 250.ms),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        color: carSurface(context),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
+            child: CarCtaButton(
+              buttonKey: const ValueKey('car-book-now'),
+              label: soldOut ? labels.soldOut : labels.bookNow,
+              onPressed: soldOut ? null : () => _book(car),
+            ),
+          ),
         ),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final ctrl = _ctrl;
-    final car = ctrl?.selectedCar;
-    final days = ctrl?.searchParams?.days ?? 1;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context);
-    if (car == null) return const BookingLoadError();
-    final pricing = car.pricingForDays(days);
-    final isSoldOut = car.availableVehicles < 1;
-
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 220,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(car.name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      shadows: [Shadow(blurRadius: 8)])),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  AppNetworkImage(
-                    url: car.imageUrl,
-                    fallbackIcon: Icons.directions_car_rounded,
-                    fallbackGradient: AppColors.destinationGradients[
-                        car.id.hashCode.abs() %
-                            AppColors.destinationGradients.length],
-                  ),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0x33000000), Color(0xAA000000)],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.all(20),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Specs
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _SpecChip(Icons.people_rounded,
-                        l10n.carSeatsCount(car.seats), AppColors.primary),
-                    _SpecChip(Icons.luggage_rounded,
-                        l10n.carBagsCount(car.bags), AppColors.accentTeal),
-                    _SpecChip(
-                        Icons.settings_rounded,
-                        car.transmission == 'automatic'
-                            ? l10n.carTransmissionAuto
-                            : l10n.carTransmissionManual,
-                        AppColors.primary),
-                    _SpecChip(
-                        Icons.ac_unit_rounded,
-                        car.hasAC ? l10n.carHasAc : l10n.carNoAc,
-                        car.hasAC ? AppColors.accentGreen : AppColors.textHint),
-                    _SpecChip(
-                        car.fuelType == 'electric'
-                            ? Icons.bolt_rounded
-                            : Icons.local_gas_station_rounded,
-                        carFuelLabel(l10n, car.fuelType),
-                        AppColors.accentPurple),
-                    _SpecChip(Icons.star_rounded, car.rating.toStringAsFixed(1),
-                        Colors.amber.shade700),
-                  ],
-                ).animate().fade(duration: 300.ms),
-                const SizedBox(height: 20),
-                // Features
-                if (car.features.isNotEmpty) ...[
-                  Text(l10n.carFeatures,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 10),
-                  ...car.features.map((f) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(children: [
-                          const Icon(Icons.check_circle_rounded,
-                              color: AppColors.accentGreen, size: 16),
-                          const SizedBox(width: 10),
-                          Text(f, style: const TextStyle(fontSize: 13)),
-                        ]),
-                      )),
-                  const SizedBox(height: 16),
-                ],
-                // Price
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkSurface : AppColors.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                          color: isDark
-                              ? AppColors.darkBorder
-                              : AppColors.border)),
-                  child: Column(children: [
-                    _PriceRow(l10n.carPricePerDay,
-                        formatPrice(context, car.pricePerDay)),
-                    _PriceRow(l10n.carSubtotal,
-                        formatPrice(context, pricing.subtotal)),
-                    _PriceRow(l10n.carNumberOfDays, l10n.carDaysCount(days)),
-                    _PriceRow(l10n.carInsurance,
-                        formatPrice(context, car.insuranceFee)),
-                    _PriceRow(l10n.carServiceFee,
-                        formatPrice(context, car.serviceFee)),
-                    const Divider(height: 20),
-                    _PriceRow(l10n.carTotal,
-                        formatPrice(context, car.totalPriceForDays(days)),
-                        isBold: true, color: AppColors.primary),
-                  ]),
-                ).animate().fade(delay: 150.ms),
-                const SizedBox(height: 28),
-                ElevatedButton.icon(
-                  onPressed: _isBooking || isSoldOut ? null : _book,
-                  icon: _isBooking
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                              strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.directions_car_rounded),
-                  label: Text(isSoldOut
-                      ? l10n.carSoldOut
-                      : _isBooking
-                          ? l10n.carBooking
-                          : l10n.carBookNow),
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary),
-                ).animate().fade(delay: 220.ms),
-              ]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  Widget _divider(BuildContext context) =>
+      VerticalDivider(width: 1, color: carBorder(context));
 }
 
-class _SpecChip extends StatelessWidget {
-  final IconData icon;
+class _Spec extends StatelessWidget {
+  final String value;
   final String label;
-  final Color color;
-  const _SpecChip(this.icon, this.label, this.color);
+  const _Spec({required this.value, required this.label});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.2))),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(icon, color: color, size: 14),
-        const SizedBox(width: 6),
-        Text(label,
-            style: TextStyle(
-                color: color, fontWeight: FontWeight.w600, fontSize: 12))
-      ]),
-    );
-  }
+  Widget build(BuildContext context) => Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Column(
+            children: [
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: carInk(context),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11, color: carMuted(context)),
+              ),
+            ],
+          ),
+        ),
+      );
 }
 
-class _PriceRow extends StatelessWidget {
-  final String label, value;
-  final bool isBold;
+class _RoundIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
   final Color? color;
-  const _PriceRow(this.label, this.value, {this.isBold = false, this.color});
+
+  const _RoundIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+    this.color,
+  });
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label,
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13)),
-            Text(value,
-                style: TextStyle(
-                    fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
-                    fontSize: isBold ? 16 : 14,
-                    color: color)),
-          ],
+        padding: const EdgeInsets.all(4),
+        child: Material(
+          color: carSurface(context).withValues(alpha: 0.92),
+          shape: const CircleBorder(),
+          child: IconButton(
+            tooltip: tooltip,
+            onPressed: onPressed,
+            icon: Icon(icon, color: color ?? carInk(context)),
+          ),
         ),
       );
 }

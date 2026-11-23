@@ -143,7 +143,8 @@ class TripsController extends ChangeNotifier {
         end: end,
         status: resolveStatus(b.status, b.date, end, now),
         imageUrl: b.imageUrl,
-        price: b.price,
+        price: b.paidAmount,
+        priceCurrencyCode: b.paidCurrencyCode,
         reference: b.refCode,
         booking: b,
       ));

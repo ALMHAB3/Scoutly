@@ -4,7 +4,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zentrip/core/services/api_service.dart';
 import 'package:zentrip/core/services/current_location_service.dart';
-import 'package:zentrip/features/car_rental/presentation/screens/car_rental_screen.dart';
+import 'package:zentrip/features/car_rental/logic/car_controller.dart';
+import 'package:zentrip/features/car_rental/presentation/screens/car_search_screen.dart';
 import 'package:zentrip/features/hotel_booking/logic/hotel_controller.dart';
 import 'package:zentrip/features/hotel_booking/presentation/screens/hotel_search_screen.dart';
 import 'package:zentrip/l10n/app_localizations.dart';
@@ -55,7 +56,11 @@ void main() {
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: CarRentalScreen(locationService: location),
+        home: CarSearchScreen(
+          params: CarSearchParams.initial(),
+          initialCars: const [],
+          locationService: location,
+        ),
       ),
     );
     await tester.pump(const Duration(milliseconds: 100));

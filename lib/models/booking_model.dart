@@ -17,6 +17,11 @@ class BookingModel {
   final int? partnerListingId;
   final int rooms;
 
+  /// What the customer was charged, in the currency they paid in (e.g. LYD).
+  /// My Trips shows this instead of [price] (USD) when present.
+  final String? bookingCurrencyCode;
+  final double? bookingDisplayAmount;
+
   const BookingModel({
     required this.id,
     required this.type,
@@ -30,7 +35,16 @@ class BookingModel {
     this.imageUrl,
     this.partnerListingId,
     this.rooms = 1,
+    this.bookingCurrencyCode,
+    this.bookingDisplayAmount,
   });
+
+  /// Amount and currency to show for this booking.
+  double? get paidAmount => bookingDisplayAmount ?? price;
+  String get paidCurrencyCode =>
+      bookingDisplayAmount != null && bookingCurrencyCode != null
+          ? bookingCurrencyCode!
+          : 'USD';
 
   static String _stringFromDynamic(dynamic value, [String fallback = '']) {
     if (value == null) return fallback;
@@ -73,6 +87,12 @@ class BookingModel {
             ? null
             : int.tryParse(json['partner_listing_id'].toString()),
         rooms: int.tryParse('${json['rooms'] ?? 1}') ?? 1,
+        bookingCurrencyCode: json['booking_currency'] == null
+            ? null
+            : _stringFromDynamic(json['booking_currency']).toUpperCase(),
+        bookingDisplayAmount: json['booking_display_amount'] == null
+            ? null
+            : _doubleFromDynamic(json['booking_display_amount']),
       );
 
   Map<String, dynamic> toJson() => {
@@ -88,5 +108,9 @@ class BookingModel {
         'image_url': imageUrl,
         'partner_listing_id': partnerListingId,
         if (type == BookingType.hotel) 'rooms': rooms,
+        if (bookingCurrencyCode != null && bookingDisplayAmount != null) ...{
+          'booking_currency': bookingCurrencyCode,
+          'booking_display_amount': bookingDisplayAmount,
+        },
       };
 }

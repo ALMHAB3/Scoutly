@@ -2238,6 +2238,8 @@ public class ApiController {
                        COALESCE(bookings.price, bookings.total_amount) AS effective_price,
                        details ->> 'end_date' AS end_date,
                        details ->> 'image_url' AS image_url,
+                       details ->> 'booking_currency' AS booking_currency,
+                       details ->> 'booking_display_amount' AS booking_display_amount,
                        COALESCE(details ->> 'rooms',
                                 details ->> 'hotel_rooms_reserved',
                                 '1') AS rooms
@@ -2295,6 +2297,7 @@ public class ApiController {
                 requireExistingRecord("partner_listings", "id", attribution.listingId(), "Partner listing");
             }
             price = partnerBookingPrice(attribution, type, start, end, price);
+            PaidDisplay paidDisplay = paidDisplay(body);
             int hotelRoomCount = type.equals("hotel")
                     ? integer(body.get("rooms"), 1) : 0;
             if (type.equals("hotel") && hotelRoomCount < 1) {
@@ -2322,7 +2325,7 @@ public class ApiController {
                     type, price, title, subtitle,
                     start, price, body.get("ref_code"),
                     bookingDetailsJson(end, body.get("image_url"), hotelRoomCount,
-                            hotelRoomReserved, carReserved));
+                            hotelRoomReserved, carReserved, paidDisplay));
             if (paymentAttemptId != null) {
                 linkPaymentAttemptToBooking(paymentAttemptId, userId, id);
             }
@@ -2359,6 +2362,8 @@ public class ApiController {
                                    COALESCE(bookings.price, bookings.total_amount) AS effective_price,
                                    details ->> 'end_date' AS end_date,
                                    details ->> 'image_url' AS image_url,
+                                   details ->> 'booking_currency' AS booking_currency,
+                                   details ->> 'booking_display_amount' AS booking_display_amount,
                                    COALESCE(details ->> 'rooms',
                                             details ->> 'hotel_rooms_reserved',
                                             '1') AS rooms
@@ -2431,8 +2436,55 @@ public class ApiController {
             int hotelRoomCount,
             boolean hotelRoomReserved,
             boolean carReserved) {
+        return bookingDetailsJson(
+                end, imageUrl, hotelRoomCount, hotelRoomReserved, carReserved, null);
+    }
+
+    /** What the customer was charged, in the currency they paid in. */
+    record PaidDisplay(String currency, BigDecimal amount) {}
+
+    /**
+     * Optional booking_currency + booking_display_amount sent by the app:
+     * the amount actually charged in the user's currency (e.g. LYD), kept so
+     * My Trips shows the booking in the currency it was paid in.
+     */
+    static PaidDisplay paidDisplay(Map<String, Object> body) {
+        Object rawCurrency = body.get("booking_currency");
+        Object rawAmount = body.get("booking_display_amount");
+        if (rawCurrency == null && rawAmount == null) return null;
+        String currency = rawCurrency == null
+                ? "" : rawCurrency.toString().trim().toUpperCase(Locale.ROOT);
+        if (!currency.matches("^[A-Z]{3}$")) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "booking_currency must be an ISO currency code");
+        }
+        BigDecimal amount;
+        try {
+            amount = new BigDecimal(rawAmount == null ? "" : rawAmount.toString().trim());
+        } catch (NumberFormatException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "booking_display_amount must be a number");
+        }
+        if (amount.signum() <= 0 || amount.compareTo(new BigDecimal("1000000000")) > 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "booking_display_amount is out of range");
+        }
+        return new PaidDisplay(currency, amount.setScale(3, RoundingMode.HALF_UP).stripTrailingZeros());
+    }
+
+    static String bookingDetailsJson(
+            OffsetDateTime end,
+            Object imageUrl,
+            int hotelRoomCount,
+            boolean hotelRoomReserved,
+            boolean carReserved,
+            PaidDisplay paidDisplay) {
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("end_date", end.toString());
+        if (paidDisplay != null) {
+            details.put("booking_currency", paidDisplay.currency());
+            details.put("booking_display_amount", paidDisplay.amount());
+        }
         if (hotelRoomCount > 0) details.put("rooms", hotelRoomCount);
         if (hotelRoomReserved) details.put("hotel_rooms_reserved", hotelRoomCount);
         if (carReserved) details.put("car_vehicle_reserved", 1);
@@ -2907,6 +2959,10 @@ public class ApiController {
         result.put("image_url", row.get("image_url"));
         result.put("partner_listing_id", row.get("partner_listing_id"));
         result.put("rooms", row.get("rooms"));
+        if (row.get("booking_currency") != null && row.get("booking_display_amount") != null) {
+            result.put("booking_currency", row.get("booking_currency"));
+            result.put("booking_display_amount", row.get("booking_display_amount"));
+        }
         result.put("status", value(row.get("status"), "upcoming"));
         return result;
     }

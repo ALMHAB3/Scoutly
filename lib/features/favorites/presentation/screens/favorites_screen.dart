@@ -133,6 +133,7 @@ class FavoritesScreen extends StatelessWidget {
         'hotel' => Icons.hotel_rounded,
         'attraction' => Icons.photo_camera_rounded,
         'restaurant' => Icons.restaurant_rounded,
+        'car' => Icons.directions_car_rounded,
         _ => Icons.location_on_rounded,
       };
 }
