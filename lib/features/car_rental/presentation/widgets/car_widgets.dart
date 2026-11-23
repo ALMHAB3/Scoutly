@@ -23,7 +23,7 @@ Color carInk(BuildContext context) =>
     carIsDark(context) ? AppColors.darkTextPrimary : AppColors.textPrimary;
 
 Color carPageBackground(BuildContext context) =>
-    carIsDark(context) ? AppColors.darkBackground : const Color(0xFFF6F8FC);
+    carIsDark(context) ? AppColors.darkBackground : AppColors.background;
 
 /// The car photo on a light studio background (or a car icon when the
 /// partner did not upload a photo).
@@ -55,8 +55,14 @@ class CarPhoto extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: dark
-                  ? const [Color(0xFF1C2A45), Color(0xFF131D30)]
-                  : const [Color(0xFFF1F4FA), Color(0xFFE3E9F4)],
+                  ? const [
+                      AppColors.darkSurfaceSecondary,
+                      AppColors.darkSurface
+                    ]
+                  : const [
+                      AppColors.surfaceSecondary,
+                      AppColors.primarySurface
+                    ],
             ),
           ),
           child: car.imageUrl == null || car.imageUrl!.trim().isEmpty
@@ -72,10 +78,14 @@ class CarPhoto extends StatelessWidget {
                   fit: fit,
                   fallbackIcon: Icons.directions_car_filled_rounded,
                   fallbackGradient: dark
-                      ? const LinearGradient(
-                          colors: [Color(0xFF1C2A45), Color(0xFF131D30)])
-                      : const LinearGradient(
-                          colors: [Color(0xFFF1F4FA), Color(0xFFE3E9F4)]),
+                      ? const LinearGradient(colors: [
+                          AppColors.darkSurfaceSecondary,
+                          AppColors.darkSurface
+                        ])
+                      : const LinearGradient(colors: [
+                          AppColors.surfaceSecondary,
+                          AppColors.primarySurface
+                        ]),
                 ),
         ),
       ),
@@ -131,7 +141,7 @@ class CarCard extends StatelessWidget {
               ? null
               : [
                   BoxShadow(
-                    color: const Color(0xFF0F1E36).withValues(alpha: 0.05),
+                    color: AppColors.textPrimary.withValues(alpha: 0.05),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),

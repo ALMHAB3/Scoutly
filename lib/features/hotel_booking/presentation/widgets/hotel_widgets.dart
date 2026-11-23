@@ -37,10 +37,14 @@ class HotelPhoto extends StatelessWidget {
             url: url ?? hotel.imageUrl,
             fallbackIcon: Icons.hotel_rounded,
             fallbackGradient: carIsDark(context)
-                ? const LinearGradient(
-                    colors: [Color(0xFF1C2A45), Color(0xFF131D30)])
-                : const LinearGradient(
-                    colors: [Color(0xFFF1F4FA), Color(0xFFE3E9F4)]),
+                ? const LinearGradient(colors: [
+                    AppColors.darkSurfaceSecondary,
+                    AppColors.darkSurface
+                  ])
+                : const LinearGradient(colors: [
+                    AppColors.surfaceSecondary,
+                    AppColors.primarySurface
+                  ]),
           ),
         ),
       );
