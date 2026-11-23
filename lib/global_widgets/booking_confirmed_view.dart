@@ -19,6 +19,7 @@ class BookingConfirmedView extends StatelessWidget {
   final String copyTooltip;
   final String copiedMessage;
   final String viewDetailsLabel;
+  final String okLabel;
   final String reference;
   final Widget photo;
   final String name;
@@ -33,6 +34,7 @@ class BookingConfirmedView extends StatelessWidget {
     required this.copyTooltip,
     required this.copiedMessage,
     required this.viewDetailsLabel,
+    required this.okLabel,
     required this.reference,
     required this.photo,
     required this.name,
@@ -40,6 +42,7 @@ class BookingConfirmedView extends StatelessWidget {
     this.provider,
   });
 
+  static const _homeTab = 0;
   static const _tripsTab = 3;
 
   @override
@@ -155,10 +158,33 @@ class BookingConfirmedView extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
+              // OK closes the booking flow and returns to the home screen.
               CarCtaButton(
-                buttonKey: const ValueKey('booking-view-details'),
-                label: viewDetailsLabel,
-                onPressed: () => AppDockBar.leaveTo(context, _tripsTab),
+                buttonKey: const ValueKey('booking-ok'),
+                label: okLabel,
+                onPressed: () => AppDockBar.leaveTo(context, _homeTab),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 52,
+                child: OutlinedButton(
+                  key: const ValueKey('booking-view-details'),
+                  onPressed: () => AppDockBar.leaveTo(context, _tripsTab),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: BorderSide(
+                      color: AppColors.primary.withValues(alpha: 0.45),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                    ),
+                  ),
+                  child: Text(viewDetailsLabel),
+                ),
               ),
             ],
           ),

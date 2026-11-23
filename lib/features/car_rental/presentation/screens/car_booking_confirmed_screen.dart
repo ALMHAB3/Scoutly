@@ -36,6 +36,7 @@ class CarBookingConfirmedScreen extends StatelessWidget {
       copyTooltip: labels.copy,
       copiedMessage: labels.copied,
       viewDetailsLabel: labels.viewBookingDetails,
+      okLabel: labels.ok,
       reference: reference,
       name: '${car.brand} ${car.model}'.trim(),
       photo: CarPhoto(

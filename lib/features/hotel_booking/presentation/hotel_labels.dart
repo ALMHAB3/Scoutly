@@ -111,6 +111,7 @@ class HotelLabels {
   String get bookingId => _t('Booking ID', 'رقم الحجز');
   String get copied => _t('Booking ID copied', 'تم نسخ رقم الحجز');
   String get copy => _t('Copy', 'نسخ');
+  String get ok => _t('OK', 'حسنًا');
   String get viewBookingDetails =>
       _t('View Booking Details', 'عرض تفاصيل الحجز');
 

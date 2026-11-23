@@ -196,6 +196,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
           copyTooltip: labels.copy,
           copiedMessage: labels.copied,
           viewDetailsLabel: labels.viewBookingDetails,
+          okLabel: labels.ok,
           reference: created.data?.refCode?.isNotEmpty == true
               ? created.data!.refCode!
               : reference,
