@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zentrip/core/services/api_service.dart';
 import 'package:zentrip/features/car_rental/logic/car_controller.dart';
-import 'package:zentrip/features/car_rental/presentation/screens/car_booking_confirmed_screen.dart';
 import 'package:zentrip/features/car_rental/presentation/screens/car_detail_screen.dart';
 import 'package:zentrip/features/car_rental/presentation/screens/car_search_screen.dart';
 import 'package:zentrip/l10n/app_localizations.dart';
@@ -201,21 +200,6 @@ void main() {
       expect(find.text(label), findsWidgets, reason: label);
     }
     ctrl.dispose();
-  });
-
-  test('calendar event runs from pickup time to drop-off time', () {
-    final ics = CarBookingConfirmedScreen.calendarEvent(
-      uid: 'ZT-C-1',
-      title: 'Car pickup: BMW X5',
-      location: 'Tripoli, Airport',
-      description: 'Booking ID: ZT-C-1',
-      start: DateTime(2026, 12, 1, 10, 30),
-      end: DateTime(2026, 12, 4, 18),
-    );
-    expect(ics, contains('DTSTART:20261201T103000'));
-    expect(ics, contains('DTEND:20261204T180000'));
-    expect(ics, contains(r'LOCATION:Tripoli\, Airport'));
-    expect(ics, contains('\r\nEND:VCALENDAR'));
   });
 
   test('a car booking keeps the currency it was paid in', () {

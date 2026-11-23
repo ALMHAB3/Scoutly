@@ -12,6 +12,9 @@ import '../../../aircraft/aircraft.dart';
 import '../../../aircraft/airbus_a320.dart';
 import '../../../aircraft/atr72.dart';
 import '../../logic/hotel_location_parser.dart';
+import 'car_pickup_point_picker.dart';
+import 'package:latlong2/latlong.dart';
+import '../../../../core/services/current_location_service.dart';
 import '../../../../global_widgets/app_logo.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
@@ -1368,6 +1371,12 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
       setState(() => _error = l10n.partnerHotelPhotoRequired);
       return;
     }
+    if (widget.type == 'car' &&
+        _hotelMainImage == null &&
+        _image.text.trim().isEmpty) {
+      setState(() => _error = _carText(l10n, 'photo_required'));
+      return;
+    }
     if (widget.type == 'flight') {
       final departure = _parseDateTimeField(_departureTime.text);
       final arrival = _parseDateTimeField(_arrivalTime.text);
@@ -1761,24 +1770,7 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                         _hotelAmenitiesSection(l10n),
                       ],
                       if (widget.type == 'car') ...[
-                        _field(
-                          _hotelLocation,
-                          _carText(l10n, 'pickup_pin'),
-                          required: true,
-                          helperText: _carText(l10n, 'pickup_pin_hint'),
-                          validator: (value) {
-                            try {
-                              final parsed =
-                                  parseHotelLocationInput(value ?? '');
-                              if (!parsed.containsKey('latitude')) {
-                                return _carText(l10n, 'pickup_pin_hint');
-                              }
-                              return null;
-                            } on FormatException {
-                              return l10n.partnerHotelLocationInvalid;
-                            }
-                          },
-                        ),
+                        _carPickupPointField(l10n),
                         _carFeaturesSection(l10n),
                       ],
                       if (widget.type == 'transfer') ...[
@@ -2136,6 +2128,160 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
     };
   }
 
+  LatLng? _carPin() {
+    try {
+      final parsed = parseHotelLocationInput(_hotelLocation.text);
+      final lat = (parsed['latitude'] as num?)?.toDouble();
+      final lng = (parsed['longitude'] as num?)?.toDouble();
+      return lat == null || lng == null ? null : LatLng(lat, lng);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  void _setCarPin(LatLng point, FormFieldState<String> field) {
+    final value =
+        '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}';
+    setState(() => _hotelLocation.text = value);
+    field.didChange(value);
+    // Clear the "set the pickup point" error shown after a failed save.
+    if (field.hasError) field.validate();
+  }
+
+  /// Pickup point = where the car is: the partner's current location (when
+  /// at the car) or a point tapped on the map.
+  Widget _carPickupPointField(AppLocalizations l10n) {
+    return FormField<String>(
+      initialValue: _hotelLocation.text,
+      validator: (_) =>
+          _carPin() == null ? _carText(l10n, 'pin_not_set') : null,
+      builder: (field) {
+        final pin = _carPin();
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                _carText(l10n, 'pickup_pin'),
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? AppColors.darkSurfaceSecondary
+                      : AppColors.surfaceSecondary,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: field.hasError
+                        ? Theme.of(context).colorScheme.error
+                        : (isDark ? AppColors.darkBorder : AppColors.border),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      pin == null
+                          ? Icons.location_off_outlined
+                          : Icons.location_on_rounded,
+                      color: pin == null
+                          ? AppColors.textSecondary
+                          : AppColors.accentRed,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        pin == null
+                            ? _carText(l10n, 'pickup_pin_hint')
+                            : '${pin.latitude.toStringAsFixed(6)}, ${pin.longitude.toStringAsFixed(6)}',
+                        key: const ValueKey('partner-car-pin'),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: pin == null ? null : FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('partner-car-pin-here'),
+                      onPressed: _saving
+                          ? null
+                          : () async {
+                              try {
+                                final position =
+                                    await const CurrentLocationService()
+                                        .getPosition();
+                                if (!mounted) return;
+                                _setCarPin(
+                                  LatLng(position.latitude, position.longitude),
+                                  field,
+                                );
+                              } on CurrentLocationException {
+                                if (mounted) {
+                                  setState(() => _error =
+                                      _carText(l10n, 'location_failed'));
+                                }
+                              }
+                            },
+                      icon: const Icon(Icons.my_location_rounded, size: 18),
+                      label: Text(_carText(l10n, 'use_location')),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      key: const ValueKey('partner-car-pin-map'),
+                      onPressed: _saving
+                          ? null
+                          : () async {
+                              final city = AirportOption.byCity(_city.text);
+                              final start = pin ??
+                                  (city?.latitude != null &&
+                                          city?.longitude != null
+                                      ? LatLng(city!.latitude!, city.longitude!)
+                                      : const LatLng(32.8872, 13.1913));
+                              final chosen = await CarPickupPointPicker.open(
+                                context,
+                                initial: start,
+                                hasInitialPin: pin != null,
+                              );
+                              if (chosen != null && mounted) {
+                                _setCarPin(chosen, field);
+                              }
+                            },
+                      icon: const Icon(Icons.map_outlined, size: 18),
+                      label: Text(_carText(l10n, 'choose_on_map')),
+                    ),
+                  ),
+                ],
+              ),
+              if (field.hasError)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+                  child: Text(
+                    field.errorText!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   /// Car photo: chosen from the device and uploaded on save (an existing
   /// photo URL is kept until replaced).
   Widget _carPhotoSection(AppLocalizations l10n) {
@@ -2473,8 +2619,16 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
       'pickup_pin' =>
         ar ? 'موقع الاستلام على الخريطة' : 'Pickup point on the map',
       'pickup_pin_hint' => ar
-          ? 'الصق رابط Google Maps أو الإحداثيات (مثال: 32.8872, 13.1913).'
-          : 'Paste a Google Maps link or coordinates (e.g. 32.8872, 13.1913).',
+          ? 'حدّد مكان السيارة: استخدم موقعك الحالي وأنت عند السيارة، أو اختره على الخريطة.'
+          : 'Set where the car is: use your current location at the car, or choose it on the map.',
+      'pin_not_set' =>
+        ar ? 'حدّد موقع استلام السيارة.' : 'Set the car\'s pickup point.',
+      'use_location' => ar ? 'موقعي الحالي' : 'My current location',
+      'choose_on_map' => ar ? 'اختر على الخريطة' : 'Choose on map',
+      'location_failed' => ar
+          ? 'تعذّر تحديد موقعك. فعّل الموقع أو اختر النقطة على الخريطة.'
+          : 'Could not get your location. Turn on location or choose on the map.',
+      'photo_required' => ar ? 'أضف صورة للسيارة.' : 'Add a photo of the car.',
       'pin_outside_city' => ar
           ? 'موقع الاستلام يجب أن يكون داخل المدينة المختارة، لأن العملاء يرون فقط سيارات مدينتهم.'
           : 'The pickup point must be inside the selected city: customers only see cars of their own city.',

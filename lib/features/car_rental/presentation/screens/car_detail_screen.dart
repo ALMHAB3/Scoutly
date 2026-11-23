@@ -9,6 +9,7 @@ import '../../../../models/car_model.dart';
 import '../../../favorites/logic/favorites_controller.dart';
 import '../../logic/car_controller.dart';
 import '../car_labels.dart';
+import '../widgets/car_pickup_map.dart';
 import '../widgets/car_widgets.dart';
 import 'car_booking_screen.dart';
 import 'car_rental_screen.dart' show CarDailyPrice;
@@ -255,6 +256,19 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                       if (car.doors != null) ('${car.doors}', labels.doors),
                       if (car.color.isNotEmpty) (car.color, labels.color),
                     ]),
+                  ],
+                  if (car.latitude != null && car.longitude != null) ...[
+                    const SizedBox(height: 22),
+                    Text(
+                      labels.pickupPoint,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: carInk(context),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    CarPickupMap(car: car),
                   ],
                 ],
               ).animate().fade(duration: 250.ms),

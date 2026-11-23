@@ -143,11 +143,6 @@ class CarLabels {
   String get copy => _t('Copy', 'نسخ');
   String get viewBookingDetails =>
       _t('View Booking Details', 'عرض تفاصيل الحجز');
-  String get addToCalendar => _t('Add to Calendar', 'أضف إلى التقويم');
-  String get calendarFailed =>
-      _t('Could not create the calendar event.', 'تعذّر إنشاء حدث التقويم.');
-  String calendarTitle(String car) =>
-      ar ? 'استلام السيارة: $car' : 'Car pickup: $car';
 
   // Location (customers only see cars of the city they are in)
   String get locating => _t('Finding your location…', 'جارٍ تحديد موقعك…');
@@ -162,6 +157,8 @@ class CarLabels {
       AttractionModel.localizedCityName(name, l10n.localeName);
   String carsIn(String name) =>
       ar ? 'سيارات متاحة في ${city(name)}' : 'Cars available in ${city(name)}';
+  String get pickupPoint =>
+      _t('Pickup point (where the car is)', 'موقع الاستلام (مكان السيارة)');
   String get yourLocation => _t('Your location', 'موقعك');
   String get pickupCityNote => _t(
         'Cars are shown for the city you are in.',

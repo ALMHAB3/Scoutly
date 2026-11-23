@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../global_widgets/app_shell.dart';
@@ -35,74 +33,6 @@ class CarBookingConfirmedScreen extends StatelessWidget {
   });
 
   static const _tripsTab = 3;
-
-  /// Calendar event (iCalendar) from the pickup time to the drop-off time,
-  /// in the device's local time.
-  static String calendarEvent({
-    required String uid,
-    required String title,
-    required String location,
-    required String description,
-    required DateTime start,
-    required DateTime end,
-  }) {
-    String date(DateTime d) =>
-        '${d.year.toString().padLeft(4, '0')}${d.month.toString().padLeft(2, '0')}${d.day.toString().padLeft(2, '0')}';
-    String local(DateTime d) => '${date(d)}T'
-        '${d.hour.toString().padLeft(2, '0')}'
-        '${d.minute.toString().padLeft(2, '0')}00';
-    String escape(String text) => text
-        .replaceAll(r'\', r'\\')
-        .replaceAll(';', r'\;')
-        .replaceAll(',', r'\,')
-        .replaceAll('\n', r'\n');
-    final now = DateTime.now().toUtc();
-    final stamp = '${date(now)}T'
-        '${now.hour.toString().padLeft(2, '0')}'
-        '${now.minute.toString().padLeft(2, '0')}'
-        '${now.second.toString().padLeft(2, '0')}Z';
-    return [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Zentrip//Car rental//EN',
-      'BEGIN:VEVENT',
-      'UID:${escape(uid)}@zentrip',
-      'DTSTAMP:$stamp',
-      'DTSTART:${local(start)}',
-      'DTEND:${local(end)}',
-      'SUMMARY:${escape(title)}',
-      'LOCATION:${escape(location)}',
-      'DESCRIPTION:${escape(description)}',
-      'END:VEVENT',
-      'END:VCALENDAR',
-      '',
-    ].join('\r\n');
-  }
-
-  Future<void> _addToCalendar(BuildContext context, CarLabels labels) async {
-    final name = '${car.brand} ${car.model}'.trim();
-    final ics = calendarEvent(
-      uid: reference,
-      title: labels.calendarTitle(name),
-      location: pickupLocation,
-      description: '${labels.bookingId}: $reference',
-      start: params.pickupDate,
-      end: params.returnDate,
-    );
-    try {
-      await Share.shareXFiles([
-        XFile.fromData(
-          Uint8List.fromList(utf8.encode(ics)),
-          name: 'zentrip-$reference.ics',
-          mimeType: 'text/calendar',
-        ),
-      ], fileNameOverrides: [
-        'zentrip-$reference.ics'
-      ]);
-    } catch (_) {
-      if (context.mounted) AppSnackbar.error(context, labels.calendarFailed);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -241,33 +171,10 @@ class CarBookingConfirmedScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              SizedBox(
-                height: 52,
-                child: OutlinedButton(
-                  key: const ValueKey('car-view-booking'),
-                  onPressed: () => AppDockBar.leaveTo(context, _tripsTab),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.06),
-                    side: BorderSide(
-                      color: AppColors.primary.withValues(alpha: 0.45),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 15,
-                    ),
-                  ),
-                  child: Text(labels.viewBookingDetails),
-                ),
-              ),
-              const SizedBox(height: 12),
               CarCtaButton(
-                buttonKey: const ValueKey('car-add-calendar'),
-                label: labels.addToCalendar,
-                onPressed: () => _addToCalendar(context, labels),
+                buttonKey: const ValueKey('car-view-booking'),
+                label: labels.viewBookingDetails,
+                onPressed: () => AppDockBar.leaveTo(context, _tripsTab),
               ),
             ],
           ),
