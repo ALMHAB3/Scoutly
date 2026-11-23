@@ -1300,6 +1300,16 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
             text: _attributeFieldValue(attributes[key]),
           ),
     };
+    if (widget.type == 'car') {
+      // Old listings may hold free text; keep only the supported values.
+      for (final entry in _choiceAttributeKeys.entries) {
+        final controller = _attributeFields[entry.key];
+        if (controller == null) continue;
+        final value = controller.text.trim().toLowerCase();
+        controller.text =
+            entry.value.contains(value) ? value : entry.value.first;
+      }
+    }
     _booleanAttributes = {
       for (final key in _booleanAttributeKeys)
         if (_editableAttributeKeys(widget.type).contains(key))
@@ -1420,14 +1430,47 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
         } else if (_hotelLocation.text.trim() != '$previousLocation'.trim()) {
           decoded.remove('place_id');
         }
-        if (widget.type == 'car') {
-          decoded['features'] = List<String>.unmodifiable(_carFeatures);
-        }
         decoded.remove('google_rating');
         decoded.remove('google_review_count');
         decoded.remove('rating');
         decoded.remove('review_count');
         decoded.remove('stars');
+      }
+      if (widget.type == 'car') {
+        // Saved for cars too (it was only saved inside the hotel branch).
+        decoded['features'] = List<String>.unmodifiable(_carFeatures);
+        final pin = parseHotelLocationInput(_hotelLocation.text);
+        final latitude = (pin['latitude'] as num?)?.toDouble();
+        final longitude = (pin['longitude'] as num?)?.toDouble();
+        final pinCity = latitude == null || longitude == null
+            ? null
+            : AirportOption.nearestTo(latitude, longitude)?.city;
+        final listingCity = AirportOption.byCity(_city.text)?.city;
+        // Customers only see cars of the city they are in, so the pickup
+        // point must be inside the listing's city.
+        if (pinCity == null ||
+            listingCity == null ||
+            pinCity.toLowerCase() != listingCity.toLowerCase()) {
+          setState(() {
+            _saving = false;
+            _error = _carText(l10n, 'pin_outside_city');
+          });
+          return;
+        }
+        decoded
+          ..['latitude'] = latitude
+          ..['longitude'] = longitude
+          ..['google_maps_url'] = _hotelLocation.text.trim()
+          ..['pickup_address'] = '${decoded['pickup_address'] ?? ''}'.trim();
+        for (final key in const ['engine', 'fuel_economy', 'color']) {
+          final value = '${decoded[key] ?? ''}'.trim();
+          if (value.isEmpty) {
+            decoded.remove(key);
+          } else {
+            decoded[key] = value;
+          }
+        }
+        if (decoded['doors'] == null) decoded.remove('doors');
       }
       if (widget.type == 'flight') {
         final departure = _parseDateTimeField(_departureTime.text)!;
@@ -1541,6 +1584,20 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
           galleryUrls.add(upload.data!);
         }
         decoded['gallery_images'] = galleryUrls;
+      } else if (widget.type == 'car' && _hotelMainImage != null) {
+        final upload = await ApiService.instance.uploadPartnerCarImage(
+          bytes: _hotelMainImage!.bytes,
+          filename: _hotelMainImage!.filename,
+        );
+        if (!mounted) return;
+        if (upload.isFailure || upload.data == null) {
+          setState(() {
+            _saving = false;
+            _error = upload.errorMessage ?? l10n.genericError;
+          });
+          return;
+        }
+        imageUrl = upload.data!;
       }
       Navigator.pop(
         context,
@@ -1703,7 +1760,27 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                         ),
                         _hotelAmenitiesSection(l10n),
                       ],
-                      if (widget.type == 'car') _carFeaturesSection(l10n),
+                      if (widget.type == 'car') ...[
+                        _field(
+                          _hotelLocation,
+                          _carText(l10n, 'pickup_pin'),
+                          required: true,
+                          helperText: _carText(l10n, 'pickup_pin_hint'),
+                          validator: (value) {
+                            try {
+                              final parsed =
+                                  parseHotelLocationInput(value ?? '');
+                              if (!parsed.containsKey('latitude')) {
+                                return _carText(l10n, 'pickup_pin_hint');
+                              }
+                              return null;
+                            } on FormatException {
+                              return l10n.partnerHotelLocationInvalid;
+                            }
+                          },
+                        ),
+                        _carFeaturesSection(l10n),
+                      ],
                       if (widget.type == 'transfer') ...[
                         _cityField(_pickupLocation, l10n.transferPickupLabel),
                         _cityField(_dropoffLocation, l10n.transferDropoffLabel),
@@ -1720,6 +1797,8 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                             maxLines: 3),
                       if (widget.type == 'hotel')
                         _hotelImagesSection(l10n)
+                      else if (widget.type == 'car')
+                        _carPhotoSection(l10n)
                       else if (widget.type != 'flight')
                         _field(_image, l10n.partnerImageUrl,
                             keyboardType: TextInputType.url),
@@ -1982,7 +2061,9 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
         .toList();
     return [
       for (final key in keys)
-        if (_booleanAttributeKeys.contains(key))
+        if (widget.type == 'car' && _choiceAttributeKeys.containsKey(key))
+          _choiceField(key, l10n)
+        else if (_booleanAttributeKeys.contains(key))
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(_attributeLabel(key, l10n)),
@@ -2007,6 +2088,98 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                 : null,
           ),
     ];
+  }
+
+  Widget _choiceField(String key, AppLocalizations l10n) {
+    final options = _choiceAttributeKeys[key]!;
+    final controller = _attributeFields[key]!;
+    final current = options.contains(controller.text.trim().toLowerCase())
+        ? controller.text.trim().toLowerCase()
+        : options.first;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: DropdownButtonFormField<String>(
+        initialValue: current,
+        decoration: _listingInputDecoration(
+          labelText: _attributeLabel(key, l10n),
+        ),
+        items: [
+          for (final option in options)
+            DropdownMenuItem(
+              value: option,
+              child: Text(_choiceLabel(key, option, l10n)),
+            ),
+        ],
+        onChanged: _saving
+            ? null
+            : (value) {
+                if (value != null) setState(() => controller.text = value);
+              },
+      ),
+    );
+  }
+
+  String _choiceLabel(String key, String value, AppLocalizations l10n) {
+    return switch ((key, value)) {
+      ('category', 'economy') => l10n.economy,
+      ('category', 'suv') => l10n.suv,
+      ('category', 'luxury') => l10n.luxury,
+      ('category', 'electric') => l10n.carTypeElectric,
+      ('category', 'van') => l10n.van,
+      ('transmission', 'automatic') => l10n.carTransmissionAuto,
+      ('transmission', 'manual') => l10n.carTransmissionManual,
+      ('fuel_type', 'gasoline') => l10n.carFuelPetrol,
+      ('fuel_type', 'diesel') => l10n.carFuelDiesel,
+      ('fuel_type', 'hybrid') => l10n.carFuelHybrid,
+      ('fuel_type', 'electric') => l10n.carFuelElectric,
+      _ => value,
+    };
+  }
+
+  /// Car photo: chosen from the device and uploaded on save (an existing
+  /// photo URL is kept until replaced).
+  Widget _carPhotoSection(AppLocalizations l10n) {
+    final existing = _image.text.trim();
+    final ar = l10n.localeName.startsWith('ar');
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            ar ? 'صورة السيارة' : 'Car photo',
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              height: 150,
+              child: _hotelMainImage != null
+                  ? Image.memory(
+                      _hotelMainImage!.bytes,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      cacheWidth: 800,
+                    )
+                  : AppNetworkImage(
+                      url: existing.isEmpty ? null : existing,
+                      width: double.infinity,
+                      height: 150,
+                      fallbackIcon: Icons.directions_car_rounded,
+                    ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const ValueKey('partner-car-photo'),
+            onPressed: _saving ? null : _pickHotelMainImage,
+            icon: const Icon(Icons.image_outlined),
+            label: Text(ar ? 'اختيار صورة' : 'Choose photo'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _carFeaturesSection(AppLocalizations l10n) {
@@ -2256,6 +2429,13 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
         'transmission' => l10n.partnerTransmission,
         'fuel_type' => l10n.partnerFuelType,
         'pickup_location' => l10n.partnerAddress,
+        'pickup_address' ||
+        'engine' ||
+        'fuel_economy' ||
+        'color' ||
+        'doors' ||
+        'has_bluetooth' =>
+          _carText(l10n, key),
         'luggage_capacity' => l10n.partnerMaxLuggage,
         'available_vehicles' => l10n.partnerAvailableVehicles,
         'insurance_fee' => l10n.carInsurance,
@@ -2276,6 +2456,31 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
         'highlights' => l10n.partnerHighlights,
         _ => key.replaceAll('_', ' '),
       };
+
+  /// Texts of the car fields that have no app-wide translation.
+  String _carText(AppLocalizations l10n, String key) {
+    final ar = l10n.localeName.startsWith('ar');
+    return switch (key) {
+      'pickup_address' => ar
+          ? 'عنوان الاستلام (الشارع / الفرع)'
+          : 'Pickup address (street / branch)',
+      'engine' => ar ? 'المحرك (مثال: 2.0L)' : 'Engine (e.g. 2.0L)',
+      'fuel_economy' =>
+        ar ? 'استهلاك الوقود (مثال: 12 كم/لتر)' : 'Fuel economy (e.g. 12 km/l)',
+      'color' => ar ? 'اللون' : 'Color',
+      'doors' => ar ? 'عدد الأبواب' : 'Doors',
+      'has_bluetooth' => ar ? 'بلوتوث' : 'Bluetooth',
+      'pickup_pin' =>
+        ar ? 'موقع الاستلام على الخريطة' : 'Pickup point on the map',
+      'pickup_pin_hint' => ar
+          ? 'الصق رابط Google Maps أو الإحداثيات (مثال: 32.8872, 13.1913).'
+          : 'Paste a Google Maps link or coordinates (e.g. 32.8872, 13.1913).',
+      'pin_outside_city' => ar
+          ? 'موقع الاستلام يجب أن يكون داخل المدينة المختارة، لأن العملاء يرون فقط سيارات مدينتهم.'
+          : 'The pickup point must be inside the selected city: customers only see cars of their own city.',
+      _ => key,
+    };
+  }
 
   String? _validateNumericAttribute(
     String key,
@@ -2308,6 +2513,9 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
     }
     if (const {'year', 'duration_nights', 'duration_minutes'}.contains(key) &&
         number < 1) {
+      return l10n.partnerInvalidServiceField;
+    }
+    if (key == 'doors' && (number < 2 || number > 9)) {
       return l10n.partnerInvalidServiceField;
     }
     return null;
@@ -2626,6 +2834,7 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
     'available_vehicles',
     'insurance_fee',
     'service_fee',
+    'doors',
   };
 
   static const _integerAttributeKeys = {
@@ -2641,12 +2850,14 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
     'luggage_capacity',
     'available_vehicles',
     'duration_nights',
+    'doors',
   };
 
   static const _optionalAttributeKeys = {
     'business_price',
     'latitude',
     'longitude',
+    'doors',
   };
 
   static const _listAttributeKeys = {
@@ -2656,7 +2867,15 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
     'included_services',
     'highlights',
   };
-  static const _booleanAttributeKeys = {'has_ac', 'has_gps'};
+  static const _booleanAttributeKeys = {'has_ac', 'has_gps', 'has_bluetooth'};
+
+  /// Fields with a fixed set of values (shown as dropdowns). The values are
+  /// what the app filters on, so free text would hide the car from filters.
+  static const _choiceAttributeKeys = {
+    'category': ['economy', 'suv', 'luxury', 'electric', 'van'],
+    'transmission': ['automatic', 'manual'],
+    'fuel_type': ['gasoline', 'diesel', 'hybrid', 'electric'],
+  };
   static const _deferredFlightAttributeKeys = {'is_direct', 'stops'};
 
   static const _requiredAttributeKeys = {
@@ -2673,6 +2892,7 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
     'fuel_type',
     'vehicle_type',
     'duration_nights',
+    'pickup_address',
   };
 
   static Set<String> _editableAttributeKeys(String type) =>
@@ -2734,11 +2954,15 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
             'model': '',
             'category': 'economy',
             'year': DateTime.now().year,
-            'pickup_location': '',
+            'pickup_address': '',
             'seats': 4,
+            'doors': 4,
             'luggage_capacity': 2,
             'transmission': 'automatic',
             'fuel_type': 'gasoline',
+            'engine': '',
+            'fuel_economy': '',
+            'color': '',
             'features': <String>[],
             'rating': 0,
             'insurance_fee': 4,
@@ -2746,6 +2970,7 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
             'available_vehicles': 1,
             'has_ac': true,
             'has_gps': false,
+            'has_bluetooth': false,
           },
         'attraction' => {
             'category': 'landmark',

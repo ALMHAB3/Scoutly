@@ -109,6 +109,102 @@ public class PartnerController {
                         .toUriString());
     }
 
+    @PostMapping("/partner/car-images")
+    public Map<String, String> uploadCarImage(
+            @RequestParam("image") MultipartFile image,
+            HttpServletRequest request) {
+        PartnerIdentity partner = requirePartner(request);
+        ensurePartnerCanManageType(partner, "car");
+        String storedPath = imageStorage.store(image);
+        if (storedPath == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "A car image is required");
+        }
+        return Map.of(
+                "image_url",
+                ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path(storedPath)
+                        .toUriString());
+    }
+
+    private static final Map<String, Set<String>> CAR_CHOICES = Map.of(
+            "category", Set.of("economy", "suv", "luxury", "electric", "van"),
+            "transmission", Set.of("automatic", "manual"),
+            "fuel_type", Set.of("gasoline", "diesel", "hybrid", "electric"));
+
+    /**
+     * Car details entered by the partner: fixed values for the fields the
+     * app filters on, bounded free text, a valid pickup point.
+     */
+    static void validateCarAttributes(Map<String, Object> attributes) {
+        for (Map.Entry<String, Set<String>> choice : CAR_CHOICES.entrySet()) {
+            Object raw = attributes.get(choice.getKey());
+            if (raw == null) continue;
+            String value = raw.toString().trim().toLowerCase(Locale.ROOT);
+            if (!choice.getValue().contains(value)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, choice.getKey() + " is not supported");
+            }
+            attributes.put(choice.getKey(), value);
+        }
+        Map<String, Integer> textLimits = Map.of(
+                "pickup_address", 255,
+                "engine", 60,
+                "fuel_economy", 60,
+                "color", 60);
+        for (Map.Entry<String, Integer> limit : textLimits.entrySet()) {
+            Object raw = attributes.get(limit.getKey());
+            if (raw == null) continue;
+            String value = raw.toString().trim();
+            if (value.length() > limit.getValue()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, limit.getKey() + " is too long");
+            }
+            attributes.put(limit.getKey(), value);
+        }
+        Object doors = attributes.get("doors");
+        if (doors != null) {
+            int count;
+            try {
+                count = new java.math.BigDecimal(doors.toString().trim()).intValueExact();
+            } catch (ArithmeticException | NumberFormatException exception) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "doors must be a whole number");
+            }
+            if (count < 2 || count > 9) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "doors must be between 2 and 9");
+            }
+            attributes.put("doors", count);
+        }
+        for (String flag : List.of("has_ac", "has_gps", "has_bluetooth")) {
+            Object raw = attributes.get(flag);
+            if (raw != null && !(raw instanceof Boolean)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, flag + " must be true or false");
+            }
+        }
+        Object latitude = attributes.get("latitude");
+        Object longitude = attributes.get("longitude");
+        if (latitude != null || longitude != null) {
+            double lat;
+            double lng;
+            try {
+                lat = Double.parseDouble(String.valueOf(latitude));
+                lng = Double.parseDouble(String.valueOf(longitude));
+            } catch (NumberFormatException exception) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "pickup coordinates are invalid");
+            }
+            if (!Double.isFinite(lat) || !Double.isFinite(lng)
+                    || lat < -90 || lat > 90 || lng < -180 || lng > 180
+                    || (lat == 0 && lng == 0)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "pickup coordinates are invalid");
+            }
+        }
+    }
+
     private static LocationMetadata validateListingData(
             String type,
             String city,
@@ -161,6 +257,7 @@ public class PartnerController {
             attributes.put("location_region", location.region());
             if ("car".equals(type)) {
                 attributes.put("pickup_location", location.city());
+                validateCarAttributes(attributes);
             }
         }
         Map<String, Set<String>> listFields = Map.of(
@@ -1534,17 +1631,26 @@ public class PartnerController {
                         ? listingAttributes.get("available_rooms")
                         : 0);
         applyGeneratedAttributes(listingAttributes, type, id, partner, active);
-        jdbc.update("""
-                UPDATE partner_listings
-                SET attributes = COALESCE(attributes, '{}'::jsonb) || jsonb_build_object(
+        // Save the partner's details (brand, model, seats, pickup point...).
+        // They were dropped before: the row was inserted with '{}' and only
+        // the hotel columns were merged in. Hotel columns stay authoritative
+        // for hotels; for other types the partner's values win.
+        String hotelColumns = """
+                jsonb_build_object(
                     'location_name', COALESCE(location_name, ''),
                     'google_maps_url', COALESCE(google_maps_url, ''),
                     'place_id', COALESCE(place_id, ''),
                     'google_rating', google_rating,
                     'google_review_count', google_review_count,
                     'tax_and_fees_percentage', tax_and_fees_percentage)
-                WHERE id = ? AND partner_id = ?
-                """, id, partner.id());
+                """;
+        String merged = "hotel".equals(type)
+                ? "CAST(? AS JSONB) || " + hotelColumns
+                : hotelColumns + " || CAST(? AS JSONB)";
+        jdbc.update(
+                "UPDATE partner_listings SET attributes = " + merged
+                        + " WHERE id = ? AND partner_id = ?",
+                serializeAttributes(listingAttributes), id, partner.id());
         googlePlacesRatingSync.refreshAsync(
                 id,
                 title,
@@ -1930,6 +2036,8 @@ public class PartnerController {
                 listing.put("pickup_location", value(listing, "pickup_location", city));
                 listing.putIfAbsent("has_ac", true);
                 listing.putIfAbsent("has_gps", false);
+                listing.putIfAbsent("has_bluetooth", false);
+                listing.putIfAbsent("pickup_address", "");
                 listing.put("status", "published");
                 listing.put("is_active", true);
             }

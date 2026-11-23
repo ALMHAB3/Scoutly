@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/utils/car_geo.dart';
 import '../../../models/car_model.dart';
 
 class CarSearchParams {
@@ -18,7 +19,16 @@ class CarSearchParams {
     this.dropoffCity = '',
   });
 
-  int get days => returnDate.difference(pickupDate).inDays.clamp(1, 999);
+  /// Rental days, counted like the server (calendar days between the UTC
+  /// dates of pickup and drop-off, at least one), so totals always match.
+  int get days {
+    final a = pickupDate.toUtc();
+    final b = returnDate.toUtc();
+    final d = DateTime.utc(b.year, b.month, b.day)
+        .difference(DateTime.utc(a.year, a.month, a.day))
+        .inDays;
+    return d.clamp(1, 999);
+  }
 
   String get dropoffOrPickup => dropoffCity.trim().isEmpty ? city : dropoffCity;
 
@@ -35,15 +45,18 @@ class CarSearchParams {
         returnDate: returnDate ?? this.returnDate,
       );
 
-  /// Tomorrow for three days, every location.
+  /// Default pickup/drop-off time of day.
+  static const defaultHour = 10;
+
+  /// Tomorrow at 10:00 for three days.
   static CarSearchParams initial({String city = ''}) {
     final now = DateTime.now();
-    final pickup =
-        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final pickup = DateTime(now.year, now.month, now.day + 1, defaultHour);
     return CarSearchParams(
       city: city,
       pickupDate: pickup,
-      returnDate: pickup.add(const Duration(days: 3)),
+      returnDate:
+          DateTime(pickup.year, pickup.month, pickup.day + 3, defaultHour),
     );
   }
 }
@@ -56,10 +69,11 @@ bool carHasFeature(CarModel car, CarFeature feature) => switch (feature) {
       CarFeature.ac => car.hasAC,
       CarFeature.gps =>
         car.hasGPS || car.features.any((f) => f.toLowerCase().contains('gps')),
-      CarFeature.bluetooth => car.features.any((f) {
-          final text = f.toLowerCase();
-          return text.contains('bluetooth') || text.contains('بلوتوث');
-        }),
+      CarFeature.bluetooth => car.hasBluetooth ||
+          car.features.any((f) {
+            final text = f.toLowerCase();
+            return text.contains('bluetooth') || text.contains('بلوتوث');
+          }),
     };
 
 /// Client-side filters applied to the cars of the chosen location.
@@ -108,9 +122,25 @@ class CarFilters {
   }
 }
 
+/// Where the customer is: their city (from the supported locations) and
+/// position. Customers only see cars of this city, nearest first.
+@immutable
+class CustomerLocation {
+  final String city;
+  final double latitude;
+  final double longitude;
+
+  const CustomerLocation({
+    required this.city,
+    required this.latitude,
+    required this.longitude,
+  });
+}
+
 class CarController extends ChangeNotifier {
   CarSearchParams searchParams;
   CarFilters filters = const CarFilters();
+  CustomerLocation? customer;
   List<CarModel> results = [];
   bool isLoading = false;
   bool loadFailed = false;
@@ -119,17 +149,20 @@ class CarController extends ChangeNotifier {
   CarController({CarSearchParams? params})
       : searchParams = params ?? CarSearchParams.initial();
 
-  /// Results after the filters (best rated first): the Browse list.
+  /// Results after the filters: the Browse list (nearest first).
   List<CarModel> get filteredResults =>
       results.where(filters.matches).toList(growable: false);
 
-  Future<void> search(CarSearchParams params) async {
-    searchParams = params;
+  /// Loads the cars of the customer's city.
+  Future<void> loadFor(CustomerLocation location) async {
+    customer = location;
+    searchParams = searchParams.copyWith(city: location.city);
     isLoading = true;
     loadFailed = false;
     notifyListeners();
     try {
-      results = await loadCars(params.city);
+      final cars = await ApiService.instance.searchCars(city: location.city);
+      results = carsInCustomerCity(cars, location);
     } catch (_) {
       results = [];
       loadFailed = true;
@@ -139,22 +172,41 @@ class CarController extends ChangeNotifier {
     }
   }
 
-  /// Cars available at [city] (every location when empty), best first.
-  static Future<List<CarModel>> loadCars(String city) async {
-    final cars = await ApiService.instance.searchCars(city: city.trim());
-    return sortCars(cars);
+  /// Only cars listed in the customer's city (never other cities), with
+  /// their distance from the customer; nearest first, then best rated.
+  static List<CarModel> carsInCustomerCity(
+    Iterable<CarModel> cars,
+    CustomerLocation location,
+  ) {
+    final city = location.city.trim().toLowerCase();
+    final inCity = <CarModel>[];
+    for (final car in cars) {
+      final carCity =
+          (car.city.isNotEmpty ? car.city : car.pickupLocation).trim();
+      if (carCity.toLowerCase() != city) continue;
+      final distance = carDistanceMeters(
+        fromLatitude: location.latitude,
+        fromLongitude: location.longitude,
+        toLatitude: car.latitude,
+        toLongitude: car.longitude,
+      );
+      inCity.add(distance == null ? car : car.withDistanceMeters(distance));
+    }
+    inCity.sort((a, b) {
+      final da = a.distanceMeters, db = b.distanceMeters;
+      if (da != null && db != null && da != db) return da.compareTo(db);
+      if (da != null && db == null) return -1;
+      if (da == null && db != null) return 1;
+      final byRating = b.rating.compareTo(a.rating);
+      return byRating != 0 ? byRating : a.pricePerDay.compareTo(b.pricePerDay);
+    });
+    return inCity;
   }
 
-  /// Adopts what the Search & Filters screen already loaded.
-  void apply({
-    required CarSearchParams params,
-    required CarFilters filters,
-    required List<CarModel> cars,
-  }) {
+  /// Adopts the dates and filters chosen on the Search & Filters screen.
+  void apply({required CarSearchParams params, required CarFilters filters}) {
     searchParams = params;
     this.filters = filters;
-    results = sortCars(cars);
-    loadFailed = false;
     notifyListeners();
   }
 
@@ -167,10 +219,4 @@ class CarController extends ChangeNotifier {
     selectedCar = car;
     notifyListeners();
   }
-
-  static List<CarModel> sortCars(Iterable<CarModel> cars) => [...cars]
-    ..sort((a, b) {
-      final byRating = b.rating.compareTo(a.rating);
-      return byRating != 0 ? byRating : a.pricePerDay.compareTo(b.pricePerDay);
-    });
 }

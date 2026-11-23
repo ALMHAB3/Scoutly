@@ -27,6 +27,19 @@ class CarModel {
   /// Partner's description of the car ("About the car"); may be empty.
   final String description;
 
+  /// City of the listing (from the supported locations registry).
+  final String city;
+
+  /// Exact pickup address entered by the partner (street, branch...).
+  final String pickupAddress;
+  final bool hasBluetooth;
+
+  /// Optional details entered by the partner ('' / null when not given).
+  final String engine;
+  final String fuelEconomy;
+  final int? doors;
+  final String color;
+
   const CarModel({
     required this.id,
     required this.brand,
@@ -53,7 +66,24 @@ class CarModel {
     this.partnerListingId,
     this.partnerName,
     this.description = '',
+    this.city = '',
+    this.pickupAddress = '',
+    this.hasBluetooth = false,
+    this.engine = '',
+    this.fuelEconomy = '',
+    this.doors,
+    this.color = '',
   });
+
+  /// Where the customer picks the car up: the partner's address when given.
+  String get pickupPlace {
+    final address = pickupAddress.trim();
+    if (address.isEmpty) return pickupLocation;
+    final place = city.trim().isEmpty ? pickupLocation : city;
+    return address.toLowerCase().contains(place.toLowerCase())
+        ? address
+        : '$address, $place';
+  }
 
   static String _stringFromDynamic(dynamic value, [String fallback = '']) {
     if (value == null) return fallback;
@@ -95,14 +125,15 @@ class CarModel {
   String get modelName => fullName;
   String get name => fullName;
   String get type => category; // alias used by controller filter
-  int get bags => luggageCapacity > 0 ? luggageCapacity : switch (category) {
-        'van' => 6,
-        'suv' => 4,
-        'luxury' || 'electric' => 3,
-        _ => 2,
-      };
-  CarRentalPriceBreakdown pricingForDays(int days) =>
-      CarRentalPriceBreakdown(
+  int get bags => luggageCapacity > 0
+      ? luggageCapacity
+      : switch (category) {
+          'van' => 6,
+          'suv' => 4,
+          'luxury' || 'electric' => 3,
+          _ => 2,
+        };
+  CarRentalPriceBreakdown pricingForDays(int days) => CarRentalPriceBreakdown(
         pricePerDay: pricePerDay,
         numberOfDays: days.clamp(1, 999).toInt(),
         insuranceFee: insuranceFee,
@@ -137,6 +168,13 @@ class CarModel {
         partnerListingId: partnerListingId,
         partnerName: partnerName,
         description: description,
+        city: city,
+        pickupAddress: pickupAddress,
+        hasBluetooth: hasBluetooth,
+        engine: engine,
+        fuelEconomy: fuelEconomy,
+        doors: doors,
+        color: color,
       );
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
@@ -147,23 +185,20 @@ class CarModel {
     final title = _stringFromDynamic(json['title'] ?? json['name']);
     final brand = _stringFromDynamic(value('brand'));
     final model = _stringFromDynamic(value('model'));
-    final fullTitle = model.isEmpty && title.isNotEmpty
-        ? title
-        : model;
-    final resolvedBrand = brand.isEmpty && title.isNotEmpty
-        ? title.split(' ').first
-        : brand;
-    final resolvedModel = resolvedBrand.isNotEmpty && fullTitle.startsWith('$resolvedBrand ')
-        ? fullTitle.substring(resolvedBrand.length + 1)
-        : fullTitle;
+    final fullTitle = model.isEmpty && title.isNotEmpty ? title : model;
+    final resolvedBrand =
+        brand.isEmpty && title.isNotEmpty ? title.split(' ').first : brand;
+    final resolvedModel =
+        resolvedBrand.isNotEmpty && fullTitle.startsWith('$resolvedBrand ')
+            ? fullTitle.substring(resolvedBrand.length + 1)
+            : fullTitle;
     return CarModel(
       id: _stringFromDynamic(json['id']),
       brand: resolvedBrand,
       model: resolvedModel,
       category: _stringFromDynamic(value('category'), 'economy'),
       year: _intFromDynamic(value('year')),
-      pricePerDay: _doubleFromDynamic(
-          json['price_per_day'] ?? json['price']),
+      pricePerDay: _doubleFromDynamic(json['price_per_day'] ?? json['price']),
       seats: _intFromDynamic(value('seats'), 4),
       transmission: _stringFromDynamic(value('transmission'), 'automatic'),
       fuelType: _stringFromDynamic(value('fuel_type'), 'gasoline'),
@@ -173,8 +208,8 @@ class CarModel {
       features:
           (value('features') as List? ?? []).map((e) => e.toString()).toList(),
       rating: _doubleFromDynamic(value('rating')),
-      pickupLocation: _stringFromDynamic(
-          value('pickup_location') ?? json['city']),
+      pickupLocation:
+          _stringFromDynamic(value('pickup_location') ?? json['city']),
       luggageCapacity: _intFromDynamic(value('luggage_capacity'), 0),
       availableVehicles: _intFromDynamic(value('available_vehicles'), 1),
       insuranceFee: _doubleFromDynamic(value('insurance_fee'), 4),
@@ -195,6 +230,15 @@ class CarModel {
           : _intFromDynamic(json['partner_listing_id']),
       partnerName: json['partner_name']?.toString(),
       description: _stringFromDynamic(json['description']).trim(),
+      city: _stringFromDynamic(json['city']).trim(),
+      pickupAddress: _stringFromDynamic(value('pickup_address')).trim(),
+      hasBluetooth: _boolFromDynamic(value('has_bluetooth'), false),
+      engine: _stringFromDynamic(value('engine')).trim(),
+      fuelEconomy: _stringFromDynamic(value('fuel_economy')).trim(),
+      doors: value('doors') == null || '${value('doors')}'.trim().isEmpty
+          ? null
+          : _intFromDynamic(value('doors')),
+      color: _stringFromDynamic(value('color')).trim(),
     );
   }
 }

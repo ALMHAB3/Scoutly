@@ -122,6 +122,77 @@ class PartnerControllerTest {
     }
 
     @Test
+    void carPartnerCanUploadCarPhotosButHotelPartnerCannot() {
+        when(jdbc.queryForMap(contains("FROM users u JOIN partners p"), eq(7L)))
+                .thenReturn(Map.of(
+                        "partner_id", 4L,
+                        "name", "Libya Cars",
+                        "service_type", "car",
+                        "slug", "libya-cars"));
+        when(imageStorage.store(org.mockito.ArgumentMatchers.any()))
+                .thenReturn("/uploads/car-photo.jpg");
+        MockHttpServletRequest request = authenticatedRequest();
+        request.setRequestURI("/api/partner/car-images");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+        try {
+            Map<String, String> response = controller.uploadCarImage(
+                    new MockMultipartFile(
+                            "image", "car.jpg", "image/jpeg", new byte[] {1, 2, 3}),
+                    request);
+            org.junit.jupiter.api.Assertions.assertTrue(
+                    response.get("image_url").endsWith("/uploads/car-photo.jpg"));
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
+
+        when(jdbc.queryForMap(contains("FROM users u JOIN partners p"), eq(7L)))
+                .thenReturn(Map.of(
+                        "partner_id", 3L,
+                        "name", "Example Hotel",
+                        "service_type", "hotel",
+                        "slug", "example-hotel"));
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.uploadCarImage(
+                        new MockMultipartFile(
+                                "image", "car.jpg", "image/jpeg", new byte[] {1}),
+                        authenticatedRequest()));
+        assertEquals(403, error.getStatusCode().value());
+    }
+
+    @Test
+    void carDetailsAreValidatedAndNormalized() {
+        Map<String, Object> car = new java.util.HashMap<>(Map.of(
+                "category", "SUV",
+                "transmission", "Automatic",
+                "fuel_type", "diesel",
+                "doors", "4",
+                "engine", " 3.0L ",
+                "has_bluetooth", true,
+                "latitude", 32.8872,
+                "longitude", 13.1913));
+        PartnerController.validateCarAttributes(car);
+        assertEquals("suv", car.get("category"));
+        assertEquals("automatic", car.get("transmission"));
+        assertEquals(4, car.get("doors"));
+        assertEquals("3.0L", car.get("engine"));
+
+        for (Map<String, Object> bad : List.<Map<String, Object>>of(
+                Map.of("category", "spaceship"),
+                Map.of("transmission", "semi"),
+                Map.of("doors", 12),
+                Map.of("has_bluetooth", "yes"),
+                Map.of("latitude", 120, "longitude", 13),
+                Map.of("latitude", 0, "longitude", 0),
+                Map.of("color", "x".repeat(61)))) {
+            assertThrows(ResponseStatusException.class,
+                    () -> PartnerController.validateCarAttributes(
+                            new java.util.HashMap<>(bad)),
+                    bad.toString());
+        }
+    }
+
+    @Test
     void hotelListingsRequireAHostedPhoto() {
         when(jdbc.queryForMap(contains("FROM users u JOIN partners p"), eq(7L)))
                 .thenReturn(Map.of(

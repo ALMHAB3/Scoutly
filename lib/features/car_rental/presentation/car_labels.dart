@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../models/attraction_model.dart';
 import '../logic/car_controller.dart';
 
 String carFuelLabel(AppLocalizations l10n, String fuel) => switch (fuel) {
@@ -62,6 +63,9 @@ class CarLabels {
         'No cars match these filters.',
         'لا توجد سيارات تطابق هذه الفلاتر.',
       );
+  String noCarsInCity(String name) => ar
+      ? 'لا توجد سيارات متاحة حاليًا في ${city(name)}.'
+      : 'No cars are available in ${city(name)} right now.';
   String get clearFilters => _t('Clear filters', 'مسح الفلاتر');
   String get loadFailed => _t('Could not load cars. Try again.',
       'تعذّر تحميل السيارات. حاول مرة أخرى.');
@@ -144,6 +148,54 @@ class CarLabels {
       _t('Could not create the calendar event.', 'تعذّر إنشاء حدث التقويم.');
   String calendarTitle(String car) =>
       ar ? 'استلام السيارة: $car' : 'Car pickup: $car';
+
+  // Location (customers only see cars of the city they are in)
+  String get locating => _t('Finding your location…', 'جارٍ تحديد موقعك…');
+  String get needLocation => _t(
+        'Turn on location to see the cars available in your city.',
+        'فعّل الموقع لعرض السيارات المتاحة في مدينتك.',
+      );
+  String get enableLocation => _t('Use my location', 'استخدم موقعي');
+
+  /// City name in the app language (e.g. مصراتة).
+  String city(String name) =>
+      AttractionModel.localizedCityName(name, l10n.localeName);
+  String carsIn(String name) =>
+      ar ? 'سيارات متاحة في ${city(name)}' : 'Cars available in ${city(name)}';
+  String get yourLocation => _t('Your location', 'موقعك');
+  String get pickupCityNote => _t(
+        'Cars are shown for the city you are in.',
+        'تُعرض السيارات المتاحة في المدينة التي أنت فيها.',
+      );
+  String kmAway(double meters) {
+    final km = meters / 1000;
+    final text = km < 1
+        ? (ar ? '${meters.round()} م' : '${meters.round()} m')
+        : (ar ? '${km.toStringAsFixed(1)} كم' : '${km.toStringAsFixed(1)} km');
+    return ar ? 'على بعد $text' : '$text away';
+  }
+
+  // Partner
+  String providedBy(String partner) =>
+      ar ? 'مقدّمة من $partner' : 'Provided by $partner';
+  String get provider => _t('Rental company', 'شركة التأجير');
+
+  // Times
+  String get pickupTime => _t('Pickup time', 'وقت الاستلام');
+  String get dropoffTime => _t('Drop-off time', 'وقت التسليم');
+  String get changeTime => _t('Change date & time', 'تغيير التاريخ والوقت');
+  String get dropoffAfterPickup => _t(
+        'Drop-off must be after pickup.',
+        'يجب أن يكون التسليم بعد الاستلام.',
+      );
+  String time(DateTime date) => DateFormat.jm(l10n.localeName).format(date);
+  String dateTime(DateTime date) => '${shortDate(date)} · ${time(date)}';
+
+  // Extra specs entered by the partner
+  String get engine => _t('Engine', 'المحرك');
+  String get fuelEconomy => _t('Fuel economy', 'استهلاك الوقود');
+  String get doors => _t('Doors', 'الأبواب');
+  String get color => _t('Color', 'اللون');
 
   String shortDate(DateTime date) =>
       DateFormat.yMMMd(l10n.localeName).format(date);

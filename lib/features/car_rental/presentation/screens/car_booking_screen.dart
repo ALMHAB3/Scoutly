@@ -48,16 +48,46 @@ class CarBookingScreen extends StatefulWidget {
 
 class _CarBookingScreenState extends State<CarBookingScreen> {
   bool _submitting = false;
+  late CarSearchParams _params = widget.params;
+
+  Future<void> _changePickup() async {
+    final picked = await pickCarDateTime(
+      context,
+      initial: _params.pickupDate,
+      first: DateTime.now(),
+    );
+    if (picked == null || !mounted) return;
+    var back = _params.returnDate;
+    if (!back.isAfter(picked)) {
+      back = DateTime(picked.year, picked.month, picked.day + 1, picked.hour,
+          picked.minute);
+    }
+    setState(
+        () => _params = _params.copyWith(pickupDate: picked, returnDate: back));
+  }
+
+  Future<void> _changeReturn() async {
+    final labels = CarLabels(AppLocalizations.of(context));
+    final picked = await pickCarDateTime(
+      context,
+      initial: _params.returnDate,
+      first: _params.pickupDate,
+    );
+    if (picked == null || !mounted) return;
+    if (!picked.isAfter(_params.pickupDate)) {
+      AppSnackbar.error(context, labels.dropoffAfterPickup);
+      return;
+    }
+    setState(() => _params = _params.copyWith(returnDate: picked));
+  }
 
   CarModel get _car => widget.car;
-  CarRentalPriceBreakdown get _pricing =>
-      _car.pricingForDays(widget.params.days);
+  CarRentalPriceBreakdown get _pricing => _car.pricingForDays(_params.days);
 
-  String get _pickupLocation => _car.pickupLocation.trim().isNotEmpty
-      ? _car.pickupLocation
-      : widget.params.city;
-  String get _dropoffLocation => widget.params.dropoffCity.trim().isNotEmpty
-      ? widget.params.dropoffCity
+  String get _pickupLocation =>
+      _car.pickupPlace.trim().isNotEmpty ? _car.pickupPlace : _params.city;
+  String get _dropoffLocation => _params.dropoffCity.trim().isNotEmpty
+      ? _params.dropoffCity
       : _pickupLocation;
 
   /// Amount and currency actually charged: the profile currency when a rate
@@ -102,7 +132,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
       return;
     }
     setState(() => _submitting = true);
-    final params = widget.params;
+    final params = _params;
 
     final availability = await ApiService.instance.checkBookingAvailability(
       type: BookingType.car,
@@ -207,7 +237,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
   @override
   Widget build(BuildContext context) {
     final labels = CarLabels(AppLocalizations.of(context));
-    final params = widget.params;
+    final params = _params;
     final pricing = _pricing;
     final charge = _charge(context);
     final totalText = formatCurrencyAmount(
@@ -270,6 +300,8 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                             labels: labels,
                             fontSize: 15,
                           ),
+                          const SizedBox(height: 6),
+                          CarProviderLine(car: _car, labels: labels),
                         ],
                       ),
                     ),
@@ -279,14 +311,18 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                 Divider(height: 1, color: carBorder(context)),
                 _Stop(
                   title: labels.pickup,
-                  date: labels.shortDate(params.pickupDate),
+                  date: labels.dateTime(params.pickupDate),
                   place: _pickupLocation,
+                  changeLabel: labels.changeTime,
+                  onTap: _submitting ? null : _changePickup,
                 ),
                 Divider(height: 1, color: carBorder(context)),
                 _Stop(
                   title: labels.dropoff,
-                  date: labels.shortDate(params.returnDate),
+                  date: labels.dateTime(params.returnDate),
                   place: _dropoffLocation,
+                  changeLabel: labels.changeTime,
+                  onTap: _submitting ? null : _changeReturn,
                 ),
               ],
             ),
@@ -333,7 +369,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                       style: const TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 17,
-                        color: carCtaColor,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],
@@ -456,30 +492,64 @@ class _Stop extends StatelessWidget {
   final String title;
   final String date;
   final String place;
+  final String changeLabel;
+  final VoidCallback? onTap;
 
-  const _Stop({required this.title, required this.date, required this.place});
+  const _Stop({
+    required this.title,
+    required this.date,
+    required this.place,
+    required this.changeLabel,
+    this.onTap,
+  });
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title,
-                style: TextStyle(fontSize: 12, color: carMuted(context))),
-            const SizedBox(height: 4),
-            Text(
-              date,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-                color: carInk(context),
-              ),
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: '$title $date, $place. $changeLabel',
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style:
+                            TextStyle(fontSize: 12, color: carMuted(context)),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        date,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                          color: carInk(context),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        place,
+                        style:
+                            TextStyle(fontSize: 12.5, color: carMuted(context)),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.edit_calendar_outlined,
+                  size: 20,
+                  color: AppColors.primary,
+                ),
+              ],
             ),
-            const SizedBox(height: 2),
-            Text(place,
-                style: TextStyle(fontSize: 12.5, color: carMuted(context))),
-          ],
+          ),
         ),
       );
 }

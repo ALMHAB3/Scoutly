@@ -170,14 +170,9 @@ abstract class AppRoutes {
       case hotelDetail:
         return _slide(const HotelDetailScreen(), settings);
       case carRental:
-        return _slide(
-          CarRentalScreen(
-            initialCity: settings.arguments is String
-                ? settings.arguments as String
-                : null,
-          ),
-          settings,
-        );
+        // Customers only see cars of the city they are in, so the screen
+        // takes the city from the device location, not from arguments.
+        return _slide(const CarRentalScreen(), settings);
       case carDetail:
         return _slide(const CarDetailScreen(), settings);
       case attractions:

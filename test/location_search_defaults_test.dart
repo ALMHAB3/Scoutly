@@ -4,8 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zentrip/core/services/api_service.dart';
 import 'package:zentrip/core/services/current_location_service.dart';
-import 'package:zentrip/features/car_rental/logic/car_controller.dart';
-import 'package:zentrip/features/car_rental/presentation/screens/car_search_screen.dart';
+import 'package:zentrip/features/car_rental/presentation/screens/car_rental_screen.dart';
 import 'package:zentrip/features/hotel_booking/logic/hotel_controller.dart';
 import 'package:zentrip/features/hotel_booking/presentation/screens/hotel_search_screen.dart';
 import 'package:zentrip/l10n/app_localizations.dart';
@@ -49,31 +48,21 @@ void main() {
     controller.dispose();
   });
 
-  testWidgets('car search stays blank until current location is requested',
+  testWidgets('car rental uses the customer\'s current city on open',
       (tester) async {
     final location = _MisrataLocationService();
     await tester.pumpWidget(
       MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: CarSearchScreen(
-          params: CarSearchParams.initial(),
-          initialCars: const [],
-          locationService: location,
-        ),
+        home: CarRentalScreen(locationService: location),
       ),
     );
-    await tester.pump(const Duration(milliseconds: 100));
-
-    final locationField = _fieldWithHint('Pickup city...');
-    expect(tester.widget<TextField>(locationField).controller!.text, isEmpty);
-    expect(location.placeRequests, 0);
-
-    await tester.tap(find.byTooltip('Use my current location'));
     await tester.pumpAndSettle();
 
-    expect(tester.widget<TextField>(locationField).controller!.text, 'Misrata');
+    // Customers only see cars of the city they are in.
     expect(location.placeRequests, 1);
+    expect(find.text('Misrata'), findsOneWidget);
   });
 }
 

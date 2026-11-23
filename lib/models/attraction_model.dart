@@ -143,6 +143,12 @@ class AttractionModel {
     'oea': 'أويا',
   };
 
+  /// City name in the user's language (Arabic names for known cities).
+  static String localizedCityName(String city, String languageCode) {
+    if (!languageCode.toLowerCase().startsWith('ar')) return city;
+    return _arabicCityNames[city.trim().toLowerCase()] ?? city;
+  }
+
   static const Map<String, String> _arabicCityNames = {
     'tripoli': 'طرابلس',
     'misrata': 'مصراتة',

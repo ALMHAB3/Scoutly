@@ -1,14 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/services/api_service.dart';
-import '../../../../core/services/current_location_service.dart';
 import '../../../../core/utils/price_format.dart';
+import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/car_model.dart';
-import '../../../../models/flight_model.dart';
 import '../../logic/car_controller.dart';
 import '../car_labels.dart';
 import '../widgets/car_widgets.dart';
@@ -17,29 +13,27 @@ import '../widgets/car_widgets.dart';
 class CarSearchResult {
   final CarSearchParams params;
   final CarFilters filters;
-  final List<CarModel> cars;
 
-  const CarSearchResult({
-    required this.params,
-    required this.filters,
-    required this.cars,
-  });
+  const CarSearchResult({required this.params, required this.filters});
 }
 
-/// "Search Cars": locations, dates, car type, price range and features, with
-/// a live count of matching cars.
+/// "Search Cars": the customer's city (fixed: only cars there are shown),
+/// drop-off point, pickup/drop-off date and time, car type, price range and
+/// features, with a live count of matching cars.
 class CarSearchScreen extends StatefulWidget {
+  final String city;
   final CarSearchParams params;
   final CarFilters filters;
-  final List<CarModel> initialCars;
-  final CurrentLocationService locationService;
+
+  /// Cars of [city] (already limited to the customer's city).
+  final List<CarModel> cars;
 
   const CarSearchScreen({
     super.key,
+    required this.city,
     required this.params,
     this.filters = const CarFilters(),
-    this.initialCars = const [],
-    this.locationService = const CurrentLocationService(),
+    this.cars = const [],
   });
 
   @override
@@ -47,36 +41,19 @@ class CarSearchScreen extends StatefulWidget {
 }
 
 class _CarSearchScreenState extends State<CarSearchScreen> {
-  late final _pickupCtrl = TextEditingController(text: widget.params.city);
   late final _dropoffCtrl =
       TextEditingController(text: widget.params.dropoffCity);
-  late DateTime _pickupDate = widget.params.pickupDate;
-  late DateTime _returnDate = widget.params.returnDate;
+  late DateTime _pickup = widget.params.pickupDate;
+  late DateTime _return = widget.params.returnDate;
   late String _type = widget.filters.carType;
   late final Set<CarFeature> _features = {...widget.filters.features};
-  double? _minPrice;
-  double? _maxPrice;
+  late double? _minPrice = widget.filters.minPricePerDay;
+  late double? _maxPrice = widget.filters.maxPricePerDay;
 
-  late List<CarModel> _cars = widget.initialCars;
-  late String _loadedCity = widget.params.city.trim();
-  bool _loadingCars = false;
-  bool _locating = false;
-  String? _message;
-  Timer? _debounce;
-  int _loadToken = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _minPrice = widget.filters.minPricePerDay;
-    _maxPrice = widget.filters.maxPricePerDay;
-    if (_cars.isEmpty) _loadCars(_loadedCity);
-  }
+  List<CarModel> get _cars => widget.cars;
 
   @override
   void dispose() {
-    _debounce?.cancel();
-    _pickupCtrl.dispose();
     _dropoffCtrl.dispose();
     super.dispose();
   }
@@ -90,7 +67,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
 
   int get _matchCount => _cars.where(_filters.matches).length;
 
-  // Price bounds (USD per day) of the cars at the chosen location.
+  // Price bounds (USD per day) of the cars in the customer's city.
   double get _floor => _cars.isEmpty
       ? 0
       : _cars
@@ -104,100 +81,34 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
           .reduce((a, b) => a > b ? a : b)
           .ceilToDouble();
 
-  Future<void> _loadCars(String city) async {
-    final token = ++_loadToken;
-    setState(() {
-      _loadingCars = true;
-      _message = null;
-    });
-    try {
-      final cars = await CarController.loadCars(city);
-      if (!mounted || token != _loadToken) return;
-      setState(() {
-        _cars = cars;
-        _loadedCity = city.trim();
-        _minPrice = null;
-        _maxPrice = null;
-      });
-    } catch (_) {
-      if (!mounted || token != _loadToken) return;
-      setState(() {
-        _cars = const [];
-        _message = AppLocalizations.of(context).carSearchFailed;
-      });
-    } finally {
-      if (mounted && token == _loadToken) {
-        setState(() => _loadingCars = false);
-      }
-    }
-  }
-
-  void _onPickupChanged(String value) {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      if (value.trim() != _loadedCity) _loadCars(value);
-    });
-  }
-
-  Future<void> _useCurrentLocation() async {
-    setState(() {
-      _locating = true;
-      _message = null;
-    });
-    final l10n = AppLocalizations.of(context);
-    try {
-      final place = await widget.locationService.getCurrentPlace();
-      final airport = AirportOption.nearestTo(
-        place.position.latitude,
-        place.position.longitude,
-      );
-      final city = AirportOption.byCity(place.city ?? '')?.city ??
-          airport?.city ??
-          place.city;
-      if (!mounted) return;
-      if (city == null) {
-        setState(() => _message = l10n.currentCityUnavailable);
-        return;
-      }
-      _pickupCtrl.text = city;
-      _loadCars(city);
-    } on CurrentLocationException catch (error) {
-      if (!mounted) return;
-      setState(() => _message = switch (error.reason) {
-            CurrentLocationError.serviceDisabled =>
-              l10n.nearbyLocationServiceDisabled,
-            CurrentLocationError.permissionDenied =>
-              l10n.nearbyLocationPermissionDenied,
-            CurrentLocationError.permissionDeniedForever =>
-              l10n.nearbyLocationPermissionDeniedForever,
-            CurrentLocationError.unableToDetermine =>
-              l10n.nearbyLocationUnableToDetermine,
-          });
-    } finally {
-      if (mounted) setState(() => _locating = false);
-    }
-  }
-
-  Future<void> _pickDate({required bool pickup}) async {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: pickup ? _pickupDate : _returnDate,
-      firstDate: pickup ? today : _pickupDate.add(const Duration(days: 1)),
-      lastDate: today.add(const Duration(days: 365)),
+  Future<void> _pickPickup() async {
+    final picked = await pickCarDateTime(
+      context,
+      initial: _pickup,
+      first: DateTime.now(),
     );
     if (picked == null || !mounted) return;
     setState(() {
-      if (pickup) {
-        _pickupDate = picked;
-        if (!_returnDate.isAfter(picked)) {
-          _returnDate = picked.add(const Duration(days: 1));
-        }
-      } else {
-        _returnDate = picked;
+      _pickup = picked;
+      if (!_return.isAfter(picked)) {
+        _return = DateTime(picked.year, picked.month, picked.day + 1,
+            picked.hour, picked.minute);
       }
     });
+  }
+
+  Future<void> _pickReturn(CarLabels labels) async {
+    final picked = await pickCarDateTime(
+      context,
+      initial: _return,
+      first: _pickup,
+    );
+    if (picked == null || !mounted) return;
+    if (!picked.isAfter(_pickup)) {
+      AppSnackbar.error(context, labels.dropoffAfterPickup);
+      return;
+    }
+    setState(() => _return = picked);
   }
 
   void _reset() {
@@ -211,30 +122,23 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
   }
 
   void _showResults() {
-    final pickup = _pickupCtrl.text.trim();
-    if (pickup != _loadedCity) {
-      _loadCars(pickup);
-      return;
-    }
     Navigator.pop(
       context,
       CarSearchResult(
         params: CarSearchParams(
-          city: pickup,
+          city: widget.city,
           dropoffCity: _dropoffCtrl.text.trim(),
-          pickupDate: _pickupDate,
-          returnDate: _returnDate,
+          pickupDate: _pickup,
+          returnDate: _return,
         ),
         filters: _filters,
-        cars: _cars,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final labels = CarLabels(l10n);
+    final labels = CarLabels(AppLocalizations.of(context));
     final count = _matchCount;
     return Scaffold(
       backgroundColor: carPageBackground(context),
@@ -258,90 +162,148 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
           CarCard(
-            padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
             child: Column(
               children: [
-                _LocationField(
-                  icon: Icons.radio_button_checked_rounded,
-                  iconColor: AppColors.primary,
-                  label: labels.pickupLocation,
-                  hint: labels.pickupHint,
-                  controller: _pickupCtrl,
-                  onChanged: _onPickupChanged,
-                  onSelected: (value) {
-                    _debounce?.cancel();
-                    _loadCars(value);
-                  },
-                  trailing: _locating
-                      ? const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.radio_button_checked_rounded,
+                      size: 20,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            labels.pickupLocation,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: carMuted(context),
+                            ),
                           ),
-                        )
-                      : IconButton(
-                          tooltip: l10n.useCurrentLocation,
-                          onPressed: _useCurrentLocation,
-                          icon: const Icon(
-                            Icons.my_location_rounded,
+                          const SizedBox(height: 3),
+                          Text(
+                            labels.city(widget.city),
+                            key: const ValueKey('car-pickup-city'),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: carInk(context),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.near_me_rounded,
+                            size: 13,
                             color: AppColors.primary,
-                            size: 20,
                           ),
-                        ),
+                          const SizedBox(width: 4),
+                          Text(
+                            labels.yourLocation,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
                 Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 9),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 1.5,
-                        height: 14,
-                        color: carBorder(context),
-                      ),
-                      const SizedBox(width: 18),
-                      Expanded(
-                        child: Divider(height: 1, color: carBorder(context)),
-                      ),
-                    ],
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Divider(height: 1, color: carBorder(context)),
                 ),
-                _LocationField(
-                  icon: Icons.location_on_outlined,
-                  iconColor: carMuted(context),
-                  label: labels.dropoffLocation,
-                  hint: labels.sameAsPickup,
-                  controller: _dropoffCtrl,
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 20,
+                      color: carMuted(context),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            labels.dropoffLocation,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: carMuted(context),
+                            ),
+                          ),
+                          TextField(
+                            controller: _dropoffCtrl,
+                            maxLength: 120,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: carInk(context),
+                            ),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              counterText: '',
+                              hintText: labels.sameAsPickup,
+                              filled: false,
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 6),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          if (_message != null)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 6, top: 8),
-              child: Text(
-                _message!,
-                style:
-                    const TextStyle(color: AppColors.accentRed, fontSize: 12),
-              ),
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 6, top: 8),
+            child: Text(
+              labels.pickupCityNote,
+              style: TextStyle(fontSize: 11.5, color: carMuted(context)),
             ),
+          ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: _DateCard(
+                child: CarDateTimeCard(
                   label: labels.pickupDate,
-                  value: labels.shortDate(_pickupDate),
-                  onTap: () => _pickDate(pickup: true),
+                  date: labels.shortDate(_pickup),
+                  time: labels.time(_pickup),
+                  onTap: _pickPickup,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _DateCard(
+                child: CarDateTimeCard(
                   label: labels.dropoffDate,
-                  value: labels.shortDate(_returnDate),
-                  onTap: () => _pickDate(pickup: false),
+                  date: labels.shortDate(_return),
+                  time: labels.time(_return),
+                  onTap: () => _pickReturn(labels),
                 ),
               ),
             ],
@@ -387,10 +349,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
           child: CarCtaButton(
             buttonKey: const ValueKey('car-show-results'),
             label: labels.showResults(count),
-            loading: _loadingCars,
-            onPressed: count == 0 && _pickupCtrl.text.trim() == _loadedCity
-                ? null
-                : _showResults,
+            onPressed: count == 0 ? null : _showResults,
           ),
         ),
       ),
@@ -492,130 +451,25 @@ class _SectionTitle extends StatelessWidget {
       );
 }
 
-class _LocationField extends StatefulWidget {
-  final IconData icon;
-  final Color iconColor;
+/// Card with a label, a date and a time; tap to change both.
+class CarDateTimeCard extends StatelessWidget {
   final String label;
-  final String hint;
-  final TextEditingController controller;
-  final ValueChanged<String>? onChanged;
-  final ValueChanged<String>? onSelected;
-  final Widget? trailing;
-
-  const _LocationField({
-    required this.icon,
-    required this.iconColor,
-    required this.label,
-    required this.hint,
-    required this.controller,
-    this.onChanged,
-    this.onSelected,
-    this.trailing,
-  });
-
-  @override
-  State<_LocationField> createState() => _LocationFieldState();
-}
-
-class _LocationFieldState extends State<_LocationField> {
-  final _focusNode = FocusNode();
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Icon(widget.icon, size: 20, color: widget.iconColor),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.label,
-                  style: TextStyle(fontSize: 11, color: carMuted(context)),
-                ),
-                RawAutocomplete<String>(
-                  textEditingController: widget.controller,
-                  focusNode: _focusNode,
-                  optionsBuilder: (value) =>
-                      ApiService.instance.searchCarLocations(value.text),
-                  onSelected: (value) => widget.onSelected?.call(value),
-                  optionsViewBuilder: (context, select, options) => Align(
-                    alignment: AlignmentDirectional.topStart,
-                    child: Material(
-                      elevation: 5,
-                      borderRadius: BorderRadius.circular(12),
-                      child: ConstrainedBox(
-                        constraints:
-                            const BoxConstraints(maxHeight: 240, maxWidth: 320),
-                        child: ListView(
-                          padding: EdgeInsets.zero,
-                          shrinkWrap: true,
-                          children: [
-                            for (final option in options)
-                              ListTile(
-                                dense: true,
-                                leading: const Icon(Icons.place_outlined),
-                                title: Text(option),
-                                onTap: () => select(option),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  fieldViewBuilder: (context, textController, focusNode, _) =>
-                      TextField(
-                    controller: textController,
-                    focusNode: focusNode,
-                    onChanged: widget.onChanged,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: carInk(context),
-                    ),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      hintText: widget.hint,
-                      filled: false,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (widget.trailing != null)
-            widget.trailing!
-          else
-            const SizedBox(width: 8),
-        ],
-      );
-}
-
-class _DateCard extends StatelessWidget {
-  final String label;
-  final String value;
+  final String date;
+  final String time;
   final VoidCallback onTap;
 
-  const _DateCard({
+  const CarDateTimeCard({
+    super.key,
     required this.label,
-    required this.value,
+    required this.date,
+    required this.time,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) => Semantics(
         button: true,
-        label: '$label $value',
+        label: '$label $date $time',
         excludeSemantics: true,
         child: InkWell(
           onTap: onTap,
@@ -634,7 +488,7 @@ class _DateCard extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        value,
+                        date,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -648,6 +502,25 @@ class _DateCard extends StatelessWidget {
                       Icons.calendar_today_outlined,
                       size: 17,
                       color: carMuted(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.schedule_rounded,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      time,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ],
                 ),

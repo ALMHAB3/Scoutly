@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../models/car_model.dart';
+import '../../../flight_booking/presentation/screens/flight_primary_button.dart';
 import '../../logic/car_controller.dart';
 import '../car_labels.dart';
-
-/// Orange call-to-action colour of the car rental screens.
-const carCtaColor = Color(0xFFFF7A1A);
 
 bool carIsDark(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark;
@@ -85,7 +83,8 @@ class CarPhoto extends StatelessWidget {
   }
 }
 
-/// Full-width orange button (Book Now, Pay, Show results...).
+/// Full-width call-to-action in the app's standard style (navy gradient,
+/// same as the rest of the app's primary buttons).
 class CarCtaButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -101,34 +100,11 @@ class CarCtaButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: double.infinity,
-        height: 54,
-        child: FilledButton(
-          key: buttonKey,
-          onPressed: loading ? null : onPressed,
-          style: FilledButton.styleFrom(
-            backgroundColor: carCtaColor,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: carCtaColor.withValues(alpha: 0.45),
-            disabledForegroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-            textStyle:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          child: loading
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.4,
-                    color: Colors.white,
-                  ),
-                )
-              : Text(label),
-        ),
+  Widget build(BuildContext context) => FlightPrimaryButton(
+        key: buttonKey,
+        label: label,
+        onPressed: onPressed,
+        loading: loading,
       );
 }
 
@@ -343,7 +319,8 @@ class CarRatingBadge extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 3),
-          const Icon(Icons.star_rounded, color: carCtaColor, size: 16),
+          const Icon(Icons.star_rounded,
+              color: AppColors.accentYellow, size: 16),
         ],
       ),
     );
@@ -357,3 +334,67 @@ String carSpecLine(CarLabels labels, CarModel car, {bool full = true}) => [
       labels.l10n.carSeatsCount(car.seats),
       if (full) carFuelLabel(labels.l10n, car.fuelType),
     ].join('  ·  ');
+
+/// Date then time picker. Returns null when cancelled.
+Future<DateTime?> pickCarDateTime(
+  BuildContext context, {
+  required DateTime initial,
+  required DateTime first,
+}) async {
+  final firstDay = DateTime(first.year, first.month, first.day);
+  final date = await showDatePicker(
+    context: context,
+    initialDate: initial.isBefore(firstDay) ? firstDay : initial,
+    firstDate: firstDay,
+    lastDate: firstDay.add(const Duration(days: 365)),
+  );
+  if (date == null || !context.mounted) return null;
+  final time = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.fromDateTime(initial),
+  );
+  if (time == null) return null;
+  return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+}
+
+/// "Provided by Libya Cars" line with a store icon.
+class CarProviderLine extends StatelessWidget {
+  final CarModel car;
+  final CarLabels labels;
+  final double fontSize;
+
+  const CarProviderLine({
+    super.key,
+    required this.car,
+    required this.labels,
+    this.fontSize = 12,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final partner = car.partnerName?.trim() ?? '';
+    if (partner.isEmpty) return const SizedBox.shrink();
+    return Row(
+      children: [
+        Icon(
+          Icons.storefront_rounded,
+          size: fontSize + 3,
+          color: AppColors.primary,
+        ),
+        const SizedBox(width: 5),
+        Flexible(
+          child: Text(
+            labels.providedBy(partner),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

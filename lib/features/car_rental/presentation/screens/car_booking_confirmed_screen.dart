@@ -36,7 +36,8 @@ class CarBookingConfirmedScreen extends StatelessWidget {
 
   static const _tripsTab = 3;
 
-  /// All-day calendar event from pickup to drop-off (iCalendar).
+  /// Calendar event (iCalendar) from the pickup time to the drop-off time,
+  /// in the device's local time.
   static String calendarEvent({
     required String uid,
     required String title,
@@ -47,6 +48,9 @@ class CarBookingConfirmedScreen extends StatelessWidget {
   }) {
     String date(DateTime d) =>
         '${d.year.toString().padLeft(4, '0')}${d.month.toString().padLeft(2, '0')}${d.day.toString().padLeft(2, '0')}';
+    String local(DateTime d) => '${date(d)}T'
+        '${d.hour.toString().padLeft(2, '0')}'
+        '${d.minute.toString().padLeft(2, '0')}00';
     String escape(String text) => text
         .replaceAll(r'\', r'\\')
         .replaceAll(';', r'\;')
@@ -64,9 +68,8 @@ class CarBookingConfirmedScreen extends StatelessWidget {
       'BEGIN:VEVENT',
       'UID:${escape(uid)}@zentrip',
       'DTSTAMP:$stamp',
-      'DTSTART;VALUE=DATE:${date(start)}',
-      // DTEND is exclusive for all-day events: include the drop-off day.
-      'DTEND;VALUE=DATE:${date(end.add(const Duration(days: 1)))}',
+      'DTSTART:${local(start)}',
+      'DTEND:${local(end)}',
       'SUMMARY:${escape(title)}',
       'LOCATION:${escape(location)}',
       'DESCRIPTION:${escape(description)}',
@@ -211,10 +214,11 @@ class CarBookingConfirmedScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           _IconLine(
                             icon: Icons.calendar_today_outlined,
-                            text: labels.dateRange(
-                              params.pickupDate,
-                              params.returnDate,
-                            ),
+                            maxLines: 2,
+                            text: '${labels.dayMonth(params.pickupDate)} '
+                                '${labels.time(params.pickupDate)} – '
+                                '${labels.dayMonth(params.returnDate)} '
+                                '${labels.time(params.returnDate)}',
                           ),
                           const SizedBox(height: 4),
                           _IconLine(
@@ -223,6 +227,8 @@ class CarBookingConfirmedScreen extends StatelessWidget {
                                 ? pickupLocation
                                 : '$pickupLocation → $dropoffLocation',
                           ),
+                          const SizedBox(height: 4),
+                          CarProviderLine(car: car, labels: labels),
                           const SizedBox(height: 4),
                           _IconLine(
                             icon: Icons.payments_outlined,
@@ -274,7 +280,8 @@ class CarBookingConfirmedScreen extends StatelessWidget {
 class _IconLine extends StatelessWidget {
   final IconData icon;
   final String text;
-  const _IconLine({required this.icon, required this.text});
+  final int maxLines;
+  const _IconLine({required this.icon, required this.text, this.maxLines = 1});
 
   @override
   Widget build(BuildContext context) => Row(
@@ -284,7 +291,7 @@ class _IconLine extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              maxLines: 1,
+              maxLines: maxLines,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontSize: 12, color: carMuted(context)),
             ),
@@ -299,7 +306,7 @@ class _SuccessBadge extends StatelessWidget {
 
   static const _colors = [
     AppColors.accentGreen,
-    carCtaColor,
+    AppColors.accentOrange,
     AppColors.accentTeal,
     AppColors.accentYellow,
     AppColors.primaryLight,

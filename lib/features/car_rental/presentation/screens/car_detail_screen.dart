@@ -156,6 +156,33 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                     carSpecLine(labels, car),
                     style: TextStyle(fontSize: 12.5, color: carMuted(context)),
                   ),
+                  if ((car.partnerName ?? '').trim().isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    CarProviderLine(car: car, labels: labels, fontSize: 13),
+                  ],
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 16,
+                        color: carMuted(context),
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          car.distanceMeters == null
+                              ? car.pickupPlace
+                              : '${car.pickupPlace} · '
+                                  '${labels.kmAway(car.distanceMeters!)}',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            color: carMuted(context),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   if (features.isNotEmpty) ...[
                     const SizedBox(height: 18),
                     Row(
@@ -198,50 +225,36 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  CarCard(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: IntrinsicHeight(
-                      child: Row(
-                        children: [
-                          _Spec(
-                            value: car.year > 0 ? '${car.year}' : '—',
-                            label: labels.year,
-                          ),
-                          _divider(context),
-                          _Spec(
-                            value: labels.transmission(car.transmission),
-                            label: labels.transmissionTitle,
-                          ),
-                          _divider(context),
-                          _Spec(value: '${car.seats}', label: labels.seats),
-                          _divider(context),
-                          _Spec(value: '${car.bags}', label: labels.bags),
-                        ],
-                      ),
+                  // Engine and fuel economy when the partner entered them
+                  // (as in the design), otherwise year and bags.
+                  _SpecGrid(specs: [
+                    if (car.engine.isNotEmpty)
+                      (car.engine, labels.engine)
+                    else
+                      (car.year > 0 ? '${car.year}' : '—', labels.year),
+                    (
+                      labels.transmission(car.transmission),
+                      labels.transmissionTitle
                     ),
-                  ),
-                  if (car.partnerName != null &&
-                      car.partnerName!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.storefront_outlined,
-                          size: 16,
-                          color: carMuted(context),
-                        ),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            '${car.partnerName} · ${car.pickupLocation}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: carMuted(context),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    ('${car.seats}', labels.seats),
+                    if (car.fuelEconomy.isNotEmpty)
+                      (car.fuelEconomy, labels.fuelEconomy)
+                    else
+                      ('${car.bags}', labels.bags),
+                  ]),
+                  if (car.engine.isNotEmpty ||
+                      car.fuelEconomy.isNotEmpty ||
+                      car.doors != null ||
+                      car.color.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    _SpecGrid(specs: [
+                      if (car.engine.isNotEmpty && car.year > 0)
+                        ('${car.year}', labels.year),
+                      if (car.fuelEconomy.isNotEmpty)
+                        ('${car.bags}', labels.bags),
+                      if (car.doors != null) ('${car.doors}', labels.doors),
+                      if (car.color.isNotEmpty) (car.color, labels.color),
+                    ]),
                   ],
                 ],
               ).animate().fade(duration: 250.ms),
@@ -264,9 +277,29 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
       ),
     );
   }
+}
 
-  Widget _divider(BuildContext context) =>
-      VerticalDivider(width: 1, color: carBorder(context));
+class _SpecGrid extends StatelessWidget {
+  final List<(String, String)> specs;
+  const _SpecGrid({required this.specs});
+
+  @override
+  Widget build(BuildContext context) {
+    if (specs.isEmpty) return const SizedBox.shrink();
+    return CarCard(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            for (var i = 0; i < specs.length; i++) ...[
+              if (i > 0) VerticalDivider(width: 1, color: carBorder(context)),
+              _Spec(value: specs[i].$1, label: specs[i].$2),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _Spec extends StatelessWidget {

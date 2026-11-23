@@ -1241,6 +1241,23 @@ class ApiService {
     });
   }
 
+  /// Uploads a car photo for a partner listing; returns its public URL.
+  Future<ApiResult<String>> uploadPartnerCarImage({
+    required Uint8List bytes,
+    required String filename,
+  }) {
+    return _request(() async {
+      final response = await _dio.post(
+        '/partner/car-images',
+        data: FormData.fromMap({
+          'image': MultipartFile.fromBytes(bytes, filename: filename),
+        }),
+      );
+      final imageUrl = response.data['image_url'] as String;
+      return Uri.parse(baseUrl).resolve(imageUrl).toString();
+    });
+  }
+
   Future<ApiResult<void>> setPartnerListingActive(
       PartnerListing listing, bool active) {
     return _request(() async {
