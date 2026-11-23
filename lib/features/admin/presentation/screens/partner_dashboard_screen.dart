@@ -322,7 +322,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
     return Material(
       color: selected
           ? AppColors.primary.withValues(alpha: 0.1)
-          : Colors.transparent,
+          : AppColors.transparent,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -1964,14 +1964,14 @@ class _PartnerListingDialogState extends State<_PartnerListingDialog> {
                 top: 2,
                 end: 2,
                 child: Material(
-                  color: Colors.black54,
+                  color: AppColors.black54,
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: onRemove,
                     child: const Padding(
                       padding: EdgeInsets.all(4),
-                      child: Icon(Icons.close, size: 16, color: Colors.white),
+                      child: Icon(Icons.close, size: 16, color: AppColors.white),
                     ),
                   ),
                 ),

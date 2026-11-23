@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 
-const _seatNavy = Color(0xFF1E1B4B);
-const _seatInk = Color(0xFF20263A);
-const _seatMuted = Color(0xFF8991A2);
-const _taken = Color(0xFFE9EBF0);
 
 /// Cabin rows are the actual aircraft row numbers supplied by the seat API.
 /// Rows advance horizontally, with the aisle running between the two groups.
@@ -52,14 +48,14 @@ class FlightSeatMapView extends StatelessWidget {
     }
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: const BorderRadius.horizontal(
           left: Radius.circular(86),
           right: Radius.circular(24),
         ),
         boxShadow: [
           BoxShadow(
-            color: _seatNavy.withValues(alpha: .035),
+            color: AppColors.seatNavy.withValues(alpha: .035),
             blurRadius: 18,
             offset: const Offset(0, 7),
           ),
@@ -90,7 +86,7 @@ class FlightSeatMapView extends StatelessWidget {
                         child: Center(
                           child: Text(isArabic ? 'المقصورة' : 'DECK',
                               style: const TextStyle(
-                                  color: _seatMuted,
+                                  color: AppColors.seatMapMuted,
                                   fontSize: 10,
                                   letterSpacing: 1.2,
                                   fontWeight: FontWeight.w900)),
@@ -126,7 +122,7 @@ class FlightSeatMapView extends StatelessWidget {
                           child: Center(
                             child: Text('$row',
                                 style: const TextStyle(
-                                    color: _seatMuted,
+                                    color: AppColors.seatMapMuted,
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600)),
                           ),
@@ -183,22 +179,22 @@ class _SeatTile extends StatelessWidget {
     final fill = selected
         ? AppColors.primary
         : occupied
-            ? _taken
+            ? AppColors.seatTaken
             : premium
-                ? Colors.white
-                : Colors.white;
+                ? AppColors.white
+                : AppColors.white;
     final edge = selected
         ? AppColors.primary
         : premium && !occupied
-            ? _seatNavy
+            ? AppColors.seatNavy
             : occupied
-                ? Colors.transparent
+                ? AppColors.transparent
                 : AppColors.border;
     final foreground = selected
-        ? Colors.white
+        ? AppColors.white
         : occupied
-            ? const Color(0xFFC6CBD4)
-            : _seatInk;
+            ? AppColors.seatTakenText
+            : AppColors.seatMapInk;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Semantics(
@@ -241,7 +237,7 @@ class _SeatTile extends StatelessWidget {
                         child: Text(
                           '$passengerNumber',
                           style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.78),
+                            color: AppColors.white.withValues(alpha: 0.78),
                             fontSize: 7,
                             height: 1,
                             fontWeight: FontWeight.w800,

@@ -356,7 +356,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                             width: 18,
                             height: 18,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2, color: AppColors.white))
                         : const Icon(Icons.search_rounded),
                     label: Text(_ctrl.isLoading
                         ? l10n.transferSearching
@@ -785,10 +785,10 @@ class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
                                           color: AppColors.primary,
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                              color: Colors.white, width: 3),
+                                              color: AppColors.white, width: 3),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black
+                                              color: AppColors.black
                                                   .withValues(alpha: 0.25),
                                               blurRadius: 5,
                                             ),
@@ -1014,7 +1014,7 @@ class _TransferCard extends StatelessWidget {
             ? const []
             : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: AppColors.black.withValues(alpha: 0.05),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -1061,7 +1061,7 @@ class _TransferCard extends StatelessWidget {
                         ),
                         if (transfer.driverRating != null) ...[
                           const Icon(Icons.star_rounded,
-                              size: 16, color: Colors.amber),
+                              size: 16, color: AppColors.amber),
                           Text(transfer.driverRating!.toStringAsFixed(1),
                               style:
                                   const TextStyle(fontWeight: FontWeight.w700)),
@@ -1166,7 +1166,7 @@ class _TransferCard extends StatelessWidget {
                         height: 18,
                         width: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white))
+                            strokeWidth: 2, color: AppColors.white))
                     : Text(l10n.book,
                         style: const TextStyle(fontWeight: FontWeight.w700)),
               ),

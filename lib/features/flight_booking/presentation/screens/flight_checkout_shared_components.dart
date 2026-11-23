@@ -47,7 +47,7 @@ class FlightBookingFlowHeader extends StatelessWidget {
                   tooltip: l10n.goBack,
                   onPressed: onBack,
                   icon:
-                      const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                      const Icon(Icons.arrow_back_rounded, color: AppColors.white),
                 )
               else
                 const SizedBox(width: 48),
@@ -58,7 +58,7 @@ class FlightBookingFlowHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
@@ -73,7 +73,7 @@ class FlightBookingFlowHeader extends StatelessWidget {
                         child: Text(
                           copy.skip,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                           ),

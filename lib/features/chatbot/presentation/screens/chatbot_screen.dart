@@ -106,7 +106,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.auto_awesome_rounded,
-                  color: Colors.white, size: 18),
+                  color: AppColors.white, size: 18),
             ),
             const SizedBox(width: 12),
             Column(
@@ -306,7 +306,7 @@ class _MessageBubble extends StatelessWidget {
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.72),
       decoration: BoxDecoration(
         gradient: isUser ? AppColors.primaryGradient : null,
-        color: isUser ? null : (isDark ? AppColors.darkSurface : Colors.white),
+        color: isUser ? null : (isDark ? AppColors.darkSurface : AppColors.white),
         borderRadius: BorderRadius.only(
           topLeft: const Radius.circular(18),
           topRight: const Radius.circular(18),
@@ -317,7 +317,7 @@ class _MessageBubble extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: AppColors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4)),
               ],
@@ -326,7 +326,7 @@ class _MessageBubble extends StatelessWidget {
         message.text,
         style: TextStyle(
           color: isUser
-              ? Colors.white
+              ? AppColors.white
               : (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
           fontSize: 14,
           height: 1.5,
@@ -354,7 +354,7 @@ class _MessageBubble extends StatelessWidget {
             decoration: const BoxDecoration(
                 gradient: AppColors.purpleGradient, shape: BoxShape.circle),
             child: const Icon(Icons.auto_awesome_rounded,
-                color: Colors.white, size: 14),
+                color: AppColors.white, size: 14),
           ),
           Flexible(child: bubble),
         ],
@@ -378,14 +378,14 @@ class _TypingIndicator extends StatelessWidget {
             decoration: const BoxDecoration(
                 gradient: AppColors.purpleGradient, shape: BoxShape.circle),
             child: const Icon(Icons.auto_awesome_rounded,
-                color: Colors.white, size: 14),
+                color: AppColors.white, size: 14),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
                   ? AppColors.darkSurface
-                  : Colors.white,
+                  : AppColors.white,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(18),
                 topRight: Radius.circular(18),
@@ -497,7 +497,7 @@ class _ChatInputBar extends StatelessWidget {
               ),
               icon: Icon(
                 isLoading ? Icons.stop_rounded : Icons.send_rounded,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 20,
               ),
             ),

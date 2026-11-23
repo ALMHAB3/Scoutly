@@ -123,7 +123,7 @@ class _PackagesListScreenState extends State<PackagesListScreen> {
                     onSelected: (_) => setState(() => _category = c),
                     selectedColor: AppColors.primary,
                     labelStyle: TextStyle(
-                      color: selected ? Colors.white : AppColors.textSecondary,
+                      color: selected ? AppColors.white : AppColors.textSecondary,
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                       fontSize: 12,
                     ),
@@ -213,7 +213,7 @@ class _PackageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.transparent,
+      color: AppColors.transparent,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
@@ -246,9 +246,9 @@ class _PackageTile extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0x33000000),
-                        Color(0x00000000),
-                        Color(0xE6000000)
+                        AppColors.overlayLight,
+                        AppColors.overlayClear,
+                        AppColors.overlayHeavy
                       ],
                       stops: [0, 0.4, 1],
                     ),
@@ -284,7 +284,7 @@ class _PackageTile extends StatelessWidget {
                         const SizedBox(width: 3),
                         Text(package.rating.toStringAsFixed(1),
                             style: const TextStyle(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700)),
                         const SizedBox(width: 7),
@@ -296,7 +296,7 @@ class _PackageTile extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.85),
+                                  color: AppColors.white.withValues(alpha: 0.85),
                                   fontSize: 11)),
                         ),
                       ]),
@@ -310,7 +310,7 @@ class _PackageTile extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white)),
+                              color: AppColors.white)),
                       const SizedBox(height: 2),
                       CurrencyAmountText(
                         amount: package.pricePerPerson,
@@ -320,7 +320,7 @@ class _PackageTile extends StatelessWidget {
                         decimalDigits: 0,
                         style: TextStyle(
                             fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.9)),
+                            color: AppColors.white.withValues(alpha: 0.9)),
                       ),
                     ],
                   ),
@@ -348,7 +348,7 @@ class _Badge extends StatelessWidget {
         ),
         child: Text(text,
             style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 10,
                 fontWeight: FontWeight.w700)),
       );

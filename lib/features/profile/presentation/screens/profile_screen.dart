@@ -241,7 +241,7 @@ class _ProfileHeader extends StatelessWidget {
                   ? ClipOval(
                       child: Image.network(user!.photoUrl!, fit: BoxFit.cover))
                   : const Icon(Icons.person_rounded,
-                      size: 44, color: Colors.white),
+                      size: 44, color: AppColors.white),
             ),
             GestureDetector(
               onTap: onEdit,
@@ -251,7 +251,7 @@ class _ProfileHeader extends StatelessWidget {
                 decoration: const BoxDecoration(
                     color: AppColors.primary, shape: BoxShape.circle),
                 child: const Icon(Icons.edit_rounded,
-                    color: Colors.white, size: 14),
+                    color: AppColors.white, size: 14),
               ),
             ),
           ],

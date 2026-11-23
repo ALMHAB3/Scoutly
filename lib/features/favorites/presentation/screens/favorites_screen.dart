@@ -91,7 +91,7 @@ class FavoritesScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(_typeIcon(fav.type),
-                            color: Colors.white, size: 24),
+                            color: AppColors.white, size: 24),
                       ),
                       const SizedBox(width: 14),
                       Expanded(

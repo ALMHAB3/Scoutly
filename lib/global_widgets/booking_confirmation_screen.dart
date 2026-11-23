@@ -36,7 +36,7 @@ class BookingConfirmationScreen extends StatelessWidget {
     final hasRoute = routeStart != null && routeEnd != null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0B1020),
+      backgroundColor: AppColors.confirmationBackground,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -52,18 +52,18 @@ class BookingConfirmationScreen extends StatelessWidget {
                       tooltip: l10n.done,
                       onPressed: () => _returnHome(context),
                       icon: const Icon(Icons.close_rounded,
-                          color: Colors.white70),
+                          color: AppColors.white70),
                     ),
                   ),
                   const SizedBox(height: 8),
                   const Icon(Icons.check_circle_rounded,
-                      color: Color(0xFF8B9BFF), size: 42),
+                      color: AppColors.confirmationIcon, size: 42),
                   const SizedBox(height: 12),
                   Text(
                     l10n.notifBookingConfirmedTitle,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontSize: 23,
                       fontWeight: FontWeight.w800,
                     ),
@@ -73,7 +73,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                     primaryText,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Color(0xFFB6C0E0),
+                      color: AppColors.confirmationSubtitle,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -102,7 +102,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                     label: Text(l10n.done),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primaryLight,
-                      foregroundColor: Colors.white,
+                      foregroundColor: AppColors.white,
                       minimumSize: const Size.fromHeight(52),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -161,11 +161,11 @@ class _TicketCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.24),
+            color: AppColors.black.withValues(alpha: 0.24),
             blurRadius: 28,
             offset: const Offset(0, 14),
           ),
@@ -299,7 +299,7 @@ class _TicketCard extends StatelessWidget {
                     QrImageView(
                       data: reference,
                       size: 72,
-                      backgroundColor: Colors.white,
+                      backgroundColor: AppColors.white,
                       padding: EdgeInsets.zero,
                     ),
                   ],
@@ -411,7 +411,7 @@ class _TicketNotchedDivider extends StatelessWidget {
             width: 20,
             height: 20,
             decoration: const BoxDecoration(
-              color: Color(0xFF0B1020),
+              color: AppColors.confirmationBackground,
               borderRadius: BorderRadius.horizontal(
                 right: Radius.circular(12),
               ),
@@ -436,7 +436,7 @@ class _TicketNotchedDivider extends StatelessWidget {
             width: 20,
             height: 20,
             decoration: const BoxDecoration(
-              color: Color(0xFF0B1020),
+              color: AppColors.confirmationBackground,
               borderRadius: BorderRadius.horizontal(
                 left: Radius.circular(12),
               ),

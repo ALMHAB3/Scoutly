@@ -274,7 +274,7 @@ class _FilterChips extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.transparent,
+                  color: isSelected ? AppColors.primary : AppColors.transparent,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                       color: isSelected ? AppColors.primary : AppColors.border),
@@ -285,7 +285,7 @@ class _FilterChips extends StatelessWidget {
                     Icon(icon,
                         size: 16,
                         color: isSelected
-                            ? Colors.white
+                            ? AppColors.white
                             : AppColors.textSecondary),
                     const SizedBox(width: 5),
                     Text(
@@ -295,7 +295,7 @@ class _FilterChips extends StatelessWidget {
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,
                         color:
-                            isSelected ? Colors.white : AppColors.textSecondary,
+                            isSelected ? AppColors.white : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -342,7 +342,7 @@ class _PlaceCard extends StatelessWidget {
               ? []
               : [
                   BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
+                      color: AppColors.black.withValues(alpha: 0.04),
                       blurRadius: 12,
                       offset: const Offset(0, 4))
                 ],
@@ -359,7 +359,7 @@ class _PlaceCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(_nearbyCategoryIcon(place.category),
-                  color: Colors.white, size: 26),
+                  color: AppColors.white, size: 26),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -379,7 +379,7 @@ class _PlaceCard extends StatelessWidget {
                   Row(
                     children: [
                       const Icon(Icons.star_rounded,
-                          color: Colors.amber, size: 14),
+                          color: AppColors.amber, size: 14),
                       Text(' ${place.rating?.toStringAsFixed(1) ?? '-'} ',
                           style: const TextStyle(
                               fontSize: 12, fontWeight: FontWeight.w600)),

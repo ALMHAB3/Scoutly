@@ -144,7 +144,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
       backgroundColor: carPageBackground(context),
       appBar: AppBar(
         backgroundColor: carPageBackground(context),
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: Text(
           labels.searchCars,
@@ -379,7 +379,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
             trackHeight: 4,
             activeTrackColor: AppColors.primary,
             inactiveTrackColor: AppColors.primary.withValues(alpha: 0.15),
-            thumbColor: Colors.white,
+            thumbColor: AppColors.white,
             overlayColor: AppColors.primary.withValues(alpha: 0.12),
             rangeThumbShape: const _RingThumb(),
           ),
@@ -554,7 +554,7 @@ class _RingThumb extends RangeSliderThumbShape {
     bool? isPressed,
   }) {
     final canvas = context.canvas;
-    canvas.drawCircle(center, 11, Paint()..color = Colors.white);
+    canvas.drawCircle(center, 11, Paint()..color = AppColors.white);
     canvas.drawCircle(
       center,
       10,

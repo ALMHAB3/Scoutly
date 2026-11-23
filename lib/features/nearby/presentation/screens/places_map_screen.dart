@@ -295,7 +295,7 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
   (IconData, Color) _layerStyle(_MapLayer l) => switch (l) {
         _MapLayer.favorites => (Icons.bookmark_rounded, AppColors.accentOrange),
         _MapLayer.restaurants => (Icons.restaurant_rounded, AppColors.primary),
-        _MapLayer.cafes => (Icons.local_cafe_rounded, const Color(0xFF8D6E63)),
+        _MapLayer.cafes => (Icons.local_cafe_rounded, AppColors.mapCafe),
         _MapLayer.attractions => (Icons.place_rounded, AppColors.accentRed),
       };
 
@@ -496,7 +496,7 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                 onTap: () => _showMapResult(selectedPlace),
                                 child: const Icon(
                                   Icons.location_on,
-                                  color: Colors.red,
+                                  color: AppColors.red,
                                   size: 48,
                                 ),
                               ),
@@ -511,11 +511,11 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
                                   border:
-                                      Border.all(color: Colors.white, width: 3),
+                                      Border.all(color: AppColors.white, width: 3),
                                   boxShadow: [
                                     BoxShadow(
                                         color:
-                                            Colors.black.withValues(alpha: 0.3),
+                                            AppColors.black.withValues(alpha: 0.3),
                                         blurRadius: 6)
                                   ],
                                 ),
@@ -534,10 +534,10 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                     color: _layerStyle(p.layer).$2,
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                        color: Colors.white, width: 2),
+                                        color: AppColors.white, width: 2),
                                     boxShadow: [
                                       BoxShadow(
-                                          color: Colors.black
+                                          color: AppColors.black
                                               .withValues(alpha: 0.25),
                                           blurRadius: 6,
                                           offset: const Offset(0, 2))
@@ -545,11 +545,11 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                   ),
                                   child: p.clusterCount == null
                                       ? Icon(_layerStyle(p.layer).$1,
-                                          color: Colors.white, size: 18)
+                                          color: AppColors.white, size: 18)
                                       : Text(
                                           p.clusterCount.toString(),
                                           style: const TextStyle(
-                                            color: Colors.white,
+                                            color: AppColors.white,
                                             fontWeight: FontWeight.w800,
                                           ),
                                         ),
@@ -581,7 +581,7 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                 ? l10n.nearbyAll
                                 : _layerLabel(l10n, layer);
                             return Material(
-                              color: Colors.transparent,
+                              color: AppColors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
                                 onTap: () =>
@@ -595,11 +595,11 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                         ? color
                                         : (isDark
                                             ? AppColors.darkSurface
-                                            : Colors.white),
+                                            : AppColors.white),
                                     borderRadius: BorderRadius.circular(20),
                                     boxShadow: [
                                       BoxShadow(
-                                          color: Colors.black
+                                          color: AppColors.black
                                               .withValues(alpha: 0.12),
                                           blurRadius: 8,
                                           offset: const Offset(0, 2))
@@ -611,7 +611,7 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                         Icon(icon,
                                             size: 15,
                                             color: isActive
-                                                ? Colors.white
+                                                ? AppColors.white
                                                 : color),
                                         const SizedBox(width: 6),
                                         Text(label,
@@ -619,7 +619,7 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
                                               color: isActive
-                                                  ? Colors.white
+                                                  ? AppColors.white
                                                   : (isDark
                                                       ? AppColors
                                                           .darkTextPrimary

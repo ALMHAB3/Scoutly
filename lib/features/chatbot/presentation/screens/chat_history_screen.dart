@@ -121,7 +121,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: const Icon(Icons.chat_rounded,
-                                    color: Colors.white, size: 18),
+                                    color: AppColors.white, size: 18),
                               ),
                               const SizedBox(width: 14),
                               Expanded(

@@ -439,7 +439,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                         ? []
                         : [
                             BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
+                                color: AppColors.black.withValues(alpha: 0.05),
                                 blurRadius: 16,
                                 offset: const Offset(0, 6))
                           ],
@@ -486,7 +486,7 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                                     gradient: AppColors.primaryGradient,
                                     shape: BoxShape.circle),
                                 child: const Icon(Icons.swap_vert_rounded,
-                                    color: Colors.white, size: 18),
+                                    color: AppColors.white, size: 18),
                               ),
                             ),
                           ),
@@ -603,14 +603,14 @@ class _TripTypeChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : Colors.transparent,
+          color: selected ? AppColors.primary : AppColors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
               color: selected ? AppColors.primary : AppColors.border),
         ),
         child: Text(label,
             style: TextStyle(
-                color: selected ? Colors.white : AppColors.textSecondary,
+                color: selected ? AppColors.white : AppColors.textSecondary,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 14)),
       ),

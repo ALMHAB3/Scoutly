@@ -212,12 +212,12 @@ class _TabBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isSelected
                       ? (isDark ? AppColors.darkSurface : AppColors.surface)
-                      : Colors.transparent,
+                      : AppColors.transparent,
                   borderRadius: BorderRadius.circular(9),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.06),
+                              color: AppColors.black.withValues(alpha: 0.06),
                               blurRadius: 8)
                         ]
                       : [],
@@ -274,14 +274,14 @@ class _FilterBar extends StatelessWidget {
           return ChoiceChip(
             avatar: Icon(icon,
                 size: 15,
-                color: selected ? Colors.white : AppColors.textSecondary),
+                color: selected ? AppColors.white : AppColors.textSecondary),
             label: Text(label),
             selected: selected,
             showCheckmark: false,
             selectedColor: AppColors.primary,
             labelStyle: TextStyle(
               fontSize: 12,
-              color: selected ? Colors.white : AppColors.textSecondary,
+              color: selected ? AppColors.white : AppColors.textSecondary,
               fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             ),
             onSelected: (_) => ctrl.setFilter(filter),
@@ -394,17 +394,17 @@ class _PastTripsPainter extends CustomPainter {
         Rect.fromCenter(center: Offset.zero, width: 190, height: 150),
         const Radius.circular(6));
     canvas.drawShadow(
-        Path()..addRRect(frame), Colors.black.withValues(alpha: 0.3), 8, false);
-    canvas.drawRRect(frame, Paint()..color = const Color(0xFFFDF3E3));
+        Path()..addRRect(frame), AppColors.black.withValues(alpha: 0.3), 8, false);
+    canvas.drawRRect(frame, Paint()..color = AppColors.illustrationPaper);
 
     // الخريطة الزرقاء
     final map = RRect.fromRectAndRadius(
         Rect.fromCenter(center: Offset.zero, width: 172, height: 132),
         const Radius.circular(4));
-    canvas.drawRRect(map, Paint()..color = const Color(0xFF1A56C4));
+    canvas.drawRRect(map, Paint()..color = AppColors.illustrationSea);
 
     // يابسة فاتحة (بقع عضوية)
-    final land = Paint()..color = const Color(0xFF9CC3F5);
+    final land = Paint()..color = AppColors.illustrationLand;
     canvas.drawOval(
         Rect.fromCenter(center: const Offset(-55, -35), width: 55, height: 38),
         land);
@@ -424,7 +424,7 @@ class _PastTripsPainter extends CustomPainter {
       ..lineTo(65, -75)
       ..lineTo(95, -45)
       ..close();
-    canvas.drawPath(fold, Paint()..color = const Color(0xFFF3E2C7));
+    canvas.drawPath(fold, Paint()..color = AppColors.illustrationFold);
 
     // دبابيس برتقالية/صفراء
     void pin(Offset p, Color color) {
@@ -432,23 +432,23 @@ class _PastTripsPainter extends CustomPainter {
           p,
           p + const Offset(4, 10),
           Paint()
-            ..color = const Color(0xFF8A6D3B)
+            ..color = AppColors.illustrationStroke
             ..strokeWidth = 1.6);
       canvas.drawCircle(p, 6.5, Paint()..color = color);
       canvas.drawCircle(p - const Offset(2, 2), 2,
-          Paint()..color = Colors.white.withValues(alpha: 0.45));
+          Paint()..color = AppColors.white.withValues(alpha: 0.45));
     }
 
-    pin(const Offset(-50, -40), const Color(0xFFF5A623));
-    pin(const Offset(28, -22), const Color(0xFFF06E1D));
-    pin(const Offset(-38, 30), const Color(0xFFF06E1D));
-    pin(const Offset(50, 28), const Color(0xFFF5A623));
+    pin(const Offset(-50, -40), AppColors.illustrationPinYellow);
+    pin(const Offset(28, -22), AppColors.illustrationPinOrange);
+    pin(const Offset(-38, 30), AppColors.illustrationPinOrange);
+    pin(const Offset(50, 28), AppColors.illustrationPinYellow);
 
     canvas.restore();
 
     // خربشات صفراء زخرفية حول الصورة
     final doodle = Paint()
-      ..color = const Color(0xFFF5C142)
+      ..color = AppColors.illustrationSun
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.4
       ..strokeCap = StrokeCap.round;
@@ -486,14 +486,14 @@ class _CancelledTripsPainter extends CustomPainter {
     canvas.drawShadow(
         Path()
           ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(8))),
-        Colors.black.withValues(alpha: 0.25),
+        AppColors.black.withValues(alpha: 0.25),
         10,
         false);
 
     final folds = [
-      const Color(0xFF1A56C4),
-      const Color(0xFF2E6BDB),
-      const Color(0xFF1A56C4)
+      AppColors.illustrationSea,
+      AppColors.illustrationSeaLight,
+      AppColors.illustrationSea
     ];
     for (var i = 0; i < 3; i++) {
       final r = Rect.fromLTWH(
@@ -502,7 +502,7 @@ class _CancelledTripsPainter extends CustomPainter {
     }
 
     // يابسة فاتحة
-    final land = Paint()..color = const Color(0xFF9CC3F5);
+    final land = Paint()..color = AppColors.illustrationLand;
     canvas.drawOval(
         Rect.fromCenter(center: const Offset(-48, -45), width: 44, height: 34),
         land);
@@ -517,7 +517,7 @@ class _CancelledTripsPainter extends CustomPainter {
         land);
 
     // مسار منقّط
-    final dot = Paint()..color = const Color(0xFF0B2B66);
+    final dot = Paint()..color = AppColors.illustrationDot;
     for (var t = 0.0; t <= 1.0; t += 0.09) {
       final p = Offset(-55 + 100 * t, 60 - 130 * t + 60 * t * t);
       canvas.drawCircle(p, 1.8, dot);
@@ -533,11 +533,11 @@ class _CancelledTripsPainter extends CustomPainter {
       ..lineTo(28, -26)
       ..quadraticBezierTo(-8, -4, 2, 48)
       ..close();
-    canvas.drawPath(arrow, Paint()..color = const Color(0xFFFDF3E3));
+    canvas.drawPath(arrow, Paint()..color = AppColors.illustrationPaper);
     canvas.drawPath(
         arrow,
         Paint()
-          ..color = const Color(0xFFE8D5B5)
+          ..color = AppColors.illustrationFoldLine
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.2);
 
@@ -551,12 +551,12 @@ class _CancelledTripsPainter extends CustomPainter {
       ..quadraticBezierTo(
           pinCenter.dx, pinCenter.dy + 44, pinCenter.dx + 12, pinCenter.dy + 16)
       ..close();
-    canvas.drawPath(pin, Paint()..color = const Color(0xFFF06E1D));
-    canvas.drawCircle(pinCenter, 7.5, Paint()..color = const Color(0xFFB74A0A));
+    canvas.drawPath(pin, Paint()..color = AppColors.illustrationPinOrange);
+    canvas.drawCircle(pinCenter, 7.5, Paint()..color = AppColors.illustrationPinShadow);
 
     // خيط زخرفي متعرج أسفل الدبوس
     final squiggle = Paint()
-      ..color = const Color(0xFFF06E1D)
+      ..color = AppColors.illustrationPinOrange
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;

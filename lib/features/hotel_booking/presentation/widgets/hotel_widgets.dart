@@ -271,7 +271,7 @@ class PhotoPill extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08), blurRadius: 8),
+                color: AppColors.black.withValues(alpha: 0.08), blurRadius: 8),
           ],
         ),
         child: Row(

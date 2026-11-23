@@ -251,7 +251,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
       backgroundColor: carPageBackground(context),
       appBar: AppBar(
         backgroundColor: carPageBackground(context),
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: Text(
           labels.bookingPayment,
@@ -397,7 +397,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                       ),
                       child: const Icon(
                         Icons.credit_card_rounded,
-                        color: Colors.white,
+                        color: AppColors.white,
                         size: 18,
                       ),
                     ),

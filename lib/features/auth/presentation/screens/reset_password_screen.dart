@@ -7,6 +7,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/auth_controller.dart';
 import 'auth_shared.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -128,7 +129,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         Text(
           widget.email,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.navy,
+                color: AppColors.authNavy,
                 fontWeight: FontWeight.w600,
               ),
         ),
@@ -138,7 +139,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             l10n.demoPasswordResetNotice,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.navy,
+                  color: AppColors.authNavy,
                   fontWeight: FontWeight.w600,
                 ),
           ),
@@ -193,7 +194,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
-                  ?.copyWith(color: AppColors.error),
+                  ?.copyWith(color: AppColors.authError),
             ),
           ),
         ],
@@ -214,13 +215,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           width: 84,
           height: 84,
           decoration: BoxDecoration(
-            color: AppColors.navy.withValues(alpha: 0.08),
+            color: AppColors.authNavy.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
           child: const Icon(
             Icons.verified_outlined,
             size: 40,
-            color: AppColors.navy,
+            color: AppColors.authNavy,
           ),
         ),
         const SizedBox(height: 18),

@@ -7,17 +7,9 @@ import '../../../../core/services/api_service.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/auth_controller.dart';
 import 'auth_shared.dart' show AuthScaffold;
+import '../../../../core/constants/app_colors.dart';
 
 // ───────────────────────── Colors ─────────────────────────
-class AppColors {
-  static const navy = Color(0xFF1F2A9A);
-  static const navyDark = Color(0xFF16206E);
-  static const fieldBg = Color(0xFFF3F5FB);
-  static const hint = Color(0xFF9AA3B5);
-  static const text = Color(0xFF111827);
-  static const skyTop = Color(0xFF7FB6E8);
-  static const skyBottom = Color(0xFFD6EAF8);
-}
 
 // ───────────────────────── Screen ─────────────────────────
 class LoginScreen extends StatefulWidget {
@@ -114,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: AppColors.text,
+            color: AppColors.authText,
             height: 1.2,
           ),
         ),
@@ -124,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: AppColors.navy,
+            color: AppColors.authNavy,
             height: 1.3,
           ),
         ),
@@ -149,7 +141,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ? Icons.visibility_off_outlined
                   : Icons.visibility_outlined,
               size: 20,
-              color: AppColors.hint,
+              color: AppColors.authHint,
             ),
             onPressed: () => setState(() => _obscure = !_obscure),
           ),
@@ -168,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 22,
                     child: Checkbox(
                       value: _remember,
-                      activeColor: AppColors.navy,
+                      activeColor: AppColors.authNavy,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
@@ -183,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: AppColors.text,
+                        color: AppColors.authText,
                       ),
                     ),
                   ),
@@ -205,7 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.navy,
+                    color: AppColors.authNavy,
                   ),
                 ),
               ),
@@ -223,18 +215,18 @@ class _LoginScreenState extends State<LoginScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              const Expanded(child: Divider(color: Color(0xFFE9ECF3))),
+              const Expanded(child: Divider(color: AppColors.authLine)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text(
                   AppLocalizations.of(context).orSignUpWith,
                   style: GoogleFonts.poppins(
                     fontSize: 11,
-                    color: AppColors.hint,
+                    color: AppColors.authHint,
                   ),
                 ),
               ),
-              const Expanded(child: Divider(color: Color(0xFFE9ECF3))),
+              const Expanded(child: Divider(color: AppColors.authLine)),
             ],
           ),
           const SizedBox(height: 14),
@@ -251,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Expanded(
                 child: _SocialButton(
                   label: 'Apple',
-                  icon: const Icon(Icons.apple, size: 22, color: Colors.black),
+                  icon: const Icon(Icons.apple, size: 22, color: AppColors.black),
                   onTap: () => _socialLogin(withApple: true),
                 ),
               ),
@@ -268,14 +260,14 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Text.rich(
             TextSpan(
               text: AppLocalizations.of(context).noAccountPrompt,
-              style: GoogleFonts.poppins(fontSize: 12, color: AppColors.text),
+              style: GoogleFonts.poppins(fontSize: 12, color: AppColors.authText),
               children: [
                 TextSpan(
                   text: AppLocalizations.of(context).createAnAccount,
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.navy,
+                    color: AppColors.authNavy,
                   ),
                 ),
               ],
@@ -311,15 +303,15 @@ class _InputField extends StatelessWidget {
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
-      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.text),
-      cursorColor: AppColors.navy,
+      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.authText),
+      cursorColor: AppColors.authNavy,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.hint),
-        prefixIcon: Icon(icon, size: 20, color: AppColors.hint),
+        hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.authHint),
+        prefixIcon: Icon(icon, size: 20, color: AppColors.authHint),
         suffixIcon: suffix,
         filled: true,
-        fillColor: AppColors.fieldBg,
+        fillColor: AppColors.authFieldBackground,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -327,7 +319,7 @@ class _InputField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.navy, width: 1.4),
+          borderSide: const BorderSide(color: AppColors.authNavy, width: 1.4),
         ),
       ),
     );
@@ -368,11 +360,11 @@ class _PressableButtonState extends State<_PressableButton> {
           width: double.infinity,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppColors.navy,
+            color: AppColors.authNavy,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: AppColors.navy.withValues(alpha: 0.35),
+                color: AppColors.authNavy.withValues(alpha: 0.35),
                 blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
@@ -384,7 +376,7 @@ class _PressableButtonState extends State<_PressableButton> {
                   height: 22,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.4,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 )
               : Text(
@@ -392,7 +384,7 @@ class _PressableButtonState extends State<_PressableButton> {
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
         ),
@@ -411,7 +403,7 @@ class _SocialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppColors.white,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -420,7 +412,7 @@ class _SocialButton extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE9ECF3)),
+            border: Border.all(color: AppColors.authLine),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -432,7 +424,7 @@ class _SocialButton extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.text,
+                  color: AppColors.authText,
                 ),
               ),
             ],
@@ -451,11 +443,11 @@ class _GoogleG extends StatelessWidget {
     return ShaderMask(
       shaderCallback: (r) => const SweepGradient(
         colors: [
-          Color(0xFFEA4335),
-          Color(0xFFFBBC05),
-          Color(0xFF34A853),
-          Color(0xFF4285F4),
-          Color(0xFFEA4335),
+          AppColors.googleRed,
+          AppColors.googleYellow,
+          AppColors.googleGreen,
+          AppColors.googleBlue,
+          AppColors.googleRed,
         ],
       ).createShader(r),
       child: Text(
@@ -463,7 +455,7 @@ class _GoogleG extends StatelessWidget {
         style: GoogleFonts.poppins(
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: AppColors.white,
         ),
       ),
     );

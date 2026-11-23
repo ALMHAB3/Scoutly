@@ -92,7 +92,7 @@ class TripItemCard extends StatelessWidget {
                 ? []
                 : [
                     BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: AppColors.black.withValues(alpha: 0.05),
                         blurRadius: 12,
                         offset: const Offset(0, 4))
                   ],
@@ -109,9 +109,9 @@ class TripItemCard extends StatelessWidget {
                       colorFilter: item.status == TripTab.completed ||
                               item.status == TripTab.cancelled
                           ? const ColorFilter.mode(
-                              Colors.grey, BlendMode.saturation)
+                              AppColors.grey, BlendMode.saturation)
                           : const ColorFilter.mode(
-                              Colors.transparent, BlendMode.dst),
+                              AppColors.transparent, BlendMode.dst),
                       child: AppNetworkImage(
                         url: item.imageUrl,
                         fallbackIcon: kind.icon,
@@ -128,7 +128,7 @@ class TripItemCard extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [Color(0x55000000), Color(0x00000000)],
+                          colors: [AppColors.overlayMedium, AppColors.overlayClear],
                         ),
                       ),
                     ),
@@ -138,7 +138,7 @@ class TripItemCard extends StatelessWidget {
                       child: _Pill(
                         icon: kind.icon,
                         text: kind.label(l10n),
-                        color: Colors.black.withValues(alpha: 0.5),
+                        color: AppColors.black.withValues(alpha: 0.5),
                       ),
                     ),
                     PositionedDirectional(
@@ -274,12 +274,12 @@ class _Pill extends StatelessWidget {
             BoxDecoration(color: color, borderRadius: BorderRadius.circular(9)),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: Colors.white),
+            Icon(icon, size: 12, color: AppColors.white),
             const SizedBox(width: 4),
           ],
           Text(text,
               style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 11,
                   fontWeight: FontWeight.w700)),
         ]),

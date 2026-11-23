@@ -63,7 +63,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
       backgroundColor: carPageBackground(context),
       appBar: AppBar(
         backgroundColor: carPageBackground(context),
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: ListenableBuilder(
           listenable: ctrl,
@@ -255,7 +255,7 @@ class _Chip extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: selected
-                      ? (small ? AppColors.primary : Colors.white)
+                      ? (small ? AppColors.primary : AppColors.white)
                       : carInk(context),
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                   fontSize: small ? 12 : 13,

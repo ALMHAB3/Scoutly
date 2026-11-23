@@ -7,6 +7,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../models/flight_model.dart';
 import 'flight_checkout_passenger.dart';
 
@@ -58,10 +59,11 @@ class TicketPdfLabels {
   });
 }
 
-const _navy = PdfColor.fromInt(0xFF202F96);
-const _ink = PdfColor.fromInt(0xFF0F1E36);
-const _muted = PdfColor.fromInt(0xFF6B7A99);
-const _line = PdfColor.fromInt(0xFFE4EAF2);
+// Ticket colours come from the app palette (AppColors).
+final _navy = PdfColor.fromInt(AppColors.primary.toARGB32());
+final _ink = PdfColor.fromInt(AppColors.textPrimary.toARGB32());
+final _muted = PdfColor.fromInt(AppColors.textSecondary.toARGB32());
+final _line = PdfColor.fromInt(AppColors.border.toARGB32());
 
 /// Fonts are bundled in assets/fonts/pdf (Noto Sans + Noto Sans Arabic) so
 /// Arabic names print correctly without internet. If the assets are missing
@@ -173,7 +175,7 @@ Future<Uint8List> buildTicketsPdf({
             pw.Container(
               padding:
                   const pw.EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const pw.BoxDecoration(
+              decoration: pw.BoxDecoration(
                 color: _navy,
                 borderRadius: pw.BorderRadius.all(pw.Radius.circular(12)),
               ),
@@ -215,7 +217,7 @@ Future<Uint8List> buildTicketsPdf({
                     clock(flight.departureTime)),
                 pw.Column(children: [
                   _text(duration,
-                      style: const pw.TextStyle(color: _muted, fontSize: 9)),
+                      style: pw.TextStyle(color: _muted, fontSize: 9)),
                   _text(rtl ? '<-' : '->',
                       style: pw.TextStyle(
                           color: _navy,
@@ -247,8 +249,7 @@ Future<Uint8List> buildTicketsPdf({
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       _text(labels.reference,
-                          style:
-                              const pw.TextStyle(color: _muted, fontSize: 9)),
+                          style: pw.TextStyle(color: _muted, fontSize: 9)),
                       _text(reference,
                           style: pw.TextStyle(
                               color: _ink,
@@ -256,8 +257,7 @@ Future<Uint8List> buildTicketsPdf({
                               fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 4),
                       _text(ticket.code,
-                          style:
-                              const pw.TextStyle(color: _muted, fontSize: 9)),
+                          style: pw.TextStyle(color: _muted, fontSize: 9)),
                     ],
                   ),
                 ),
@@ -287,7 +287,7 @@ Future<Uint8List> buildTicketsPdf({
                 children: [
                   pw.Expanded(
                     child: _text(labels.total,
-                        style: const pw.TextStyle(color: _muted, fontSize: 9)),
+                        style: pw.TextStyle(color: _muted, fontSize: 9)),
                   ),
                   _text(totalText,
                       style: pw.TextStyle(
@@ -313,7 +313,7 @@ pw.Widget _airport(String code, String city, String time, {bool end = false}) =>
         _text(code,
             style: pw.TextStyle(
                 color: _ink, fontSize: 26, fontWeight: pw.FontWeight.bold)),
-        _text(city, style: const pw.TextStyle(color: _muted, fontSize: 9)),
+        _text(city, style: pw.TextStyle(color: _muted, fontSize: 9)),
         _text(time,
             style: pw.TextStyle(
                 color: _ink, fontSize: 12, fontWeight: pw.FontWeight.bold)),
@@ -338,7 +338,7 @@ pw.Widget _cell(String label, String value, {bool end = false}) => pw.Column(
       children: [
         if (label.isNotEmpty)
           _text(label.toUpperCase(),
-              style: const pw.TextStyle(color: _muted, fontSize: 8)),
+              style: pw.TextStyle(color: _muted, fontSize: 8)),
         _text(value.isEmpty ? '-' : value,
             style: pw.TextStyle(
                 color: _ink, fontSize: 11, fontWeight: pw.FontWeight.bold)),

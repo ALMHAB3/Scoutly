@@ -5,11 +5,8 @@ import '../../../../core/utils/money_format.dart';
 import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../models/flight_model.dart';
 import '../../../../models/flight_seat_map.dart';
+import '../../../../core/constants/app_colors.dart';
 
-const _navy = Color(0xFF1E1B4B);
-const _ink = Color(0xFF172033);
-const _muted = Color(0xFF81899B);
-const _line = Color(0xFFE7EAF1);
 
 class FlightCabinSelector extends StatelessWidget {
   final FlightSeatCabin cabin;
@@ -45,14 +42,14 @@ class FlightCabinSelector extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                            color: _ink,
+                            color: AppColors.seatInk,
                             fontSize: 22,
                             fontWeight: FontWeight.w800)),
                     const SizedBox(height: 2),
                     Text(
                       '${cabin.availableSeats}/${cabin.totalSeats} available',
                       style: const TextStyle(
-                          color: _muted,
+                          color: AppColors.seatMuted,
                           fontSize: 13,
                           fontWeight: FontWeight.w600),
                     ),
@@ -106,7 +103,7 @@ class _CabinPill extends StatelessWidget {
         selected: selected,
         label: AppLocalizations.of(context).cabinNumber(number),
         child: Material(
-          color: selected ? _navy : const Color(0xFFFFFFFF),
+          color: selected ? AppColors.seatNavy : AppColors.surface,
           borderRadius: BorderRadius.circular(14),
           child: InkWell(
             onTap: enabled ? onTap : null,
@@ -117,7 +114,7 @@ class _CabinPill extends StatelessWidget {
               child: Center(
                 child: Text(number,
                     style: TextStyle(
-                        color: selected ? Colors.white : _ink,
+                        color: selected ? AppColors.white : AppColors.seatInk,
                         fontSize: 17,
                         fontWeight: FontWeight.w800)),
               ),
@@ -139,15 +136,15 @@ class FlightSeatLegend extends StatelessWidget {
       runSpacing: 9,
       children: [
         _LegendItem(
-            color: const Color(0xFFE8ECF5),
+            color: AppColors.seatAvailable,
             label: isArabic ? 'متاح' : 'Available'),
         _LegendItem(
-            color: Colors.white,
-            border: _navy,
+            color: AppColors.white,
+            border: AppColors.seatNavy,
             label: isArabic ? 'مساحة إضافية للأرجل' : 'Extra legroom'),
-        _LegendItem(color: _navy, label: isArabic ? 'مقعدك' : 'Your seat'),
+        _LegendItem(color: AppColors.seatNavy, label: isArabic ? 'مقعدك' : 'Your seat'),
         _LegendItem(
-            color: const Color(0xFFE9EBF0),
+            color: AppColors.seatTaken,
             label: isArabic ? 'محجوز' : 'Taken'),
       ],
     );
@@ -178,7 +175,7 @@ class _LegendItem extends StatelessWidget {
           const SizedBox(width: 6),
           Text(label,
               style: const TextStyle(
-                  color: _muted, fontSize: 11, fontWeight: FontWeight.w600)),
+                  color: AppColors.seatMuted, fontSize: 11, fontWeight: FontWeight.w600)),
         ],
       );
 }
@@ -201,26 +198,26 @@ class FlightExtrasPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     if (extras.isEmpty) return const SizedBox.shrink();
     return Material(
-      color: Colors.white,
+      color: AppColors.white,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        side: const BorderSide(color: _line),
+        side: const BorderSide(color: AppColors.seatLine),
         borderRadius: BorderRadius.circular(18),
       ),
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
-        iconColor: _navy,
+        iconColor: AppColors.seatNavy,
         title: Text(AppLocalizations.of(context).optionalExtras,
-            style: const TextStyle(color: _ink, fontWeight: FontWeight.w800)),
+            style: const TextStyle(color: AppColors.seatInk, fontWeight: FontWeight.w800)),
         subtitle: Text(AppLocalizations.of(context).optionalExtrasSubtitle,
-            style: const TextStyle(color: _muted, fontSize: 12)),
+            style: const TextStyle(color: AppColors.seatMuted, fontSize: 12)),
         children: [
           for (final entry in extras.entries)
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
-              activeColor: _navy,
+              activeColor: AppColors.seatNavy,
               value: selectedExtras.contains(entry.key),
               title: Text(_extraLabel(entry.key),
                   style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -252,7 +249,7 @@ class FlightSeatMapSkeleton extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         height: 235,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(28),
         ),
         child: const Center(
@@ -281,7 +278,7 @@ class _SkeletonLine extends StatelessWidget {
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: const Color(0xFFE9ECF3),
+          color: AppColors.seatPlaceholder,
           borderRadius: BorderRadius.circular(10),
         ),
       );
@@ -303,18 +300,18 @@ class FlightSeatErrorPanel extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: _line),
+          border: Border.all(color: AppColors.seatLine),
         ),
         child: Column(
           children: [
-            const Icon(Icons.event_seat_outlined, color: _muted, size: 27),
+            const Icon(Icons.event_seat_outlined, color: AppColors.seatMuted, size: 27),
             const SizedBox(height: 9),
             Text(message,
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(color: _ink, fontWeight: FontWeight.w600)),
+                    const TextStyle(color: AppColors.seatInk, fontWeight: FontWeight.w600)),
             if (onRetry != null) ...[
               const SizedBox(height: 8),
               TextButton.icon(

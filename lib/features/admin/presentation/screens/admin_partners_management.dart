@@ -217,7 +217,7 @@ class AdminPartnersManagementState extends State<AdminPartnersManagement> {
                       dimension: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     )
                   : const Icon(Icons.person_add_alt_1_rounded),

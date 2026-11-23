@@ -42,30 +42,30 @@ class BoardingPassCard extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: AppColors.white,
                               letterSpacing: 1)),
                       Text(trip.originCity,
                           style: TextStyle(
                               fontSize: 12,
-                              color: Colors.white.withValues(alpha: 0.7))),
+                              color: AppColors.white.withValues(alpha: 0.7))),
                     ],
                   ),
                   Column(
                     children: [
-                      const Icon(Icons.flight, color: Colors.white, size: 22),
+                      const Icon(Icons.flight, color: AppColors.white, size: 22),
                       const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
+                          color: AppColors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           trip.isDirect ? AppLocalizations.of(context).boardingDirect : AppLocalizations.of(context).boardingOneStop,
                           style: const TextStyle(
                               fontSize: 10,
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontWeight: FontWeight.w600),
                         ),
                       ),
@@ -78,12 +78,12 @@ class BoardingPassCard extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: AppColors.white,
                               letterSpacing: 1)),
                       Text(trip.destinationCity,
                           style: TextStyle(
                               fontSize: 12,
-                              color: Colors.white.withValues(alpha: 0.7))),
+                              color: AppColors.white.withValues(alpha: 0.7))),
                     ],
                   ),
                 ],
@@ -143,7 +143,7 @@ class _DashedDivider extends StatelessWidget {
                         width: 6,
                         height: 1.5,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: AppColors.white.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(1),
                         ),
                       )),
@@ -179,13 +179,13 @@ class _InfoChip extends StatelessWidget {
         Text(label,
             style: TextStyle(
                 fontSize: 10,
-                color: Colors.white.withValues(alpha: 0.6),
+                color: AppColors.white.withValues(alpha: 0.6),
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 3),
         Text(value,
             style: const TextStyle(
                 fontSize: 13,
-                color: Colors.white,
+                color: AppColors.white,
                 fontWeight: FontWeight.w700)),
       ],
     );

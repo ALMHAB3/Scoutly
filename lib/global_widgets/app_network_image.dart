@@ -29,7 +29,7 @@ class AppNetworkImage extends StatelessWidget {
       decoration: BoxDecoration(gradient: gradient),
       alignment: Alignment.center,
       child: Icon(fallbackIcon,
-          color: Colors.white.withValues(alpha: 0.55), size: 36),
+          color: AppColors.white.withValues(alpha: 0.55), size: 36),
     );
   }
 

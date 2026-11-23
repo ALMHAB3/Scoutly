@@ -30,7 +30,7 @@ abstract class AppSnackbar {
       ..showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppColors.transparent,
           elevation: 0,
           margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
           duration: const Duration(seconds: 3),
@@ -40,7 +40,7 @@ abstract class AppSnackbar {
               color: AppColors.textPrimary,
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 8)),
+                BoxShadow(color: AppColors.black.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 8)),
               ],
             ),
             child: Row(
@@ -54,7 +54,7 @@ abstract class AppSnackbar {
                 Expanded(
                   child: Text(
                     message,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500, height: 1.3),
+                    style: const TextStyle(color: AppColors.white, fontSize: 14, fontWeight: FontWeight.w500, height: 1.3),
                   ),
                 ),
               ],

@@ -11,6 +11,7 @@ import '../../logic/auth_controller.dart';
 import '../models/country_phone_option.dart';
 import 'auth_shared.dart';
 import '../widgets/photo_picker_avatar.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -196,18 +197,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
         LengthLimitingTextInputFormatter(_phoneCountry.maxNationalDigits),
       ],
       onChanged: (_) => setState(() => _phoneErr = null),
-      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.text),
-      cursorColor: AppColors.navy,
+      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.authText),
+      cursorColor: AppColors.authNavy,
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context).phoneHint,
-        hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.hint),
+        hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.authHint),
         errorText: _phoneErr,
-        errorStyle: GoogleFonts.poppins(fontSize: 11, color: AppColors.error),
+        errorStyle: GoogleFonts.poppins(fontSize: 11, color: AppColors.authError),
         prefixIcon: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(width: 14),
-            const Icon(Icons.phone_outlined, size: 20, color: AppColors.hint),
+            const Icon(Icons.phone_outlined, size: 20, color: AppColors.authHint),
             const SizedBox(width: 8),
             InkWell(
               borderRadius: BorderRadius.circular(8),
@@ -224,24 +225,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       '+${_phoneCountry.dialCode}',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: AppColors.text,
+                        color: AppColors.authText,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const Icon(Icons.arrow_drop_down,
-                        size: 18, color: AppColors.hint),
+                        size: 18, color: AppColors.authHint),
                   ],
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            Container(width: 1, height: 26, color: AppColors.line),
+            Container(width: 1, height: 26, color: AppColors.authLine),
             const SizedBox(width: 8),
           ],
         ),
         prefixIconConstraints: const BoxConstraints(minHeight: 52),
         filled: true,
-        fillColor: AppColors.fieldBg,
+        fillColor: AppColors.authFieldBackground,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -253,15 +254,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.navy, width: 1.4),
+          borderSide: const BorderSide(color: AppColors.authNavy, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.2),
+          borderSide: const BorderSide(color: AppColors.authError, width: 1.2),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.4),
+          borderSide: const BorderSide(color: AppColors.authError, width: 1.4),
         ),
       ),
     );
@@ -282,7 +283,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(height: 8),
           Text(
             AppLocalizations.of(context).addProfilePhotoOptional,
-            style: GoogleFonts.poppins(fontSize: 11, color: AppColors.hint),
+            style: GoogleFonts.poppins(fontSize: 11, color: AppColors.authHint),
           ),
           const SizedBox(height: 12),
           AuthTitle(
@@ -347,11 +348,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 height: 22,
                 child: Checkbox(
                   value: _agree,
-                  activeColor: AppColors.navy,
+                  activeColor: AppColors.authNavy,
                   side: BorderSide(
                     color: _termsErr != null
-                        ? AppColors.error
-                        : const Color(0xFFB8BFCE),
+                        ? AppColors.authError
+                        : AppColors.authCheckboxBorder,
                     width: 1.4,
                   ),
                   shape: RoundedRectangleBorder(
@@ -370,14 +371,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     TextSpan(
                       text: AppLocalizations.of(context).agreeToThe,
                       style: GoogleFonts.poppins(
-                          fontSize: 11.5, color: AppColors.hint),
+                          fontSize: 11.5, color: AppColors.authHint),
                       children: [
                         TextSpan(
                           text: AppLocalizations.of(context).termsOfService,
                           style: GoogleFonts.poppins(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.navy),
+                              color: AppColors.authNavy),
                         ),
                         TextSpan(
                           text: Localizations.localeOf(context).languageCode ==
@@ -390,7 +391,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: GoogleFonts.poppins(
                               fontSize: 11.5,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.navy),
+                              color: AppColors.authNavy),
                         ),
                       ],
                     ),
@@ -406,7 +407,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 padding: const EdgeInsetsDirectional.only(top: 4, start: 30),
                 child: Text(_termsErr!,
                     style: GoogleFonts.poppins(
-                        fontSize: 11, color: AppColors.error)),
+                        fontSize: 11, color: AppColors.authError)),
               ),
             ),
           const SizedBox(height: 18),
@@ -433,7 +434,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: SocialButton(
                     label: 'Apple',
                     icon:
-                        const Icon(Icons.apple, size: 22, color: Colors.black),
+                        const Icon(Icons.apple, size: 22, color: AppColors.black),
                     onTap: () => _socialLogin(withApple: true),
                   ),
                 ),
@@ -457,7 +458,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         icon: Icon(
           obscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
           size: 20,
-          color: AppColors.hint,
+          color: AppColors.authHint,
         ),
         onPressed: onTap,
       );
@@ -473,11 +474,11 @@ class _StrengthBar extends StatelessWidget {
   Widget build(BuildContext context) {
     const labels = ['Too weak', 'Weak', 'Fair', 'Good', 'Strong'];
     const colors = [
-      Color(0xFFE5484D),
-      Color(0xFFE5484D),
-      Color(0xFFF5A623),
-      Color(0xFF3DB26E),
-      Color(0xFF1F9D55),
+      AppColors.strengthWeak,
+      AppColors.strengthWeak,
+      AppColors.strengthFair,
+      AppColors.strengthGood,
+      AppColors.strengthStrong,
     ];
     final color = colors[score];
 
@@ -501,7 +502,7 @@ class _StrengthBar extends StatelessWidget {
                                 EdgeInsetsDirectional.only(end: i == 3 ? 0 : 5),
                             decoration: BoxDecoration(
                               color:
-                                  i < score ? color : const Color(0xFFE3E6EE),
+                                  i < score ? color : AppColors.strengthEmpty,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),

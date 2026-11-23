@@ -48,7 +48,7 @@ class AppearanceScreen extends StatelessWidget {
                             color: isSelected ? AppColors.primary : (isDark ? AppColors.darkSurfaceSecondary : AppColors.surfaceSecondary),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, color: isSelected ? Colors.white : AppColors.textSecondary, size: 22),
+                          child: Icon(icon, color: isSelected ? AppColors.white : AppColors.textSecondary, size: 22),
                         ),
                         const SizedBox(width: 14),
                         Text(label, style: TextStyle(fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500, fontSize: 15)),

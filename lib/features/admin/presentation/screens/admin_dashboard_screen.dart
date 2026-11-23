@@ -303,7 +303,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Material(
       color: selected
           ? AppColors.primary.withValues(alpha: 0.1)
-          : Colors.transparent,
+          : AppColors.transparent,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -878,7 +878,7 @@ class _MetricCard extends StatelessWidget {
             Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.08 : 0.025),
+            color: AppColors.black.withValues(alpha: isDark ? 0.08 : 0.025),
             blurRadius: 16,
             offset: const Offset(0, 5),
           ),

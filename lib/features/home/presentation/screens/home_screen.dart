@@ -22,17 +22,8 @@ import '../../../../models/flight_model.dart';
 import '../../../../models/travel_package_model.dart';
 import '../../../../routes/app_routes.dart';
 import 'packages_list_screen.dart';
+import '../../../../core/constants/app_colors.dart';
 
-class AppColors {
-  static const primary = Color(0xFF2B35A8);
-  static const bg = Color(0xFFF3F5FB);
-  static const text = Color(0xFF14183A);
-  static const muted = Color(0xFF8A90A8);
-  static const field = Color(0xFFF6F7FB);
-  static const toggleBg = Color(0xFFF1F3F9);
-  static const tint = Color(0xFFE9ECFA);
-  static const divider = Color(0xFFE3E6F0);
-}
 
 class HomeScreen extends StatefulWidget {
   final CurrentLocationService locationService;
@@ -566,7 +557,7 @@ class _HomeSectionHeader extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
-                color: AppColors.text,
+                color: AppColors.homeText,
               ),
             ),
           ),
@@ -621,7 +612,7 @@ class _HomeMonumentsSection extends StatelessWidget {
           return SizedBox(
             width: 220,
             child: Material(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(18),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -647,7 +638,7 @@ class _HomeMonumentsSection extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: AppColors.text,
+                              color: AppColors.homeText,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -657,7 +648,7 @@ class _HomeMonumentsSection extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontSize: 12,
-                              color: AppColors.muted,
+                              color: AppColors.homeMuted,
                             ),
                           ),
                         ],
@@ -719,7 +710,7 @@ class _HomeOffersSection extends StatelessWidget {
           return SizedBox(
             width: 240,
             child: Material(
-              color: Colors.white,
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(18),
               clipBehavior: Clip.antiAlias,
               child: InkWell(
@@ -745,7 +736,7 @@ class _HomeOffersSection extends StatelessWidget {
                                   vertical: 5,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.94),
+                                  color: AppColors.white.withValues(alpha: 0.94),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -753,7 +744,7 @@ class _HomeOffersSection extends StatelessWidget {
                                   style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.primary,
+                                    color: AppColors.homePrimary,
                                   ),
                                 ),
                               ),
@@ -772,7 +763,7 @@ class _HomeOffersSection extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: AppColors.text,
+                              color: AppColors.homeText,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -785,7 +776,7 @@ class _HomeOffersSection extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.muted,
+                                    color: AppColors.homeMuted,
                                   ),
                                 ),
                               ),
@@ -796,7 +787,7 @@ class _HomeOffersSection extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.primary,
+                                  color: AppColors.homePrimary,
                                 ),
                               ),
                             ],
@@ -857,7 +848,7 @@ class _Header extends StatelessWidget {
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.homePrimary,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(34)),
       ),
       child: Stack(
@@ -872,7 +863,7 @@ class _Header extends StatelessWidget {
                 Text(
                   l10n.greeting,
                   style:
-                      const TextStyle(fontSize: 13, color: Color(0xFFC9D0F5)),
+                      const TextStyle(fontSize: 13, color: AppColors.homeGreeting),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -880,7 +871,7 @@ class _Header extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
               ],
@@ -890,7 +881,7 @@ class _Header extends StatelessWidget {
             right: 20,
             top: topPad + 22,
             child: Material(
-              color: Colors.white.withAlpha(50),
+              color: AppColors.white.withAlpha(50),
               shape: const CircleBorder(),
               child: InkWell(
                 customBorder: const CircleBorder(),
@@ -918,7 +909,7 @@ class _Header extends StatelessWidget {
                           clipBehavior: Clip.none,
                           children: [
                             const Icon(Icons.notifications_none_rounded,
-                                color: Colors.white, size: 22),
+                                color: AppColors.white, size: 22),
                             if (unread > 0)
                               PositionedDirectional(
                                 top: 2,
@@ -931,14 +922,14 @@ class _Header extends StatelessWidget {
                                   padding:
                                       const EdgeInsets.symmetric(horizontal: 4),
                                   decoration: const BoxDecoration(
-                                    color: Color(0xFFF5A524),
+                                    color: AppColors.homeBadge,
                                     shape: BoxShape.circle,
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
                                     unread > 9 ? '9+' : '$unread',
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       fontSize: 9,
                                       fontWeight: FontWeight.w700,
                                       height: 1,
@@ -964,7 +955,7 @@ class _Header extends StatelessWidget {
 class _DotMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white.withAlpha(56);
+    final paint = Paint()..color = AppColors.white.withAlpha(56);
     final blobs = <Rect>[
       Rect.fromCenter(
           center: Offset(size.width * 0.55, size.height * 0.30),
@@ -1044,11 +1035,11 @@ class _SearchCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(12),
+            color: AppColors.black.withAlpha(12),
             blurRadius: 18,
             offset: const Offset(0, 6),
           ),
@@ -1060,7 +1051,7 @@ class _SearchCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.toggleBg,
+              color: AppColors.homeToggleBackground,
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
@@ -1101,7 +1092,7 @@ class _SearchCard extends StatelessWidget {
                   ),
                   const Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(28, 8, 54, 8),
-                    child: Divider(height: 1, color: AppColors.divider),
+                    child: Divider(height: 1, color: AppColors.homeDivider),
                   ),
                   Padding(
                     padding: const EdgeInsetsDirectional.only(end: 54),
@@ -1121,7 +1112,7 @@ class _SearchCard extends StatelessWidget {
                 bottom: 0,
                 child: Center(
                   child: Material(
-                    color: AppColors.primary,
+                    color: AppColors.homePrimary,
                     shape: const CircleBorder(),
                     child: InkWell(
                       customBorder: const CircleBorder(),
@@ -1130,7 +1121,7 @@ class _SearchCard extends StatelessWidget {
                         width: 42,
                         height: 42,
                         child: Icon(Icons.swap_vert_rounded,
-                            color: Colors.white, size: 22),
+                            color: AppColors.white, size: 22),
                       ),
                     ),
                   ),
@@ -1189,7 +1180,7 @@ class _SearchCard extends StatelessWidget {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     )
                   : const Icon(Icons.search_rounded, size: 20),
@@ -1199,8 +1190,8 @@ class _SearchCard extends StatelessWidget {
                     const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.homePrimary,
+                foregroundColor: AppColors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(26),
@@ -1234,10 +1225,10 @@ class _TripTab extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 11),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.transparent,
+          color: selected ? AppColors.white : AppColors.transparent,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: selected ? AppColors.primary : Colors.transparent,
+            color: selected ? AppColors.homePrimary : AppColors.transparent,
             width: 1.5,
           ),
         ),
@@ -1246,7 +1237,7 @@ class _TripTab extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: selected ? AppColors.primary : AppColors.text,
+            color: selected ? AppColors.homePrimary : AppColors.homeText,
           ),
         ),
       ),
@@ -1280,11 +1271,11 @@ class _AirportRow extends StatelessWidget {
               width: 14,
               height: 14,
               decoration: BoxDecoration(
-                color: filledDot ? AppColors.text : Colors.white,
+                color: filledDot ? AppColors.homeText : AppColors.white,
                 shape: BoxShape.circle,
                 border: filledDot
                     ? null
-                    : Border.all(color: AppColors.primary, width: 3),
+                    : Border.all(color: AppColors.homePrimary, width: 3),
               ),
             ),
             const SizedBox(width: 14),
@@ -1295,7 +1286,7 @@ class _AirportRow extends StatelessWidget {
                   Text(
                     caption,
                     style:
-                        const TextStyle(fontSize: 11, color: AppColors.muted),
+                        const TextStyle(fontSize: 11, color: AppColors.homeMuted),
                   ),
                   const SizedBox(height: 2),
                   Row(
@@ -1307,7 +1298,7 @@ class _AirportRow extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.text,
+                          color: AppColors.homeText,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1317,7 +1308,7 @@ class _AirportRow extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 13,
-                            color: Color(0xFF5C627A),
+                            color: AppColors.homeSecondaryText,
                           ),
                         ),
                       ),
@@ -1642,7 +1633,7 @@ class _SelectField extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: AppColors.field,
+          color: AppColors.homeField,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
@@ -1650,12 +1641,12 @@ class _SelectField extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(fontSize: 10, color: AppColors.muted),
+              style: const TextStyle(fontSize: 10, color: AppColors.homeMuted),
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                Icon(icon, size: 16, color: AppColors.primary),
+                Icon(icon, size: 16, color: AppColors.homePrimary),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -1664,12 +1655,12 @@ class _SelectField extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.text,
+                      color: AppColors.homeText,
                     ),
                   ),
                 ),
                 const Icon(Icons.keyboard_arrow_down_rounded,
-                    size: 18, color: AppColors.muted),
+                    size: 18, color: AppColors.homeMuted),
               ],
             ),
           ],
@@ -1713,11 +1704,11 @@ class _ServiceButtonState extends State<_ServiceButton> {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.white,
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(12),
+                color: AppColors.black.withAlpha(12),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -1730,10 +1721,10 @@ class _ServiceButtonState extends State<_ServiceButton> {
                 width: 44,
                 height: 44,
                 decoration: const BoxDecoration(
-                  color: AppColors.tint,
+                  color: AppColors.homeTint,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(widget.icon, size: 22, color: AppColors.primary),
+                child: Icon(widget.icon, size: 22, color: AppColors.homePrimary),
               ),
               const SizedBox(height: 8),
               Text(
@@ -1741,7 +1732,7 @@ class _ServiceButtonState extends State<_ServiceButton> {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.text,
+                  color: AppColors.homeText,
                 ),
               ),
             ],

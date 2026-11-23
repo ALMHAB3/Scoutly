@@ -22,9 +22,9 @@ class OfflineBanner extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 13),
+              const Icon(Icons.wifi_off_rounded, color: AppColors.white, size: 13),
               const SizedBox(width: 6),
-              Text(l10n.offlineBannerText, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+              Text(l10n.offlineBannerText, style: const TextStyle(color: AppColors.white, fontSize: 11, fontWeight: FontWeight.w600)),
             ],
           ),
         );

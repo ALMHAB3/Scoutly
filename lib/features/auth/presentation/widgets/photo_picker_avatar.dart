@@ -182,7 +182,7 @@ class _PhotoPickerAvatarState extends State<PhotoPickerAvatar> {
               decoration: const BoxDecoration(
                   color: AppColors.primary, shape: BoxShape.circle),
               child: const Icon(Icons.camera_alt_rounded,
-                  color: Colors.white, size: 14),
+                  color: AppColors.white, size: 14),
             ),
           ),
         ],

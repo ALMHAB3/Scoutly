@@ -190,7 +190,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                   a.displayName(Localizations.localeOf(context).languageCode),
                   style: const TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: AppColors.white,
                       shadows: [Shadow(blurRadius: 8)])),
               background: Stack(
                 fit: StackFit.expand,
@@ -206,7 +206,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Color(0x33000000), Color(0x99000000)],
+                        colors: [AppColors.overlayLight, AppColors.overlayStrong],
                       ),
                     ),
                   ),
@@ -223,7 +223,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                         isFav
                             ? Icons.bookmark_rounded
                             : Icons.bookmark_border_rounded,
-                        color: Colors.white),
+                        color: AppColors.white),
                     onPressed: () =>
                         FavoritesController.instance.toggle(FavoritePlace(
                       id: a.id,
@@ -263,7 +263,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                       if (a.rating > 0 && a.reviewCount > 0)
                         Row(children: [
                           const Icon(Icons.star_rounded,
-                              color: Colors.amber, size: 16),
+                              color: AppColors.amber, size: 16),
                           Text('${a.rating} (${a.reviewCount})',
                               textDirection: TextDirection.ltr,
                               style: const TextStyle(
@@ -345,7 +345,7 @@ class _AttractionDetailScreenState extends State<AttractionDetailScreen> {
                             width: 18,
                             height: 18,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2, color: AppColors.white))
                         : const Icon(Icons.confirmation_num_rounded),
                     label: Text(_isBooking
                         ? l10n.attractionBooking

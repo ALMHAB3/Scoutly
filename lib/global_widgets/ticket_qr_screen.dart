@@ -32,11 +32,11 @@ class TicketQrScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))],
+                  boxShadow: [BoxShadow(color: AppColors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))],
                 ),
-                child: QrImageView(data: refCode, size: 220, backgroundColor: Colors.white),
+                child: QrImageView(data: refCode, size: 220, backgroundColor: AppColors.white),
               ),
               const SizedBox(height: 24),
               Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18), textAlign: TextAlign.center),

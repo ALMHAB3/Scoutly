@@ -8,6 +8,7 @@ import '../../../../core/utils/auth_fonts.dart'
 import '../../../../routes/app_routes.dart';
 import '../../logic/auth_controller.dart';
 import 'auth_shared.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class VerifyScreen extends StatefulWidget {
   final String email;
@@ -195,7 +196,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
           style: GoogleFonts.poppins(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: AppColors.navy,
+            color: AppColors.authNavy,
           ),
         ),
         const SizedBox(height: 24),
@@ -292,13 +293,13 @@ class _VerifyScreenState extends State<VerifyScreen> {
             width: 84,
             height: 84,
             decoration: BoxDecoration(
-              color: AppColors.navy.withValues(alpha: 0.08),
+              color: AppColors.authNavy.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               Icons.verified_outlined,
               size: 40,
-              color: AppColors.navy,
+              color: AppColors.authNavy,
             ),
           ),
         ),
@@ -312,7 +313,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
           textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
             fontSize: 12.5,
-            color: AppColors.hint,
+            color: AppColors.authHint,
             height: 1.6,
           ),
         ),
@@ -330,7 +331,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
         icon: Icon(
           obscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
           size: 20,
-          color: AppColors.hint,
+          color: AppColors.authHint,
         ),
         onPressed: onTap,
       );

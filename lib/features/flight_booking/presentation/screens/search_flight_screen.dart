@@ -429,7 +429,7 @@ class _SearchSummary extends StatelessWidget {
             child: Icon(
               Icons.public_rounded,
               size: 144,
-              color: Colors.white.withValues(alpha: 0.035),
+              color: AppColors.white.withValues(alpha: 0.035),
             ),
           ),
           Column(
@@ -441,8 +441,8 @@ class _SearchSummary extends StatelessWidget {
                     tooltip: l10n.goBack,
                     onPressed: onBack,
                     style: IconButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.white.withValues(alpha: 0.14),
+                      foregroundColor: AppColors.white,
+                      backgroundColor: AppColors.white.withValues(alpha: 0.14),
                       minimumSize: const Size(38, 38),
                     ),
                     icon: const Icon(Icons.arrow_back_rounded, size: 18),
@@ -454,7 +454,7 @@ class _SearchSummary extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -465,8 +465,8 @@ class _SearchSummary extends StatelessWidget {
                     onPressed: onFilter,
                     visualDensity: VisualDensity.compact,
                     style: IconButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.white.withValues(alpha: 0.14),
+                      foregroundColor: AppColors.white,
+                      backgroundColor: AppColors.white.withValues(alpha: 0.14),
                       minimumSize: const Size(36, 36),
                     ),
                     icon: const Icon(Icons.tune_rounded, size: 19),
@@ -536,7 +536,7 @@ class _RouteEndpoint extends StatelessWidget {
             code,
             maxLines: 1,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 34,
               height: 1.05,
               letterSpacing: 0.5,
@@ -549,7 +549,7 @@ class _RouteEndpoint extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.78),
+            color: AppColors.white.withValues(alpha: 0.78),
             fontSize: 11,
             fontWeight: FontWeight.w600,
           ),
@@ -576,7 +576,7 @@ class _RouteArc extends StatelessWidget {
             duration!,
             maxLines: 1,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.78),
+              color: AppColors.white.withValues(alpha: 0.78),
               fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
@@ -587,7 +587,7 @@ class _RouteArc extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 12,
             fontWeight: FontWeight.w700,
           ),
@@ -598,7 +598,7 @@ class _RouteArc extends StatelessWidget {
           width: double.infinity,
           child: CustomPaint(
             painter: _RouteLinePainter(
-              color: Colors.white.withValues(alpha: 0.78),
+              color: AppColors.white.withValues(alpha: 0.78),
               rtl: rtl,
             ),
             child: Align(
@@ -608,7 +608,7 @@ class _RouteArc extends StatelessWidget {
                 child: const Icon(
                   Icons.flight_rounded,
                   size: 16,
-                  color: Colors.white,
+                  color: AppColors.white,
                 ),
               ),
             ),
@@ -831,7 +831,7 @@ class _FlightDateCard extends StatelessWidget {
                   softWrap: false,
                   style: TextStyle(
                     color: selected
-                        ? Colors.white.withValues(alpha: 0.76)
+                        ? AppColors.white.withValues(alpha: 0.76)
                         : isDark
                             ? AppColors.darkTextSecondary
                             : AppColors.textSecondary,
@@ -844,7 +844,7 @@ class _FlightDateCard extends StatelessWidget {
                   materialL10n.formatDecimal(date.day),
                   style: TextStyle(
                     color: selected
-                        ? Colors.white
+                        ? AppColors.white
                         : !enabled
                             ? AppColors.textHint
                             : isDark
@@ -910,7 +910,7 @@ class _FlightCard extends StatelessWidget {
               ? const []
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.055),
+                    color: AppColors.black.withValues(alpha: 0.055),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -919,7 +919,7 @@ class _FlightCard extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(15),
           child: Material(
-            color: Colors.transparent,
+            color: AppColors.transparent,
             child: InkWell(
               onTap: available ? onSelect : null,
               child: Column(
@@ -940,7 +940,7 @@ class _FlightCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                             ),
@@ -957,7 +957,7 @@ class _FlightCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.white,
                             fontSize: 8,
                             fontWeight: FontWeight.w700,
                           ),

@@ -92,7 +92,7 @@ class _ReviewFormSheetState extends State<ReviewFormSheet> {
                 final starIndex = i + 1;
                 return IconButton(
                   onPressed: () => setState(() => _rating = starIndex),
-                  icon: Icon(starIndex <= _rating ? Icons.star_rounded : Icons.star_border_rounded, color: Colors.amber, size: 32),
+                  icon: Icon(starIndex <= _rating ? Icons.star_rounded : Icons.star_border_rounded, color: AppColors.amber, size: 32),
                 );
               }),
             ),
@@ -113,7 +113,7 @@ class _ReviewFormSheetState extends State<ReviewFormSheet> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submit,
                 child: _isSubmitting
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white))
                     : Text(l10n.submitReview),
               ),
             ),

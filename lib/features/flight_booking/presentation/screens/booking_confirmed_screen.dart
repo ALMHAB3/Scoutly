@@ -179,13 +179,13 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
       backgroundColor: AppColors.darkBackground,
       appBar: AppBar(
         backgroundColor: AppColors.darkBackground,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
         // The theme's title colour (dark text) overrides foregroundColor, so
         // the title was invisible on the dark background.
         titleTextStyle: Theme.of(context)
             .appBarTheme
             .titleTextStyle
-            ?.copyWith(color: Colors.white),
+            ?.copyWith(color: AppColors.white),
         title: Text(l10n.flightBookingConfirmed),
       ),
       body: _loading
@@ -193,11 +193,11 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const CircularProgressIndicator(color: Colors.white),
+                  const CircularProgressIndicator(color: AppColors.white),
                   const SizedBox(height: 16),
                   Text(
                     l10n.flightBookingInProgress,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: AppColors.white),
                   ),
                 ],
               ),
@@ -288,7 +288,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                 child: Text(
                   l10n.flightSimulationBadge,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                   ),
@@ -300,7 +300,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
           Text(
             '${flight.originCity} to ${flight.destinationCity}',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 24,
               fontWeight: FontWeight.w800,
             ),
@@ -420,7 +420,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                       Localizations.localeOf(context).languageCode,
                     ),
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontWeight: FontWeight.w800,
                       fontSize: 16,
                     ),
@@ -441,7 +441,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                     prefix: '${l10n.packageStayTotal}: ',
                     decimalDigits: 2,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -485,7 +485,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2, color: AppColors.white),
                     )
                   : const Icon(Icons.picture_as_pdf_rounded, size: 20),
               label: Text(
@@ -499,8 +499,8 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white54),
+                foregroundColor: AppColors.white,
+                side: const BorderSide(color: AppColors.white54),
                 minimumSize: const Size(260, 50),
                 shape: const StadiumBorder(),
               ),
@@ -553,7 +553,7 @@ class FlightTicketCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.22),
+            color: AppColors.black.withValues(alpha: 0.22),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -603,7 +603,7 @@ class FlightTicketCard extends StatelessWidget {
                       child: Text(
                         seatClass.toUpperCase(),
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
@@ -796,7 +796,7 @@ class FlightTicketCard extends StatelessWidget {
                           data: _code,
                           size: 54,
                           padding: EdgeInsets.zero,
-                          backgroundColor: Colors.white,
+                          backgroundColor: AppColors.white,
                           errorCorrectionLevel: QrErrorCorrectLevel.H,
                         ),
                       ),
@@ -845,7 +845,7 @@ class FlightTicketCard extends StatelessWidget {
               QrImageView(
                 data: reference,
                 size: 240,
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.white,
                 errorCorrectionLevel: QrErrorCorrectLevel.H,
               ),
               const SizedBox(height: 16),
@@ -984,7 +984,7 @@ class _TicketFlightLine extends StatelessWidget {
                   height: 30,
                   child: Icon(
                     Icons.flight_rounded,
-                    color: Colors.white,
+                    color: AppColors.white,
                     size: 16,
                   ),
                 ),
@@ -1091,7 +1091,7 @@ class _TicketExtraChip extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -1132,9 +1132,9 @@ class _BackHomeButton extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                shadowColor: Colors.transparent,
+                backgroundColor: AppColors.transparent,
+                foregroundColor: AppColors.white,
+                shadowColor: AppColors.transparent,
                 elevation: 0,
                 shape: const StadiumBorder(),
               ),
@@ -1170,7 +1170,7 @@ class _ConfirmationError extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: AppColors.white),
             ),
             const SizedBox(height: 20),
             FlightPrimaryButton(

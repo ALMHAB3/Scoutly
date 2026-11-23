@@ -162,7 +162,7 @@ class _OnboardingPage extends StatelessWidget {
             decoration: BoxDecoration(gradient: page.gradient, shape: BoxShape.circle, boxShadow: [
               BoxShadow(color: page.gradient.colors.first.withValues(alpha: 0.35), blurRadius: 40, offset: const Offset(0, 16)),
             ]),
-            child: Icon(page.icon, size: 60, color: Colors.white),
+            child: Icon(page.icon, size: 60, color: AppColors.white),
           )
               .animate(key: ValueKey(page.icon))
               .fade(duration: 650.ms)

@@ -194,7 +194,7 @@ class _AttractionsScreenState extends State<AttractionsScreen> {
                           decoration: BoxDecoration(
                               color: isSelected
                                   ? AppColors.accentPurple
-                                  : Colors.transparent,
+                                  : AppColors.transparent,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                   color: isSelected
@@ -204,7 +204,7 @@ class _AttractionsScreenState extends State<AttractionsScreen> {
                               style: TextStyle(
                                   fontSize: 12,
                                   color: isSelected
-                                      ? Colors.white
+                                      ? AppColors.white
                                       : AppColors.textSecondary,
                                   fontWeight: isSelected
                                       ? FontWeight.w700
@@ -355,9 +355,9 @@ class _AttrCard extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0x33000000),
-                      Color(0x00000000),
-                      Color(0xE6000000)
+                      AppColors.overlayLight,
+                      AppColors.overlayClear,
+                      AppColors.overlayHeavy
                     ],
                     stops: [0, 0.4, 1],
                   ),
@@ -373,9 +373,9 @@ class _AttrCard extends StatelessWidget {
                       Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.35),
+                              color: AppColors.black.withValues(alpha: 0.35),
                               borderRadius: BorderRadius.circular(10)),
-                          child: Icon(icon, color: Colors.white, size: 18)),
+                          child: Icon(icon, color: AppColors.white, size: 18)),
                     ]),
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -386,13 +386,13 @@ class _AttrCard extends StatelessWidget {
                               style: const TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
-                                  color: Colors.white)),
+                                  color: AppColors.white)),
                           const SizedBox(height: 2),
                           Text(attraction.displayLocation(languageCode),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
+                                  color: AppColors.white.withValues(alpha: 0.8),
                                   fontSize: 11)),
                           const SizedBox(height: 4),
                           if (attraction.rating > 0 &&
@@ -402,11 +402,11 @@ class _AttrCard extends StatelessWidget {
                               if (attraction.rating > 0 &&
                                   attraction.reviewCount > 0) ...[
                                 const Icon(Icons.star_rounded,
-                                    color: Colors.amber, size: 12),
+                                    color: AppColors.amber, size: 12),
                                 Text(
                                   ' ${attraction.rating}',
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.9),
+                                    color: AppColors.white.withValues(alpha: 0.9),
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -417,20 +417,20 @@ class _AttrCard extends StatelessWidget {
                                 attraction.isFree
                                     ? Text(l10n.free,
                                         style: const TextStyle(
-                                            color: Colors.white,
+                                            color: AppColors.white,
                                             fontWeight: FontWeight.w800,
                                             fontSize: 13))
                                     : attraction.entryFee == null
                                         ? const Text('—',
                                             style: TextStyle(
-                                                color: Colors.white,
+                                                color: AppColors.white,
                                                 fontWeight: FontWeight.w800,
                                                 fontSize: 15))
                                         : CurrencyAmountText(
                                             amount: attraction.entryFee!,
                                             decimalDigits: 0,
                                             style: const TextStyle(
-                                                color: Colors.white,
+                                                color: AppColors.white,
                                                 fontWeight: FontWeight.w800,
                                                 fontSize: 15)),
                             ]),

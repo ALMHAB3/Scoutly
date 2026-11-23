@@ -1824,7 +1824,7 @@ class _TravelerSeatChip extends StatelessWidget {
           child: Text(
             '$label · ${seat ?? '—'}',
             style: TextStyle(
-              color: selected ? Colors.white : AppColors.textSecondary,
+              color: selected ? AppColors.white : AppColors.textSecondary,
               fontSize: 11,
               fontWeight: FontWeight.w700,
             ),

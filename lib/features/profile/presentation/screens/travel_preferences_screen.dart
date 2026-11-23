@@ -261,10 +261,10 @@ class _TravelPreferencesScreenState extends State<TravelPreferencesScreen> {
                             ? AppColors.darkSurfaceSecondary
                             : AppColors.surfaceSecondary,
                         selectedColor: AppColors.primary,
-                        checkmarkColor: Colors.white,
+                        checkmarkColor: AppColors.white,
                         labelStyle: TextStyle(
                           color: selected
-                              ? Colors.white
+                              ? AppColors.white
                               : isDark
                                   ? AppColors.darkTextPrimary
                                   : AppColors.textPrimary,
@@ -312,10 +312,10 @@ class _TravelPreferencesScreenState extends State<TravelPreferencesScreen> {
             ? AppColors.darkSurfaceSecondary
             : AppColors.surfaceSecondary,
         selectedColor: AppColors.primary,
-        checkmarkColor: Colors.white,
+        checkmarkColor: AppColors.white,
         labelStyle: TextStyle(
           color: selectedValue == value
-              ? Colors.white
+              ? AppColors.white
               : isDark
                   ? AppColors.darkTextPrimary
                   : AppColors.textPrimary,

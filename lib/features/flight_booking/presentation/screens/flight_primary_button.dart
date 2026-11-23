@@ -40,11 +40,11 @@ class FlightPrimaryButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: enabled ? onPressed : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            disabledBackgroundColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            disabledForegroundColor: Colors.white70,
-            shadowColor: Colors.transparent,
+            backgroundColor: AppColors.transparent,
+            disabledBackgroundColor: AppColors.transparent,
+            foregroundColor: AppColors.white,
+            disabledForegroundColor: AppColors.white70,
+            shadowColor: AppColors.transparent,
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
@@ -56,7 +56,7 @@ class FlightPrimaryButton extends StatelessWidget {
                   height: 22,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.4,
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 )
               : Row(

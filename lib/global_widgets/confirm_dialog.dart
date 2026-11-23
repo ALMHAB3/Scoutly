@@ -12,7 +12,7 @@ Future<bool> showAppConfirmDialog(
 }) async {
   final result = await showDialog<bool>(
     context: context,
-    barrierColor: Colors.black54,
+    barrierColor: AppColors.black54,
     builder: (_) => _AppConfirmDialog(
       title: title,
       message: message,

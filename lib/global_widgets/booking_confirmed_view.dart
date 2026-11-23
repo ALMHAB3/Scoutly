@@ -269,7 +269,7 @@ class _SuccessBadge extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.check_rounded,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 48,
               ),
             ).animate().scale(

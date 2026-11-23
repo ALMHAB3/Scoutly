@@ -43,7 +43,7 @@ class ItineraryCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             child: Row(
               children: [
-                const Icon(Icons.map_rounded, color: Colors.white, size: 22),
+                const Icon(Icons.map_rounded, color: AppColors.white, size: 22),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -53,12 +53,12 @@ class ItineraryCard extends StatelessWidget {
                           style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white)),
+                              color: AppColors.white)),
                       if (budget != null)
                         Text(l10n.chatItineraryBudget(budget),
                             style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.white.withValues(alpha: 0.85))),
+                                color: AppColors.white.withValues(alpha: 0.85))),
                     ],
                   ),
                 ),
@@ -66,13 +66,13 @@ class ItineraryCard extends StatelessWidget {
             ),
           ),
           // ── Divider ─────────────────────────────────────────────────────
-          Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
+          Divider(color: AppColors.white.withValues(alpha: 0.2), height: 1),
           // ── Days ────────────────────────────────────────────────────────
           if (days.isEmpty)
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(l10n.chatItineraryReady,
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.9))),
+                  style: TextStyle(color: AppColors.white.withValues(alpha: 0.9))),
             )
           else
             ...days.asMap().entries.map((e) {
@@ -89,17 +89,17 @@ class ItineraryCard extends StatelessWidget {
                 isSaved
                     ? Icons.bookmark_added_rounded
                     : Icons.bookmark_add_outlined,
-                color: Colors.white,
+                color: AppColors.white,
                 size: 16,
               ),
               label: Text(
                 isSaved
                     ? l10n.chatItinerarySavedSuccess
                     : l10n.chatItinerarySave,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.white),
               ),
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
+                side: BorderSide(color: AppColors.white.withValues(alpha: 0.5)),
                 minimumSize: const Size(double.infinity, 42),
               ),
             ),
@@ -124,7 +124,7 @@ class _DayRow extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
+        color: AppColors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -132,7 +132,7 @@ class _DayRow extends StatelessWidget {
         children: [
           Text(title,
               style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w700,
                   fontSize: 13)),
           const SizedBox(height: 6),
@@ -144,13 +144,13 @@ class _DayRow extends StatelessWidget {
                         width: 5,
                         height: 5,
                         decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: AppColors.white.withValues(alpha: 0.6),
                             shape: BoxShape.circle)),
                     const SizedBox(width: 8),
                     Expanded(
                         child: Text(a.toString(),
                             style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
+                                color: AppColors.white.withValues(alpha: 0.85),
                                 fontSize: 12))),
                   ],
                 ),

@@ -11,7 +11,7 @@ abstract class AppTheme {
         seedColor: AppColors.primary,
         brightness: Brightness.light,
         primary: AppColors.primary,
-        onPrimary: Colors.white,
+        onPrimary: AppColors.white,
         secondary: AppColors.accentTeal,
         surface: AppColors.surface,
         // ignore: deprecated_member_use
@@ -26,7 +26,7 @@ abstract class AppTheme {
         foregroundColor: AppColors.textPrimary,
         centerTitle: false,
         systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
+          statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.dark,
         ),
         titleTextStyle: _fontStyle(
@@ -63,7 +63,7 @@ abstract class AppTheme {
         seedColor: AppColors.primary,
         brightness: Brightness.dark,
         primary: AppColors.primaryLight,
-        onPrimary: Colors.white,
+        onPrimary: AppColors.white,
         secondary: AppColors.accentTeal,
         surface: AppColors.darkSurface,
         // ignore: deprecated_member_use
@@ -78,7 +78,7 @@ abstract class AppTheme {
         foregroundColor: AppColors.darkTextPrimary,
         centerTitle: false,
         systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
+          statusBarColor: AppColors.transparent,
           statusBarIconBrightness: Brightness.light,
         ),
         titleTextStyle: _fontStyle(
@@ -194,7 +194,7 @@ abstract class AppTheme {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        foregroundColor: AppColors.white,
         elevation: 0,
         minimumSize: const Size(double.infinity, 54),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),

@@ -214,7 +214,7 @@ class _Chip extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
-                color: selected ? Colors.white : carInk(context),
+                color: selected ? AppColors.white : carInk(context),
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 fontSize: 13,
               ),
@@ -314,7 +314,7 @@ class CarRatingBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppColors.black.withValues(alpha: 0.08),
             blurRadius: 8,
           ),
         ],

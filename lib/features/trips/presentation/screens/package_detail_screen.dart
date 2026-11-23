@@ -77,7 +77,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               title: Text(package.displayTitle(languageCode),
                   style: const TextStyle(
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: AppColors.white,
                       shadows: [Shadow(blurRadius: 8)])),
               background: AppNetworkImage(
                 url: package.imageUrl,
@@ -96,7 +96,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         isFav
                             ? Icons.bookmark_rounded
                             : Icons.bookmark_border_rounded,
-                        color: Colors.white),
+                        color: AppColors.white),
                     onPressed: () => FavoritesController.instance.toggle(
                       FavoritePlace(
                           id: package.id,
@@ -133,7 +133,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         rating: package.rating,
                         itemSize: 16,
                         itemBuilder: (_, __) => const Icon(Icons.star_rounded,
-                            color: Colors.amber)),
+                            color: AppColors.amber)),
                     const SizedBox(width: 6),
                     Text('${package.rating} (${package.reviewCount})',
                         textDirection: TextDirection.ltr,
@@ -326,7 +326,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
+                                strokeWidth: 2, color: AppColors.white))
                         : const Icon(Icons.card_travel_rounded, size: 18),
                     label: Text(_isBooking
                         ? l10n.flightBookingInProgress

@@ -19,7 +19,7 @@ abstract class BookingLoadingOverlay {
       context: context,
       useRootNavigator: true,
       barrierDismissible: false,
-      barrierColor: Colors.white.withValues(alpha: 0.84),
+      barrierColor: AppColors.white.withValues(alpha: 0.84),
       builder: (_) => _BookingLoadingDialog(
         title: title,
         subtitle: subtitle,
@@ -74,7 +74,7 @@ class _BookingLoadingDialogState extends State<_BookingLoadingDialog>
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.transparent,
       elevation: 0,
       insetPadding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(
@@ -101,7 +101,7 @@ class _BookingLoadingDialogState extends State<_BookingLoadingDialog>
                   width: 112,
                   height: 76,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.white,
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: AppColors.border),
                     boxShadow: [
@@ -148,7 +148,7 @@ class _BookingLoadingDialogState extends State<_BookingLoadingDialog>
                     width: 34,
                     height: 34,
                     decoration: const BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.white,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.flight_rounded,

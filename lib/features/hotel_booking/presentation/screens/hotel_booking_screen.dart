@@ -242,7 +242,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
       backgroundColor: carPageBackground(context),
       appBar: AppBar(
         backgroundColor: carPageBackground(context),
-        surfaceTintColor: Colors.transparent,
+        surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: Text(
           labels.bookingPayment,
@@ -409,7 +409,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Icon(Icons.credit_card_rounded,
-                          color: Colors.white, size: 18),
+                          color: AppColors.white, size: 18),
                     ),
                     const SizedBox(width: 12),
                     Expanded(

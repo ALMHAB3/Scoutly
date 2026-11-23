@@ -121,7 +121,7 @@ class AppDockBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final navBg = isDark ? app_colors.AppColors.darkSurface : Colors.white;
+    final navBg = isDark ? app_colors.AppColors.darkSurface : app_colors.AppColors.white;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -141,7 +141,7 @@ class AppDockBar extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color:
-                            Colors.black.withValues(alpha: isDark ? 0.3 : 0.1),
+                            app_colors.AppColors.black.withValues(alpha: isDark ? 0.3 : 0.1),
                         blurRadius: 28,
                         offset: const Offset(0, 8),
                       ),
@@ -192,7 +192,7 @@ class AppDockBar extends StatelessWidget {
                       tooltip: l10n.navChatbot,
                       onPressed: () => onSelected(2),
                       backgroundColor: app_colors.AppColors.primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: app_colors.AppColors.white,
                       elevation: 4,
                       child: const Icon(Icons.auto_awesome_rounded),
                     ),

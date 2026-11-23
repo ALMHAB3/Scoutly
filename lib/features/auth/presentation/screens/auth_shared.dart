@@ -2,20 +2,11 @@ import '../../../../l10n/app_localizations.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/auth_fonts.dart'
     as GoogleFonts; // ignore: library_prefixes
 
 // ───────────────────────── Colors ─────────────────────────
-class AppColors {
-  static const navy = Color(0xFF1F2A9A);
-  static const fieldBg = Color(0xFFF3F5FB);
-  static const hint = Color(0xFF9AA3B5);
-  static const text = Color(0xFF111827);
-  static const line = Color(0xFFE9ECF3);
-  static const error = Color(0xFFE5484D);
-  static const skyTop = Color(0xFF7FB6E8);
-  static const skyBottom = Color(0xFFD6EAF8);
-}
 
 // ───────────────────────── Scaffold (hero + plane + sheet) ─────────────────────────
 class AuthScaffold extends StatefulWidget {
@@ -66,7 +57,7 @@ class _AuthScaffoldState extends State<AuthScaffold>
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTap: () => FocusScope.of(context).unfocus(),
@@ -104,7 +95,7 @@ class _AuthScaffoldState extends State<AuthScaffold>
                 top: topPad + 8,
                 start: 16,
                 child: Material(
-                  color: Colors.white.withValues(alpha: 0.85),
+                  color: AppColors.white.withValues(alpha: 0.85),
                   shape: const CircleBorder(),
                   child: InkWell(
                     customBorder: const CircleBorder(),
@@ -116,7 +107,7 @@ class _AuthScaffoldState extends State<AuthScaffold>
                               ? Icons.arrow_forward_ios_rounded
                               : Icons.arrow_back_ios_new_rounded,
                           size: 18,
-                          color: AppColors.text),
+                          color: AppColors.authText),
                     ),
                   ),
                 ),
@@ -130,11 +121,11 @@ class _AuthScaffoldState extends State<AuthScaffold>
               top: heroHeight,
               child: Container(
                 decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                   boxShadow: [
                     BoxShadow(
-                      color: Color(0x1A000000),
+                      color: AppColors.shadowSoft,
                       blurRadius: 24,
                       offset: Offset(0, -6),
                     ),
@@ -182,7 +173,7 @@ class _AuthScaffoldState extends State<AuthScaffold>
                               width: 36,
                               height: 4,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE3E6EE),
+                                color: AppColors.authSheetHandle,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                             ),
@@ -238,8 +229,8 @@ class _AnimatedPlane extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(2),
                       gradient: LinearGradient(colors: [
-                        Colors.white.withValues(alpha: 0),
-                        Colors.white.withValues(alpha: 0.85),
+                        AppColors.white.withValues(alpha: 0),
+                        AppColors.white.withValues(alpha: 0.85),
                       ]),
                     ),
                   ),
@@ -250,7 +241,7 @@ class _AnimatedPlane extends StatelessWidget {
                   child: Transform.rotate(
                     angle: math.pi / 2 + tilt,
                     child: const Icon(Icons.flight,
-                        size: planeSize, color: AppColors.navy),
+                        size: planeSize, color: AppColors.authNavy),
                   ),
                 ),
               ],
@@ -273,7 +264,7 @@ class _SkyBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [AppColors.skyTop, AppColors.skyBottom],
+          colors: [AppColors.authSkyTop, AppColors.authSkyBottom],
         ),
       ),
       child: CustomPaint(painter: _MountainPainter(), size: Size.infinite),
@@ -293,7 +284,7 @@ class _MountainPainter extends CustomPainter {
       ..lineTo(x1, h)
       ..close();
 
-    final cloud = Paint()..color = Colors.white.withValues(alpha: 0.9);
+    final cloud = Paint()..color = AppColors.white.withValues(alpha: 0.9);
     void drawCloud(double cx, double cy, double s) {
       canvas.drawCircle(Offset(cx, cy), 14 * s, cloud);
       canvas.drawCircle(Offset(cx + 16 * s, cy + 4 * s), 12 * s, cloud);
@@ -304,16 +295,16 @@ class _MountainPainter extends CustomPainter {
     drawCloud(w * 0.90, h * 0.16, 0.9);
 
     canvas.drawPath(mountain(-w * 0.1, w * 0.28, h * 0.30, w * 0.75),
-        Paint()..color = const Color(0xFF8E9BE0));
+        Paint()..color = AppColors.authMountainLight);
     canvas.drawPath(mountain(w * 0.35, w * 0.72, h * 0.42, w * 1.15),
-        Paint()..color = const Color(0xFF6F82D6));
+        Paint()..color = AppColors.authMountainDark);
     canvas.drawPath(
       Path()
         ..moveTo(w * 0.28 - 28, h * 0.30 + 40)
         ..lineTo(w * 0.28, h * 0.30)
         ..lineTo(w * 0.28 + 28, h * 0.30 + 40)
         ..close(),
-      Paint()..color = Colors.white.withValues(alpha: 0.7),
+      Paint()..color = AppColors.white.withValues(alpha: 0.7),
     );
   }
 
@@ -334,17 +325,17 @@ class _SignPost extends StatelessWidget {
           width: 52,
           height: 52,
           decoration: BoxDecoration(
-            color: const Color(0xFFF5A623),
+            color: AppColors.authSignpost,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF7A4A12), width: 3),
+            border: Border.all(color: AppColors.authSignpostBorder, width: 3),
           ),
-          child: Icon(icon, color: Colors.white, size: 28),
+          child: Icon(icon, color: AppColors.white, size: 28),
         ),
         Container(
           key: const ValueKey('bus-stop-sign-pole'),
           width: 4,
           height: 34,
-          color: const Color(0xFF9AA3B5),
+          color: AppColors.authSignpostPole,
         ),
       ],
     );
@@ -369,7 +360,7 @@ class AuthTitle extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: AppColors.text,
+            color: AppColors.authText,
             height: 1.2,
           ),
         ),
@@ -379,7 +370,7 @@ class AuthTitle extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: AppColors.navy,
+            color: AppColors.authNavy,
             height: 1.3,
           ),
         ),
@@ -390,7 +381,7 @@ class AuthTitle extends StatelessWidget {
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 12.5,
-              color: AppColors.hint,
+              color: AppColors.authHint,
               height: 1.5,
             ),
           ),
@@ -438,23 +429,23 @@ class AuthInput extends StatelessWidget {
       keyboardType: keyboardType,
       textInputAction: textInputAction,
       onChanged: onChanged,
-      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.text),
-      cursorColor: AppColors.navy,
+      style: GoogleFonts.poppins(fontSize: 14, color: AppColors.authText),
+      cursorColor: AppColors.authNavy,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.hint),
+        hintStyle: GoogleFonts.poppins(fontSize: 13, color: AppColors.authHint),
         errorText: errorText,
-        errorStyle: GoogleFonts.poppins(fontSize: 11, color: AppColors.error),
-        prefixIcon: Icon(icon, size: 20, color: AppColors.hint),
+        errorStyle: GoogleFonts.poppins(fontSize: 11, color: AppColors.authError),
+        prefixIcon: Icon(icon, size: 20, color: AppColors.authHint),
         suffixIcon: suffix,
         filled: true,
-        fillColor: AppColors.fieldBg,
+        fillColor: AppColors.authFieldBackground,
         contentPadding: const EdgeInsets.symmetric(vertical: 16),
-        border: _border(Colors.transparent),
-        enabledBorder: _border(Colors.transparent),
-        focusedBorder: _border(AppColors.navy, 1.4),
-        errorBorder: _border(AppColors.error, 1.2),
-        focusedErrorBorder: _border(AppColors.error, 1.4),
+        border: _border(AppColors.transparent),
+        enabledBorder: _border(AppColors.transparent),
+        focusedBorder: _border(AppColors.authNavy, 1.4),
+        errorBorder: _border(AppColors.authError, 1.2),
+        focusedErrorBorder: _border(AppColors.authError, 1.4),
       ),
     );
   }
@@ -495,11 +486,11 @@ class _AuthButtonState extends State<AuthButton> {
           width: double.infinity,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppColors.navy,
+            color: AppColors.authNavy,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: AppColors.navy.withValues(alpha: 0.35),
+                color: AppColors.authNavy.withValues(alpha: 0.35),
                 blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
@@ -513,7 +504,7 @@ class _AuthButtonState extends State<AuthButton> {
                     width: 22,
                     height: 22,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2.4, color: Colors.white),
+                        strokeWidth: 2.4, color: AppColors.white),
                   )
                 : Text(
                     widget.label,
@@ -521,7 +512,7 @@ class _AuthButtonState extends State<AuthButton> {
                     style: GoogleFonts.poppins(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: AppColors.white,
                     ),
                   ),
           ),
@@ -544,7 +535,7 @@ class SocialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppColors.white,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
@@ -553,7 +544,7 @@ class SocialButton extends StatelessWidget {
           height: 48,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: AppColors.authLine),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -564,7 +555,7 @@ class SocialButton extends StatelessWidget {
                   style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.text)),
+                      color: AppColors.authText)),
             ],
           ),
         ),
@@ -580,15 +571,15 @@ class GoogleG extends StatelessWidget {
   Widget build(BuildContext context) {
     return ShaderMask(
       shaderCallback: (r) => const SweepGradient(colors: [
-        Color(0xFFEA4335),
-        Color(0xFFFBBC05),
-        Color(0xFF34A853),
-        Color(0xFF4285F4),
-        Color(0xFFEA4335),
+        AppColors.googleRed,
+        AppColors.googleYellow,
+        AppColors.googleGreen,
+        AppColors.googleBlue,
+        AppColors.googleRed,
       ]).createShader(r),
       child: Text('G',
           style: GoogleFonts.poppins(
-              fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white)),
+              fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.white)),
     );
   }
 }
@@ -601,13 +592,13 @@ class OrDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Expanded(child: Divider(color: AppColors.line)),
+        const Expanded(child: Divider(color: AppColors.authLine)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Text(text ?? AppLocalizations.of(context).orSignUpWith,
-              style: GoogleFonts.poppins(fontSize: 11, color: AppColors.hint)),
+              style: GoogleFonts.poppins(fontSize: 11, color: AppColors.authHint)),
         ),
-        const Expanded(child: Divider(color: AppColors.line)),
+        const Expanded(child: Divider(color: AppColors.authLine)),
       ],
     );
   }
@@ -631,14 +622,14 @@ class AuthFooterLink extends StatelessWidget {
         child: Text.rich(
           TextSpan(
             text: '$text ',
-            style: GoogleFonts.poppins(fontSize: 12, color: AppColors.text),
+            style: GoogleFonts.poppins(fontSize: 12, color: AppColors.authText),
             children: [
               TextSpan(
                 text: link,
                 style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.navy),
+                    color: AppColors.authNavy),
               ),
             ],
           ),
