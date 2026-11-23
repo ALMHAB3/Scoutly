@@ -3219,15 +3219,9 @@ class _Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
-      ),
+      shadow: false,
       child: child,
     );
   }

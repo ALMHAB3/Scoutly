@@ -81,23 +81,11 @@ class TripItemCard extends StatelessWidget {
       opacity: item.status == TripTab.cancelled ? 0.8 : 1,
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: AppCard(
           margin: const EdgeInsets.only(bottom: 14),
+          padding: EdgeInsets.zero,
+          radius: 18,
           clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.surface,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.border),
-            boxShadow: isDark
-                ? []
-                : [
-                    BoxShadow(
-                        color: AppColors.black.withValues(alpha: 0.05),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4))
-                  ],
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

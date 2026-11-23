@@ -64,7 +64,6 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final package = widget.package;
     final languageCode = Localizations.localeOf(context).languageCode;
     return Scaffold(
@@ -144,15 +143,9 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 ).animate().fade(duration: 300.ms),
                 const SizedBox(height: 20),
                 // ── خط الرحلة الجاهز: ليالي + سعر تذكرة + سعر فندق ────
-                Container(
+                AppCard(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color:
-                            isDark ? AppColors.darkBorder : AppColors.border),
-                  ),
+                  shadow: false,
                   child: Column(
                     children: [
                       Row(

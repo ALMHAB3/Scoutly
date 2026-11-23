@@ -428,23 +428,9 @@ class _FlightSearchScreenState extends State<FlightSearchScreen> {
                 const SizedBox(height: 20),
 
                 // ── Route card ────────────────────────────────────────
-                Container(
+                AppCard(
                   padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : AppColors.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                        color:
-                            isDark ? AppColors.darkBorder : AppColors.border),
-                    boxShadow: isDark
-                        ? []
-                        : [
-                            BoxShadow(
-                                color: AppColors.black.withValues(alpha: 0.05),
-                                blurRadius: 16,
-                                offset: const Offset(0, 6))
-                          ],
-                  ),
+                  radius: 20,
                   child: Column(
                     children: [
                       _AirportField(
@@ -688,17 +674,12 @@ class _DateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AppCard(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.border),
-        ),
+        radius: 14,
+        shadow: false,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(label,
               style: const TextStyle(

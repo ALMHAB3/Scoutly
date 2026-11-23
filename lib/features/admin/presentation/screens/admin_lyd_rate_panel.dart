@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/currency_rates.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/currency_service.dart';
@@ -83,17 +82,11 @@ class _AdminLydRatePanelState extends State<AdminLydRatePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return AppCard(
       key: const ValueKey('admin-lyd-rate'),
-      width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border:
-            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
-      ),
+      radius: 18,
+      shadow: false,
       child: Form(
         key: _formKey,
         child: Column(

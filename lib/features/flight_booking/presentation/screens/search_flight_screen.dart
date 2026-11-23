@@ -1376,51 +1376,51 @@ class _FlightCardSkeleton extends StatelessWidget {
   const _FlightCardSkeleton();
 
   @override
-  Widget build(BuildContext context) => Container(
-        height: 154,
+  Widget build(BuildContext context) => AppCard(
         margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: Shimmer.fromColors(
-            baseColor: AppColors.border,
-            highlightColor: AppColors.surface,
-            child: Column(
-              children: [
-                Container(height: 34, color: AppColors.surfaceSecondary),
-                const Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.all(14),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: _SkeletonBlock(height: 37)),
-                            SizedBox(width: 12),
-                            Expanded(child: _SkeletonBlock(height: 25)),
-                            SizedBox(width: 12),
-                            Expanded(child: _SkeletonBlock(height: 37)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Expanded(child: _SkeletonBlock(height: 19)),
-                            SizedBox(width: 8),
-                            Expanded(child: _SkeletonBlock(height: 19)),
-                            SizedBox(width: 8),
-                            Expanded(child: _SkeletonBlock(height: 19)),
-                          ],
-                        ),
-                      ],
+        padding: EdgeInsets.zero,
+        radius: 15,
+        shadow: false,
+        child: SizedBox(
+          height: 152,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Shimmer.fromColors(
+              baseColor: AppColors.border,
+              highlightColor: AppColors.surface,
+              child: Column(
+                children: [
+                  Container(height: 34, color: AppColors.surfaceSecondary),
+                  const Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(14),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: _SkeletonBlock(height: 37)),
+                              SizedBox(width: 12),
+                              Expanded(child: _SkeletonBlock(height: 25)),
+                              SizedBox(width: 12),
+                              Expanded(child: _SkeletonBlock(height: 37)),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Expanded(child: _SkeletonBlock(height: 19)),
+                              SizedBox(width: 8),
+                              Expanded(child: _SkeletonBlock(height: 19)),
+                              SizedBox(width: 8),
+                              Expanded(child: _SkeletonBlock(height: 19)),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -1592,13 +1592,6 @@ class _MessageState extends StatelessWidget {
         ),
       );
 }
-
-String _seatClassLabel(String seatClass, AppLocalizations l10n) =>
-    switch (seatClass.toLowerCase()) {
-      'business' => l10n.business,
-      'first' => l10n.firstClass,
-      _ => l10n.economy,
-    };
 
 String _formatFlightDuration(int durationMinutes, AppLocalizations l10n) =>
     l10n.flightDurationShort(

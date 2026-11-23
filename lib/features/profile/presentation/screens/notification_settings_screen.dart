@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/user_settings_sync.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -43,7 +44,6 @@ class _NotificationSettingsScreenState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final items = [
       (
@@ -93,14 +93,9 @@ class _NotificationSettingsScreenState
         itemBuilder: (_, i) {
           final (icon, color, title, subtitle, value, key, onChanged) =
               items[i];
-          return Container(
+          return AppCard(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.border),
-            ),
+            shadow: false,
             child: Row(
               children: [
                 Container(

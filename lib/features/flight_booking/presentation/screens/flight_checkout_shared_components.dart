@@ -433,20 +433,9 @@ class CheckoutPanel extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => AppCard(
         padding: padding,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.025),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+        radius: 15,
         child: child,
       );
 }

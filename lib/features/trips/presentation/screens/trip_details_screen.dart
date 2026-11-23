@@ -277,13 +277,9 @@ class _DetailSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border:
-            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
-      ),
+    return AppCard(
+      padding: EdgeInsets.zero,
+      shadow: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

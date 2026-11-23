@@ -6,6 +6,7 @@ import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/confirm_dialog.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../logic/chatbot_controller.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class ChatHistoryScreen extends StatefulWidget {
   const ChatHistoryScreen({super.key});
@@ -50,7 +51,6 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
@@ -100,18 +100,10 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                       child: GestureDetector(
                         onTap: () => Navigator.pop(context, session),
                         onLongPress: () => _delete(session),
-                        child: Container(
+                        child: AppCard(
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkSurface
-                                : AppColors.surface,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                                color: isDark
-                                    ? AppColors.darkBorder
-                                    : AppColors.border),
-                          ),
+                          radius: 14,
+                          shadow: false,
                           child: Row(
                             children: [
                               Container(

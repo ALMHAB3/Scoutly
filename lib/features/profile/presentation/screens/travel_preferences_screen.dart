@@ -348,15 +348,10 @@ class _PreferenceSection extends StatelessWidget {
                   .titleSmall
                   ?.copyWith(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          Container(
-            width: double.infinity,
+          AppCard(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurface : AppColors.surface,
-              border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.border),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            radius: 12,
+            shadow: false,
             child: child,
           ),
         ],

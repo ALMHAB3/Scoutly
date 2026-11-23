@@ -7,7 +7,6 @@ import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/location_settings_service.dart';
 import '../../../../core/services/current_location_service.dart';
-import '../../../../core/services/currency_service.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/booking_loading_overlay.dart';
@@ -234,14 +233,10 @@ class _TransfersScreenState extends State<TransfersScreen> {
                 style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 18),
-              Container(
+              AppCard(
                 padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : AppColors.surface,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                        color:
-                            isDark ? AppColors.darkBorder : AppColors.border)),
+                radius: 18,
+                shadow: false,
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1007,25 +1002,10 @@ class _TransferCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Container(
+    return AppCard(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.border,
-        ),
-        boxShadow: isDark
-            ? const []
-            : [
-                BoxShadow(
-                  color: AppColors.black.withValues(alpha: 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-      ),
+      radius: 18,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1211,15 +1191,9 @@ class _EmptyRides extends StatelessWidget {
   const _EmptyRides({required this.message, required this.isDark});
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: double.infinity,
+  Widget build(BuildContext context) => AppCard(
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.border),
-        ),
+        shadow: false,
         child: Column(
           children: [
             const Icon(Icons.local_taxi_rounded,

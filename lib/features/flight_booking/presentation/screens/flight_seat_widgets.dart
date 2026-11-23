@@ -1,9 +1,7 @@
 import '../../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/utils/money_format.dart';
 import '../../../../global_widgets/currency_amount_text.dart';
-import '../../../../models/flight_model.dart';
 import '../../../../models/flight_seat_map.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../global_widgets/ui/ui.dart';
@@ -300,13 +298,11 @@ class FlightSeatErrorPanel extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => AppCard(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.seatLine),
-        ),
+        radius: 24,
+        borderColor: AppColors.seatLine,
+        shadow: false,
         child: Column(
           children: [
             const Icon(Icons.event_seat_outlined,

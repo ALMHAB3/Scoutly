@@ -10,7 +10,6 @@ import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_shell.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/booking_load_error.dart';
-import '../../../../core/services/currency_service.dart';
 import '../../../../global_widgets/payment_checkout_screen.dart';
 import '../../../../features/notifications/logic/notifications_store.dart';
 import '../../../../l10n/app_localizations.dart';
@@ -415,13 +414,10 @@ class _InfoCard extends StatelessWidget {
       Text(title,
           style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
       const SizedBox(height: 10),
-      Container(
+      AppCard(
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.border)),
+        radius: 14,
+        shadow: false,
         child: Column(children: children),
       ),
     ]);

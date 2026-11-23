@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../logic/favorites_controller.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -10,7 +11,6 @@ class FavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.favorites)),
@@ -70,16 +70,10 @@ class FavoritesScreen extends StatelessWidget {
                       color: AppColors.accentRed),
                 ),
                 onDismissed: (_) => FavoritesController.instance.remove(fav.id),
-                child: Container(
+                child: AppCard(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.darkSurface : AppColors.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color:
-                            isDark ? AppColors.darkBorder : AppColors.border),
-                  ),
+                  shadow: false,
                   child: Row(
                     children: [
                       Container(

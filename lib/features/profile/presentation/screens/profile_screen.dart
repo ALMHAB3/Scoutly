@@ -18,6 +18,7 @@ import 'language_screen.dart';
 import 'currency_screen.dart';
 import 'notification_settings_screen.dart';
 import 'travel_preferences_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -422,13 +423,9 @@ class _MenuSection extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   color: AppColors.textSecondary)),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.border),
-          ),
+        AppCard(
+          padding: EdgeInsets.zero,
+          shadow: false,
           child: Column(
             children: items.asMap().entries.map((e) {
               final isLast = e.key == items.length - 1;

@@ -125,22 +125,9 @@ class _SuggestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                    color: AppColors.black.withValues(alpha: 0.05),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6))
-              ],
-      ),
+      radius: 20,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

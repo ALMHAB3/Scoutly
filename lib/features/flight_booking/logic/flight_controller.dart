@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/services/api_service.dart';
-import '../../../core/services/currency_service.dart';
 import '../../../core/services/price_comparison.dart';
 import '../../../models/flight_model.dart';
 import '../../../models/flight_price_breakdown.dart';

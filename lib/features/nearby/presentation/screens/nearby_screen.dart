@@ -320,7 +320,6 @@ class _PlaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
     return GestureDetector(
       onTap: () => Navigator.push(
@@ -332,23 +331,9 @@ class _PlaceCard extends StatelessWidget {
           ),
         ),
       ),
-      child: Container(
+      child: AppCard(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : AppColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.border),
-          boxShadow: isDark
-              ? []
-              : [
-                  BoxShadow(
-                      color: AppColors.black.withValues(alpha: 0.04),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4))
-                ],
-        ),
         child: Row(
           children: [
             // Icon/category

@@ -869,91 +869,80 @@ class _MetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return SizedBox(
       width: width,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border:
-            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: isDark ? 0.08 : 0.025),
-            blurRadius: 16,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600),
-                ),
-              ),
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 20),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: AlignmentDirectional.centerStart,
-            child: amount == null
-                ? Text(
-                    value,
-                    style: const TextStyle(
-                        fontSize: 27, fontWeight: FontWeight.w800),
-                  )
-                : CurrencyAmountText(
-                    amount: amount!,
-                    decimalDigits: 0,
-                    style: const TextStyle(
-                        fontSize: 27, fontWeight: FontWeight.w800),
+      child: AppCard(
+        padding: const EdgeInsets.all(18),
+        radius: 18,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600),
                   ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Icon(Icons.trending_up_rounded, size: 15, color: color),
-              const SizedBox(width: 4),
-              Text(
-                footnoteValue,
-                style: TextStyle(
-                    color: color, fontSize: 11, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(
-                  footnote,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 10,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
-              ),
-            ],
-          ),
-        ],
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: amount == null
+                  ? Text(
+                      value,
+                      style: const TextStyle(
+                          fontSize: 27, fontWeight: FontWeight.w800),
+                    )
+                  : CurrencyAmountText(
+                      amount: amount!,
+                      decimalDigits: 0,
+                      style: const TextStyle(
+                          fontSize: 27, fontWeight: FontWeight.w800),
+                    ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.trending_up_rounded, size: 15, color: color),
+                const SizedBox(width: 4),
+                Text(
+                  footnoteValue,
+                  style: TextStyle(
+                      color: color, fontSize: 11, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    footnote,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 10,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -968,16 +957,10 @@ class _Panel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
+    return AppCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border:
-            Border.all(color: isDark ? AppColors.darkBorder : AppColors.border),
-      ),
+      radius: 18,
+      shadow: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

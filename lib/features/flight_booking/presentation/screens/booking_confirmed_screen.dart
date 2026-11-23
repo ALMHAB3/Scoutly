@@ -45,7 +45,7 @@ class _BookingConfirmedScreenState extends State<BookingConfirmedScreen> {
     required String? passengerName,
   }) async {
     if (_savingPdf) return;
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     final labels = CheckoutLabels(l10n);
     final ar = l10n.localeName.startsWith('ar');
     final locale = Localizations.localeOf(context).languageCode;

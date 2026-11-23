@@ -16,6 +16,9 @@ class AppCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Gradient? gradient;
 
+  /// Clip children to the rounded corners (e.g. a photo at the top).
+  final Clip clipBehavior;
+
   const AppCard({
     super.key,
     required this.child,
@@ -27,6 +30,7 @@ class AppCard extends StatelessWidget {
     this.shadow = true,
     this.onTap,
     this.gradient,
+    this.clipBehavior = Clip.none,
   });
 
   @override
@@ -35,6 +39,7 @@ class AppCard extends StatelessWidget {
       width: double.infinity,
       margin: margin,
       padding: padding,
+      clipBehavior: clipBehavior,
       decoration: BoxDecoration(
         color: gradient == null ? (color ?? context.uiSurface) : null,
         gradient: gradient,
