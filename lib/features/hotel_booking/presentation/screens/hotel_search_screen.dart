@@ -12,9 +12,9 @@ import '../../../../models/hotel_destination_suggestion.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/hotel_controller.dart';
 import '../../../../global_widgets/app_shell.dart';
-import '../../../car_rental/presentation/widgets/car_widgets.dart';
 import '../../../notifications/presentation/screens/notifications_screen.dart';
 import '../hotel_labels.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// مفتاح تخزين آخر مدينة تم البحث عنها، يُستخدم من شاشة SearchHotelsScreen
 /// (لعرض اقتراح "كرر آخر بحث") ومن هذه الشاشة نفسها.
@@ -355,7 +355,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
     final labels = HotelLabels(l10n);
 
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       bottomNavigationBar: AppDockBar(
         selectedIndex: 0,
         onSelected: (index) => AppDockBar.leaveTo(context, index),
@@ -370,7 +370,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                 IconButton(
                   tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                   onPressed: () => Navigator.maybePop(context),
-                  icon: Icon(Icons.arrow_back_rounded, color: carInk(context)),
+                  icon: Icon(Icons.arrow_back_rounded, color: context.uiInk),
                 ),
                 const Spacer(),
                 IconButton(
@@ -382,7 +382,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                     ),
                   ),
                   icon: Icon(Icons.notifications_none_rounded,
-                      color: carInk(context)),
+                      color: context.uiInk),
                 ),
               ],
             ),
@@ -399,13 +399,13 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                 fontSize: 30,
                 height: 1.15,
                 fontWeight: FontWeight.w800,
-                color: carInk(context),
+                color: context.uiInk,
               ),
             ).animate().fade(duration: 250.ms),
             const SizedBox(height: 18),
 
             // ── Destination ────────────────────────────────────────────
-            CarCard(
+            AppCard(
               padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
               child: Row(
                 children: [
@@ -419,7 +419,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                         Text(
                           labels.destination,
                           style:
-                              TextStyle(fontSize: 11, color: carMuted(context)),
+                              TextStyle(fontSize: 11, color: context.uiMuted),
                         ),
                         TextField(
                           controller: _cityCtrl,
@@ -430,7 +430,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
-                            color: carInk(context),
+                            color: context.uiInk,
                           ),
                           decoration: InputDecoration(
                             isDense: true,
@@ -520,7 +520,7 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                   padding: const EdgeInsets.only(top: 6),
                   child: Material(
                     elevation: 5,
-                    color: carSurface(context),
+                    color: context.uiSurface,
                     borderRadius: BorderRadius.circular(14),
                     child: content,
                   ),
@@ -582,11 +582,11 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
             const SizedBox(height: 12),
 
             // ── Rooms + guests ──────────────────────────────────────────
-            CarCard(
+            AppCard(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               child: Column(
                 children: [
-                  _Counter(
+                  AppCounter(
                     icon: Icons.bed_rounded,
                     label: labels.rooms,
                     value: _rooms,
@@ -597,8 +597,8 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
                       if (_guests < v) _guests = v;
                     }),
                   ),
-                  Divider(height: 1, color: carBorder(context)),
-                  _Counter(
+                  Divider(height: 1, color: context.uiBorder),
+                  AppCounter(
                     icon: Icons.people_outline_rounded,
                     label: labels.guests,
                     value: _guests,
@@ -635,9 +635,9 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
               builder: (_, __) => Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CarCtaButton(
-                    buttonKey: const ValueKey('hotel-search'),
-                    label: _ctrl.isLoading && !_isLoadingNearby
+                  AppButton.label(
+                    key: const ValueKey('hotel-search'),
+                    text: _ctrl.isLoading && !_isLoadingNearby
                         ? l10n.hotelSearching
                         : labels.searchHotels,
                     loading: _ctrl.isLoading && !_isLoadingNearby,
@@ -696,13 +696,13 @@ class _DateCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          child: CarCard(
+          child: AppCard(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: TextStyle(fontSize: 11, color: carMuted(context))),
+                    style: TextStyle(fontSize: 11, color: context.uiMuted)),
                 const SizedBox(height: 4),
                 Row(
                   children: [
@@ -716,7 +716,7 @@ class _DateCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: carInk(context),
+                          color: context.uiInk,
                         ),
                       ),
                     ),
@@ -726,85 +726,5 @@ class _DateCard extends StatelessWidget {
             ),
           ),
         ),
-      );
-}
-
-class _Counter extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final int value, min, max;
-  final ValueChanged<int> onChanged;
-
-  const _Counter({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: AppColors.primary),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: carInk(context),
-                ),
-              ),
-            ),
-            _RoundButton(
-              icon: Icons.remove_rounded,
-              tooltip: '$label -',
-              onTap: value > min ? () => onChanged(value - 1) : null,
-            ),
-            SizedBox(
-              width: 36,
-              child: Text(
-                '$value',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: carInk(context),
-                ),
-              ),
-            ),
-            _RoundButton(
-              icon: Icons.add_rounded,
-              tooltip: '$label +',
-              onTap: value < max ? () => onChanged(value + 1) : null,
-            ),
-          ],
-        ),
-      );
-}
-
-class _RoundButton extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback? onTap;
-  const _RoundButton(
-      {required this.icon, required this.tooltip, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) => IconButton(
-        tooltip: tooltip,
-        onPressed: onTap,
-        style: IconButton.styleFrom(
-          backgroundColor: AppColors.primary.withValues(alpha: 0.08),
-          disabledBackgroundColor: carBorder(context).withValues(alpha: 0.4),
-        ),
-        icon: Icon(icon,
-            size: 18,
-            color: onTap == null ? carMuted(context) : AppColors.primary),
       );
 }

@@ -11,12 +11,12 @@ import '../../../../global_widgets/review_form_sheet.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/hotel_model.dart';
 import '../../../../models/review_model.dart';
-import '../../../car_rental/presentation/widgets/car_widgets.dart';
 import '../../../favorites/logic/favorites_controller.dart';
 import '../../logic/hotel_controller.dart';
 import '../hotel_labels.dart';
 import '../widgets/hotel_widgets.dart';
 import 'hotel_booking_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Hotel details: photos, favorite, price per night, amenities, about, room
 /// rates, reviews, location and Book Now (same design as the car details).
@@ -119,7 +119,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
     final photos = hotel.photos;
 
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -144,7 +144,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       children: [
-                        _RoundIconButton(
+                        AppIconButton(
                           icon: Icons.arrow_back_rounded,
                           tooltip: MaterialLocalizations.of(context)
                               .backButtonTooltip,
@@ -156,7 +156,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           builder: (context, _) {
                             final saved = FavoritesController.instance
                                 .isFavorite(_favoriteId(hotel));
-                            return _RoundIconButton(
+                            return AppIconButton(
                               icon: saved
                                   ? Icons.favorite_rounded
                                   : Icons.favorite_border_rounded,
@@ -176,7 +176,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                   PositionedDirectional(
                     start: 16,
                     bottom: 30,
-                    child: PhotoPill(
+                    child: AppPill(
                       icon: Icons.photo_library_outlined,
                       text: '${_photoIndex + 1}/${photos.length}',
                     ),
@@ -184,7 +184,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                 PositionedDirectional(
                   end: 16,
                   bottom: 30,
-                  child: CarRatingBadge(
+                  child: AppRatingBadge(
                     rating: hotel.hasGoogleRating ? hotel.rating : 0,
                   ),
                 ),
@@ -194,7 +194,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
           SliverToBoxAdapter(
             child: Container(
               decoration: BoxDecoration(
-                color: carSurface(context),
+                color: context.uiSurface,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(24)),
               ),
@@ -212,7 +212,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
-                            color: carInk(context),
+                            color: context.uiInk,
                           ),
                         ),
                       ),
@@ -237,7 +237,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                               : labels.ratingUnavailable,
                           style: TextStyle(
                             fontSize: 12.5,
-                            color: carMuted(context),
+                            color: context.uiMuted,
                           ),
                         ),
                       ),
@@ -253,7 +253,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                     Row(
                       children: [
                         Icon(Icons.location_on_outlined,
-                            size: 16, color: carMuted(context)),
+                            size: 16, color: context.uiMuted),
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
@@ -263,7 +263,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                     '${labels.kmAway(hotel.distanceMeters!)}',
                             style: TextStyle(
                               fontSize: 12.5,
-                              color: carMuted(context),
+                              color: context.uiMuted,
                             ),
                           ),
                         ),
@@ -272,7 +272,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                   ],
                   if (hotel.amenities.isNotEmpty) ...[
                     const SizedBox(height: 20),
-                    _SectionTitle(labels.amenities),
+                    AppSectionTitle(labels.amenities),
                     const SizedBox(height: 10),
                     LayoutBuilder(
                       builder: (context, box) {
@@ -284,7 +284,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                             for (final amenity in hotel.amenities)
                               SizedBox(
                                 width: width,
-                                child: CarFeatureTile(
+                                child: AppFeatureTile(
                                   icon: hotelAmenityIcon(amenity),
                                   label: amenity,
                                   maxLines: 2,
@@ -296,7 +296,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                     ),
                   ],
                   const SizedBox(height: 22),
-                  _SectionTitle(labels.about),
+                  AppSectionTitle(labels.about),
                   const SizedBox(height: 8),
                   Text(
                     hotel.description.isEmpty
@@ -305,21 +305,21 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                     style: TextStyle(
                       fontSize: 13.5,
                       height: 1.5,
-                      color: carMuted(context),
+                      color: context.uiMuted,
                     ),
                   ),
                   if (hotel.offers.isNotEmpty) ...[
                     const SizedBox(height: 22),
-                    _SectionTitle(labels.roomRates),
+                    AppSectionTitle(labels.roomRates),
                     const SizedBox(height: 10),
-                    CarCard(
+                    AppCard(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 6),
                       child: Column(
                         children: [
                           for (var i = 0; i < hotel.offers.length; i++) ...[
                             if (i > 0)
-                              Divider(height: 1, color: carBorder(context)),
+                              Divider(height: 1, color: context.uiBorder),
                             _OfferRow(
                               name:
                                   _offerName(hotel.offers[i], labels.roomRates),
@@ -337,12 +337,13 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                       hotel.longitude != null &&
                       !(hotel.latitude == 0 && hotel.longitude == 0)) ...[
                     const SizedBox(height: 22),
-                    _SectionTitle(labels.location),
+                    AppSectionTitle(labels.location),
                     const SizedBox(height: 10),
-                    HotelLocationMap(
+                    AppPlaceMap(
                       latitude: hotel.latitude!,
                       longitude: hotel.longitude!,
                       address: hotel.address,
+                      addressIcon: Icons.hotel_rounded,
                     ),
                   ],
                   const SizedBox(height: 8),
@@ -353,13 +354,13 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: carSurface(context),
+        color: context.uiSurface,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
-            child: CarCtaButton(
-              buttonKey: const ValueKey('hotel-book-now'),
-              label: soldOut ? labels.soldOut : labels.bookNow,
+            child: AppButton.label(
+              key: const ValueKey('hotel-book-now'),
+              text: soldOut ? labels.soldOut : labels.bookNow,
               onPressed: soldOut || !priced ? null : () => _book(hotel),
             ),
           ),
@@ -398,7 +399,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: _SectionTitle(l10n.hotelGuestReviews)),
+            Expanded(child: AppSectionTitle(l10n.hotelGuestReviews)),
             TextButton.icon(
               onPressed: () => _writeHotelReview(hotel),
               icon: const Icon(Icons.star_rate_rounded),
@@ -421,19 +422,19 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
             final result = snapshot.data;
             if (snapshot.hasError || result == null || result.isFailure) {
               return Text(l10n.genericError,
-                  style: TextStyle(color: carMuted(context)));
+                  style: TextStyle(color: context.uiMuted));
             }
             final reviews = result.data ?? const <ReviewModel>[];
             if (reviews.isEmpty) {
               return Text(l10n.hotelNoGuestReviews,
-                  style: TextStyle(color: carMuted(context)));
+                  style: TextStyle(color: context.uiMuted));
             }
             return Column(
               children: [
                 for (final review in reviews.take(5))
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
-                    child: CarCard(
+                    child: AppCard(
                       padding: const EdgeInsets.all(12),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +467,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                         review.userName,
                                         style: TextStyle(
                                           fontWeight: FontWeight.w700,
-                                          color: carInk(context),
+                                          color: context.uiInk,
                                         ),
                                       ),
                                     ),
@@ -483,7 +484,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                       review.comment,
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: carMuted(context),
+                                        color: context.uiMuted,
                                       ),
                                     ),
                                   ),
@@ -501,21 +502,6 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
       ],
     );
   }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  const _SectionTitle(this.text);
-
-  @override
-  Widget build(BuildContext context) => Text(
-        text,
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w800,
-          color: carInk(context),
-        ),
-      );
 }
 
 class _OfferRow extends StatelessWidget {
@@ -536,7 +522,7 @@ class _OfferRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: carInk(context),
+                  color: context.uiInk,
                 ),
               ),
             ),
@@ -550,34 +536,6 @@ class _OfferRow extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      );
-}
-
-class _RoundIconButton extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onPressed;
-  final Color? color;
-
-  const _RoundIconButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.all(4),
-        child: Material(
-          color: carSurface(context).withValues(alpha: 0.92),
-          shape: const CircleBorder(),
-          child: IconButton(
-            tooltip: tooltip,
-            onPressed: onPressed,
-            icon: Icon(icon, color: color ?? carInk(context)),
-          ),
         ),
       );
 }

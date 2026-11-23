@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../core/constants/app_colors.dart';
-import '../features/car_rental/presentation/widgets/car_widgets.dart';
 import 'app_shell.dart';
 import 'app_snackbar.dart';
+import 'ui/ui.dart';
 
 /// "Booking Confirmed!" screen shared by car and hotel bookings: booking ID
 /// (copy), the booked item with its details, "View Booking Details" (opens
@@ -54,7 +54,7 @@ class BookingConfirmedView extends StatelessWidget {
         if (!didPop) AppDockBar.leaveTo(context, 0);
       },
       child: Scaffold(
-        backgroundColor: carPageBackground(context),
+        backgroundColor: context.uiPageBackground,
         bottomNavigationBar: AppDockBar(
           selectedIndex: _tripsTab,
           onSelected: (index) => AppDockBar.leaveTo(context, index),
@@ -72,17 +72,17 @@ class BookingConfirmedView extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
-                  color: carInk(context),
+                  color: context.uiInk,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 subtitle,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: carMuted(context)),
+                style: TextStyle(fontSize: 14, color: context.uiMuted),
               ),
               const SizedBox(height: 24),
-              CarCard(
+              AppCard(
                 padding: const EdgeInsets.fromLTRB(16, 12, 6, 12),
                 child: Row(
                   children: [
@@ -94,7 +94,7 @@ class BookingConfirmedView extends StatelessWidget {
                             bookingIdLabel,
                             style: TextStyle(
                               fontSize: 12,
-                              color: carMuted(context),
+                              color: context.uiMuted,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -103,7 +103,7 @@ class BookingConfirmedView extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                         ],
@@ -117,13 +117,13 @@ class BookingConfirmedView extends StatelessWidget {
                           AppSnackbar.success(context, copiedMessage);
                         }
                       },
-                      icon: Icon(Icons.copy_rounded, color: carMuted(context)),
+                      icon: Icon(Icons.copy_rounded, color: context.uiMuted),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 12),
-              CarCard(
+              AppCard(
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
@@ -140,7 +140,7 @@ class BookingConfirmedView extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                           for (final (icon, text) in lines) ...[
@@ -159,9 +159,9 @@ class BookingConfirmedView extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               // OK closes the booking flow and returns to the home screen.
-              CarCtaButton(
-                buttonKey: const ValueKey('booking-ok'),
-                label: okLabel,
+              AppButton.label(
+                key: const ValueKey('booking-ok'),
+                text: okLabel,
                 onPressed: () => AppDockBar.leaveTo(context, _homeTab),
               ),
               const SizedBox(height: 12),
@@ -203,14 +203,14 @@ class _IconLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, size: 14, color: carMuted(context)),
+          Icon(icon, size: 14, color: context.uiMuted),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
               text,
               maxLines: maxLines,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12, color: carMuted(context)),
+              style: TextStyle(fontSize: 12, color: context.uiMuted),
             ),
           ),
         ],

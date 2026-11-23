@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/price_format.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../models/hotel_model.dart';
-import '../../../car_rental/presentation/widgets/car_widgets.dart';
 import '../hotel_labels.dart';
-
-// The hotel screens share the car rental screens' design (cards, buttons,
-// colours) from car_widgets.dart: CarCard, CarCtaButton, carInk...
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Hotel photo (or a hotel icon when there is none).
 class HotelPhoto extends StatelessWidget {
@@ -36,7 +31,7 @@ class HotelPhoto extends StatelessWidget {
           child: AppNetworkImage(
             url: url ?? hotel.imageUrl,
             fallbackIcon: Icons.hotel_rounded,
-            fallbackGradient: carIsDark(context)
+            fallbackGradient: context.uiIsDark
                 ? const LinearGradient(colors: [
                     AppColors.darkSurfaceSecondary,
                     AppColors.darkSurface
@@ -82,13 +77,13 @@ class HotelNightlyPrice extends StatelessWidget {
           style: TextStyle(
             fontSize: priced ? fontSize : 13,
             fontWeight: FontWeight.w800,
-            color: priced ? AppColors.primary : carMuted(context),
+            color: priced ? AppColors.primary : context.uiMuted,
           ),
         ),
         if (priced)
           TextSpan(
             text: ' ${labels.perNight}',
-            style: TextStyle(fontSize: 12, color: carMuted(context)),
+            style: TextStyle(fontSize: 12, color: context.uiMuted),
           ),
       ]),
     );
@@ -112,24 +107,10 @@ class HotelProviderLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final partner = hotel.partnerName?.trim() ?? '';
     if (partner.isEmpty) return const SizedBox.shrink();
-    return Row(
-      children: [
-        Icon(Icons.storefront_rounded,
-            size: fontSize + 3, color: AppColors.primary),
-        const SizedBox(width: 5),
-        Flexible(
-          child: Text(
-            labels.providedBy(partner),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-      ],
+    return AppIconLabel(
+      icon: Icons.storefront_rounded,
+      text: labels.providedBy(partner),
+      fontSize: fontSize,
     );
   }
 }
@@ -175,119 +156,4 @@ IconData hotelAmenityIcon(String amenity) {
   if (has(['beach', 'شاطئ'])) return Icons.beach_access_rounded;
   if (has(['tv', 'تلفاز', 'تلفزيون'])) return Icons.tv_rounded;
   return Icons.check_circle_outline_rounded;
-}
-
-/// Small map with the hotel's location and its address.
-class HotelLocationMap extends StatelessWidget {
-  final double latitude;
-  final double longitude;
-  final String address;
-
-  const HotelLocationMap({
-    super.key,
-    required this.latitude,
-    required this.longitude,
-    required this.address,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final point = LatLng(latitude, longitude);
-    return CarCard(
-      padding: EdgeInsets.zero,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: SizedBox(
-              height: 160,
-              child: FlutterMap(
-                options: MapOptions(
-                  initialCenter: point,
-                  initialZoom: 15,
-                  interactionOptions: const InteractionOptions(
-                    flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
-                  ),
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.zentrip.app',
-                  ),
-                  MarkerLayer(markers: [
-                    Marker(
-                      point: point,
-                      width: 40,
-                      height: 40,
-                      alignment: Alignment.topCenter,
-                      child: const Icon(Icons.location_on_rounded,
-                          size: 40, color: AppColors.accentRed),
-                    ),
-                  ]),
-                ],
-              ),
-            ),
-          ),
-          if (address.trim().isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  const Icon(Icons.hotel_rounded,
-                      size: 18, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      address,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: carInk(context),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// White pill on photos (distance, featured...).
-class PhotoPill extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  const PhotoPill({super.key, required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-        decoration: BoxDecoration(
-          color: carSurface(context),
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-                color: AppColors.black.withValues(alpha: 0.08), blurRadius: 8),
-          ],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 13, color: AppColors.primary),
-            const SizedBox(width: 4),
-            Text(
-              text,
-              style: TextStyle(
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-                color: carInk(context),
-              ),
-            ),
-          ],
-        ),
-      );
 }

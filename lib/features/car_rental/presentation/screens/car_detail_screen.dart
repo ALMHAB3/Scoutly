@@ -9,10 +9,10 @@ import '../../../../models/car_model.dart';
 import '../../../favorites/logic/favorites_controller.dart';
 import '../../logic/car_controller.dart';
 import '../car_labels.dart';
-import '../widgets/car_pickup_map.dart';
 import '../widgets/car_widgets.dart';
 import 'car_booking_screen.dart';
 import 'car_rental_screen.dart' show CarDailyPrice;
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Car details: photo, price per day, features, about and specs, Book Now.
 class CarDetailScreen extends StatefulWidget {
@@ -75,7 +75,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -87,7 +87,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Row(
                       children: [
-                        _RoundIconButton(
+                        AppIconButton(
                           icon: Icons.arrow_back_rounded,
                           tooltip: MaterialLocalizations.of(context)
                               .backButtonTooltip,
@@ -99,7 +99,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                           builder: (context, _) {
                             final saved = FavoritesController.instance
                                 .isFavorite(_favoriteId(car));
-                            return _RoundIconButton(
+                            return AppIconButton(
                               icon: saved
                                   ? Icons.favorite_rounded
                                   : Icons.favorite_border_rounded,
@@ -118,7 +118,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                 PositionedDirectional(
                   end: 16,
                   bottom: 16,
-                  child: CarRatingBadge(rating: car.rating),
+                  child: AppRatingBadge(rating: car.rating),
                 ),
               ],
             ),
@@ -126,7 +126,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
           SliverToBoxAdapter(
             child: Container(
               decoration: BoxDecoration(
-                color: carSurface(context),
+                color: context.uiSurface,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(24)),
               ),
@@ -144,7 +144,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w800,
-                            color: carInk(context),
+                            color: context.uiInk,
                           ),
                         ),
                       ),
@@ -155,7 +155,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                   const SizedBox(height: 6),
                   Text(
                     carSpecLine(labels, car),
-                    style: TextStyle(fontSize: 12.5, color: carMuted(context)),
+                    style: TextStyle(fontSize: 12.5, color: context.uiMuted),
                   ),
                   if ((car.partnerName ?? '').trim().isNotEmpty) ...[
                     const SizedBox(height: 10),
@@ -167,7 +167,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                       Icon(
                         Icons.location_on_outlined,
                         size: 16,
-                        color: carMuted(context),
+                        color: context.uiMuted,
                       ),
                       const SizedBox(width: 5),
                       Expanded(
@@ -178,7 +178,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                                   '${labels.kmAway(car.distanceMeters!)}',
                           style: TextStyle(
                             fontSize: 12.5,
-                            color: carMuted(context),
+                            color: context.uiMuted,
                           ),
                         ),
                       ),
@@ -191,7 +191,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                         for (var i = 0; i < features.length; i++) ...[
                           if (i > 0) const SizedBox(width: 10),
                           Expanded(
-                            child: CarFeatureTile(
+                            child: AppFeatureTile(
                               icon: carFeatureIcon(features[i]),
                               label: labels.feature(features[i]),
                             ),
@@ -211,7 +211,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: carInk(context),
+                      color: context.uiInk,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -222,7 +222,7 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                     style: TextStyle(
                       fontSize: 13.5,
                       height: 1.5,
-                      color: carMuted(context),
+                      color: context.uiMuted,
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -264,11 +264,15 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
-                        color: carInk(context),
+                        color: context.uiInk,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    CarPickupMap(car: car),
+                    AppPlaceMap(
+                        latitude: car.latitude!,
+                        longitude: car.longitude!,
+                        address: car.pickupPlace,
+                        addressIcon: Icons.directions_car_filled_rounded),
                   ],
                 ],
               ).animate().fade(duration: 250.ms),
@@ -277,13 +281,13 @@ class _CarDetailScreenState extends State<CarDetailScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: carSurface(context),
+        color: context.uiSurface,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 6, 20, 12),
-            child: CarCtaButton(
-              buttonKey: const ValueKey('car-book-now'),
-              label: soldOut ? labels.soldOut : labels.bookNow,
+            child: AppButton.label(
+              key: const ValueKey('car-book-now'),
+              text: soldOut ? labels.soldOut : labels.bookNow,
               onPressed: soldOut ? null : () => _book(car),
             ),
           ),
@@ -300,13 +304,13 @@ class _SpecGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (specs.isEmpty) return const SizedBox.shrink();
-    return CarCard(
+    return AppCard(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: IntrinsicHeight(
         child: Row(
           children: [
             for (var i = 0; i < specs.length; i++) ...[
-              if (i > 0) VerticalDivider(width: 1, color: carBorder(context)),
+              if (i > 0) VerticalDivider(width: 1, color: context.uiBorder),
               _Spec(value: specs[i].$1, label: specs[i].$2),
             ],
           ],
@@ -334,7 +338,7 @@ class _Spec extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
-                  color: carInk(context),
+                  color: context.uiInk,
                 ),
               ),
               const SizedBox(height: 3),
@@ -342,37 +346,9 @@ class _Spec extends StatelessWidget {
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 11, color: carMuted(context)),
+                style: TextStyle(fontSize: 11, color: context.uiMuted),
               ),
             ],
-          ),
-        ),
-      );
-}
-
-class _RoundIconButton extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onPressed;
-  final Color? color;
-
-  const _RoundIconButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onPressed,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.all(4),
-        child: Material(
-          color: carSurface(context).withValues(alpha: 0.92),
-          shape: const CircleBorder(),
-          child: IconButton(
-            tooltip: tooltip,
-            onPressed: onPressed,
-            icon: Icon(icon, color: color ?? carInk(context)),
           ),
         ),
       );

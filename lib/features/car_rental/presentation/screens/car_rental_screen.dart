@@ -14,6 +14,7 @@ import '../../logic/car_controller.dart';
 import '../car_labels.dart';
 import '../widgets/car_widgets.dart';
 import 'car_search_screen.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Car rental home: "Find Your Perfect Drive" with the cars of the city the
 /// customer is in (never other cities), nearest first.
@@ -118,7 +119,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
   Widget build(BuildContext context) {
     final labels = CarLabels(AppLocalizations.of(context));
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       bottomNavigationBar: AppDockBar(
         selectedIndex: 0,
         onSelected: (index) => AppDockBar.leaveTo(context, index),
@@ -157,7 +158,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                         fontSize: 30,
                         height: 1.15,
                         fontWeight: FontWeight.w800,
-                        color: carInk(context),
+                        color: context.uiInk,
                       ),
                     ).animate().fade(duration: 250.ms),
                     const SizedBox(height: 18),
@@ -176,7 +177,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                         ),
@@ -189,7 +190,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                                 Icon(
                                   Icons.near_me_rounded,
                                   size: 14,
-                                  color: carMuted(context),
+                                  color: context.uiMuted,
                                 ),
                                 const SizedBox(width: 4),
                                 Flexible(
@@ -199,7 +200,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: carMuted(context),
+                                      color: context.uiMuted,
                                     ),
                                   ),
                                 ),
@@ -228,7 +229,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                             const SizedBox(height: 12),
                             Text(
                               labels.locating,
-                              style: TextStyle(color: carMuted(context)),
+                              style: TextStyle(color: context.uiMuted),
                             ),
                           ],
                         ],
@@ -318,7 +319,7 @@ class _TopBar extends StatelessWidget {
         IconButton(
           tooltip: material.backButtonTooltip,
           onPressed: onBack,
-          icon: Icon(Icons.arrow_back_rounded, color: carInk(context)),
+          icon: Icon(Icons.arrow_back_rounded, color: context.uiInk),
         ),
         const Spacer(),
         IconButton(
@@ -326,7 +327,7 @@ class _TopBar extends StatelessWidget {
           onPressed: onNotifications,
           icon: Icon(
             Icons.notifications_none_rounded,
-            color: carInk(context),
+            color: context.uiInk,
           ),
         ),
       ],
@@ -358,11 +359,11 @@ class _SearchBar extends StatelessWidget {
         key: const ValueKey('car-search-bar'),
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        child: CarCard(
+        child: AppCard(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           child: Row(
             children: [
-              Icon(Icons.search_rounded, color: carMuted(context)),
+              Icon(Icons.search_rounded, color: context.uiMuted),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -371,7 +372,7 @@ class _SearchBar extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
-                    color: city == null ? carMuted(context) : carInk(context),
+                    color: city == null ? context.uiMuted : context.uiInk,
                     fontWeight: city == null ? null : FontWeight.w600,
                   ),
                 ),
@@ -379,7 +380,7 @@ class _SearchBar extends StatelessWidget {
               Container(
                 width: 1,
                 height: 26,
-                color: carBorder(context),
+                color: context.uiBorder,
                 margin: const EdgeInsets.symmetric(horizontal: 8),
               ),
               Padding(
@@ -425,7 +426,7 @@ class _BrowseCarCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: CarCard(
+        child: AppCard(
           padding: EdgeInsets.zero,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,7 +443,7 @@ class _BrowseCarCard extends StatelessWidget {
                   PositionedDirectional(
                     top: 12,
                     end: 12,
-                    child: CarRatingBadge(rating: car.rating),
+                    child: AppRatingBadge(rating: car.rating),
                   ),
                   if (car.distanceMeters != null)
                     PositionedDirectional(
@@ -474,7 +475,7 @@ class _BrowseCarCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: carInk(context),
+                                  color: context.uiInk,
                                 ),
                               ),
                               const SizedBox(height: 5),
@@ -484,7 +485,7 @@ class _BrowseCarCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: carMuted(context),
+                                  color: context.uiMuted,
                                 ),
                               ),
                             ],
@@ -496,7 +497,7 @@ class _BrowseCarCard extends StatelessWidget {
                     ),
                     if (partner.isNotEmpty) ...[
                       const SizedBox(height: 10),
-                      Divider(height: 1, color: carBorder(context)),
+                      Divider(height: 1, color: context.uiBorder),
                       const SizedBox(height: 10),
                       CarProviderLine(car: car, labels: labels),
                     ],
@@ -520,7 +521,7 @@ class _Pill extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
-          color: carSurface(context),
+          color: context.uiSurface,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
@@ -539,7 +540,7 @@ class _Pill extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w700,
-                color: carInk(context),
+                color: context.uiInk,
               ),
             ),
           ],
@@ -575,7 +576,7 @@ class CarDailyPrice extends StatelessWidget {
           ),
           TextSpan(
             text: ' ${labels.perDay}',
-            style: TextStyle(fontSize: 12, color: carMuted(context)),
+            style: TextStyle(fontSize: 12, color: context.uiMuted),
           ),
         ]),
       );
@@ -599,18 +600,18 @@ class _Message extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
         child: Column(
           children: [
-            Icon(icon, size: 44, color: carMuted(context)),
+            Icon(icon, size: 44, color: context.uiMuted),
             const SizedBox(height: 10),
             Text(
               text,
               textAlign: TextAlign.center,
-              style: TextStyle(color: carMuted(context), height: 1.4),
+              style: TextStyle(color: context.uiMuted, height: 1.4),
             ),
             if (action != null) ...[
               const SizedBox(height: 14),
               SizedBox(
                 width: 220,
-                child: CarCtaButton(label: action!, onPressed: onAction),
+                child: AppButton.label(text: action!, onPressed: onAction),
               ),
             ],
           ],

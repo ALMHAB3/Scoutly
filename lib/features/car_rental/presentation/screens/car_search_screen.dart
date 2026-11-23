@@ -8,6 +8,7 @@ import '../../../../models/car_model.dart';
 import '../../logic/car_controller.dart';
 import '../car_labels.dart';
 import '../widgets/car_widgets.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// What the Search & Filters screen hands back to the Browse screen.
 class CarSearchResult {
@@ -141,9 +142,9 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
     final labels = CarLabels(AppLocalizations.of(context));
     final count = _matchCount;
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       appBar: AppBar(
-        backgroundColor: carPageBackground(context),
+        backgroundColor: context.uiPageBackground,
         surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: Text(
@@ -151,7 +152,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 18,
-            color: carInk(context),
+            color: context.uiInk,
           ),
         ),
         actions: [
@@ -161,7 +162,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
-          CarCard(
+          AppCard(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
             child: Column(
               children: [
@@ -181,7 +182,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                             labels.pickupLocation,
                             style: TextStyle(
                               fontSize: 11,
-                              color: carMuted(context),
+                              color: context.uiMuted,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -191,7 +192,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                         ],
@@ -230,14 +231,14 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: Divider(height: 1, color: carBorder(context)),
+                  child: Divider(height: 1, color: context.uiBorder),
                 ),
                 Row(
                   children: [
                     Icon(
                       Icons.location_on_outlined,
                       size: 20,
-                      color: carMuted(context),
+                      color: context.uiMuted,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -248,7 +249,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                             labels.dropoffLocation,
                             style: TextStyle(
                               fontSize: 11,
-                              color: carMuted(context),
+                              color: context.uiMuted,
                             ),
                           ),
                           TextField(
@@ -257,7 +258,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                             decoration: InputDecoration(
                               isDense: true,
@@ -283,7 +284,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
             padding: const EdgeInsetsDirectional.only(start: 6, top: 8),
             child: Text(
               labels.pickupCityNote,
-              style: TextStyle(fontSize: 11.5, color: carMuted(context)),
+              style: TextStyle(fontSize: 11.5, color: context.uiMuted),
             ),
           ),
           const SizedBox(height: 12),
@@ -309,7 +310,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
             ],
           ),
           const SizedBox(height: 22),
-          _SectionTitle(labels.carTypeTitle),
+          AppSectionTitle(labels.carTypeTitle),
           const SizedBox(height: 10),
           CarTypeChips(
             labels: labels,
@@ -317,11 +318,11 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
             onSelected: (type) => setState(() => _type = type),
           ),
           const SizedBox(height: 22),
-          _SectionTitle(labels.priceRange, trailing: labels.perDayNote),
+          AppSectionTitle(labels.priceRange, note: labels.perDayNote),
           const SizedBox(height: 4),
           _priceRange(context),
           const SizedBox(height: 18),
-          _SectionTitle(labels.features),
+          AppSectionTitle(labels.features),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -329,7 +330,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                 if (feature != CarFeature.values.first)
                   const SizedBox(width: 10),
                 Expanded(
-                  child: CarFeatureTile(
+                  child: AppFeatureTile(
                     icon: carFeatureIcon(feature),
                     label: labels.feature(feature),
                     selected: _features.contains(feature),
@@ -346,9 +347,9 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-          child: CarCtaButton(
-            buttonKey: const ValueKey('car-show-results'),
-            label: labels.showResults(count),
+          child: AppButton.label(
+            key: const ValueKey('car-show-results'),
+            text: labels.showResults(count),
             onPressed: count == 0 ? null : _showResults,
           ),
         ),
@@ -364,7 +365,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Text(
           _cars.isEmpty ? '—' : formatPrice(context, floor),
-          style: TextStyle(color: carMuted(context)),
+          style: TextStyle(color: context.uiMuted),
         ),
       );
     }
@@ -405,7 +406,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                 formatPrice(context, values.start),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: carInk(context),
+                  color: context.uiInk,
                 ),
               ),
               const Spacer(),
@@ -413,7 +414,7 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
                 formatPrice(context, values.end),
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: carInk(context),
+                  color: context.uiInk,
                 ),
               ),
             ],
@@ -422,33 +423,6 @@ class _CarSearchScreenState extends State<CarSearchScreen> {
       ],
     );
   }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  final String? trailing;
-  const _SectionTitle(this.text, {this.trailing});
-
-  @override
-  Widget build(BuildContext context) => Row(
-        children: [
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: carInk(context),
-            ),
-          ),
-          if (trailing != null) ...[
-            const SizedBox(width: 6),
-            Text(
-              '($trailing)',
-              style: TextStyle(fontSize: 12, color: carMuted(context)),
-            ),
-          ],
-        ],
-      );
 }
 
 /// Card with a label, a date and a time; tap to change both.
@@ -474,14 +448,14 @@ class CarDateTimeCard extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
-          child: CarCard(
+          child: AppCard(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: TextStyle(fontSize: 11, color: carMuted(context)),
+                  style: TextStyle(fontSize: 11, color: context.uiMuted),
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -494,14 +468,14 @@ class CarDateTimeCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: carInk(context),
+                          color: context.uiInk,
                         ),
                       ),
                     ),
                     Icon(
                       Icons.calendar_today_outlined,
                       size: 17,
-                      color: carMuted(context),
+                      color: context.uiMuted,
                     ),
                   ],
                 ),

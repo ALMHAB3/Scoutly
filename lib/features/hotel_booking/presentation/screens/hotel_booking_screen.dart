@@ -13,11 +13,11 @@ import '../../../../global_widgets/payment_checkout_screen.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/booking_model.dart';
 import '../../../../models/hotel_model.dart';
-import '../../../car_rental/presentation/widgets/car_widgets.dart';
 import '../../../notifications/logic/notifications_store.dart';
 import '../../logic/hotel_controller.dart';
 import '../hotel_labels.dart';
 import '../widgets/hotel_widgets.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Opens the payment page for [amount] in [currency]. Replaceable in tests.
 typedef HotelPaymentLauncher = Future<({bool paid, int? attemptId})?> Function(
@@ -239,9 +239,9 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
     );
 
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       appBar: AppBar(
-        backgroundColor: carPageBackground(context),
+        backgroundColor: context.uiPageBackground,
         surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: Text(
@@ -249,14 +249,14 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 18,
-            color: carInk(context),
+            color: context.uiInk,
           ),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
-          CarCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -282,7 +282,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -299,7 +299,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                Divider(height: 1, color: carBorder(context)),
+                Divider(height: 1, color: context.uiBorder),
                 IntrinsicHeight(
                   child: Row(
                     children: [
@@ -310,7 +310,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                           icon: Icons.login_rounded,
                         ),
                       ),
-                      VerticalDivider(width: 1, color: carBorder(context)),
+                      VerticalDivider(width: 1, color: context.uiBorder),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _Stop(
@@ -322,7 +322,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                     ],
                   ),
                 ),
-                Divider(height: 1, color: carBorder(context)),
+                Divider(height: 1, color: context.uiBorder),
                 _Stop(
                   title: labels.yourStay,
                   value: labels.stay(_nights, _rooms, params.guests),
@@ -332,14 +332,14 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                   Row(
                     children: [
                       Icon(Icons.location_on_outlined,
-                          size: 15, color: carMuted(context)),
+                          size: 15, color: context.uiMuted),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
                           _hotel.address,
                           style: TextStyle(
                             fontSize: 12.5,
-                            color: carMuted(context),
+                            color: context.uiMuted,
                           ),
                         ),
                       ),
@@ -349,7 +349,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          CarCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -365,7 +365,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                   _price(pricing.taxAndFees),
                 ),
                 const SizedBox(height: 6),
-                Divider(height: 1, color: carBorder(context)),
+                Divider(height: 1, color: context.uiBorder),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -374,7 +374,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                         labels.totalAmount,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          color: carInk(context),
+                          color: context.uiInk,
                         ),
                       ),
                     ),
@@ -393,7 +393,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          CarCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -420,14 +420,14 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                             labels.cardPayment,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             labels.cardPaymentNote,
                             style: TextStyle(
-                                fontSize: 11.5, color: carMuted(context)),
+                                fontSize: 11.5, color: context.uiMuted),
                           ),
                         ],
                       ),
@@ -440,13 +440,12 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                 Row(
                   children: [
                     Icon(Icons.lock_outline_rounded,
-                        size: 14, color: carMuted(context)),
+                        size: 14, color: context.uiMuted),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         labels.secureNote,
-                        style:
-                            TextStyle(fontSize: 11, color: carMuted(context)),
+                        style: TextStyle(fontSize: 11, color: context.uiMuted),
                       ),
                     ),
                   ],
@@ -457,13 +456,13 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: carSurface(context),
+        color: context.uiSurface,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-            child: CarCtaButton(
-              buttonKey: const ValueKey('hotel-pay'),
-              label: labels.pay(totalText),
+            child: AppButton.label(
+              key: const ValueKey('hotel-pay'),
+              text: labels.pay(totalText),
               loading: _submitting,
               onPressed: _pay,
             ),
@@ -484,7 +483,7 @@ class _Heading extends StatelessWidget {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w800,
-          color: carInk(context),
+          color: context.uiInk,
         ),
       );
 }
@@ -502,8 +501,7 @@ class _Stop extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title,
-                style: TextStyle(fontSize: 12, color: carMuted(context))),
+            Text(title, style: TextStyle(fontSize: 12, color: context.uiMuted)),
             const SizedBox(height: 4),
             Row(
               children: [
@@ -515,7 +513,7 @@ class _Stop extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 14,
-                      color: carInk(context),
+                      color: context.uiInk,
                     ),
                   ),
                 ),
@@ -539,7 +537,7 @@ class _PriceRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(fontSize: 13, color: carMuted(context)),
+                style: TextStyle(fontSize: 13, color: context.uiMuted),
               ),
             ),
             const SizedBox(width: 8),
@@ -548,7 +546,7 @@ class _PriceRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
-                color: carInk(context),
+                color: context.uiInk,
               ),
             ),
           ],

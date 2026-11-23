@@ -18,6 +18,7 @@ import '../car_labels.dart';
 import '../widgets/car_widgets.dart';
 import 'car_booking_confirmed_screen.dart';
 import 'car_rental_screen.dart' show CarDailyPrice;
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Opens the payment page for [amount] in [currency]; returns the payment
 /// attempt id when paid, null otherwise. Replaceable in tests.
@@ -248,9 +249,9 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
     final name = '${_car.brand} ${_car.model}'.trim();
 
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       appBar: AppBar(
-        backgroundColor: carPageBackground(context),
+        backgroundColor: context.uiPageBackground,
         surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: Text(
@@ -258,14 +259,14 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 18,
-            color: carInk(context),
+            color: context.uiInk,
           ),
         ),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
-          CarCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -291,7 +292,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -308,7 +309,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                   ],
                 ),
                 const SizedBox(height: 14),
-                Divider(height: 1, color: carBorder(context)),
+                Divider(height: 1, color: context.uiBorder),
                 _Stop(
                   title: labels.pickup,
                   date: labels.dateTime(params.pickupDate),
@@ -316,7 +317,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                   changeLabel: labels.changeTime,
                   onTap: _submitting ? null : _changePickup,
                 ),
-                Divider(height: 1, color: carBorder(context)),
+                Divider(height: 1, color: context.uiBorder),
                 _Stop(
                   title: labels.dropoff,
                   date: labels.dateTime(params.returnDate),
@@ -328,7 +329,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          CarCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -350,7 +351,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                   formatPrice(context, pricing.serviceFee),
                 ),
                 const SizedBox(height: 6),
-                Divider(height: 1, color: carBorder(context)),
+                Divider(height: 1, color: context.uiBorder),
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -359,7 +360,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                         labels.totalAmount,
                         style: TextStyle(
                           fontWeight: FontWeight.w800,
-                          color: carInk(context),
+                          color: context.uiInk,
                         ),
                       ),
                     ),
@@ -378,7 +379,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          CarCard(
+          AppCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -410,7 +411,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                             labels.cardPayment,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: carInk(context),
+                              color: context.uiInk,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -418,7 +419,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                             labels.cardPaymentNote,
                             style: TextStyle(
                               fontSize: 11.5,
-                              color: carMuted(context),
+                              color: context.uiMuted,
                             ),
                           ),
                         ],
@@ -436,7 +437,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                     Icon(
                       Icons.lock_outline_rounded,
                       size: 14,
-                      color: carMuted(context),
+                      color: context.uiMuted,
                     ),
                     const SizedBox(width: 6),
                     Expanded(
@@ -444,7 +445,7 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
                         labels.secureNote,
                         style: TextStyle(
                           fontSize: 11,
-                          color: carMuted(context),
+                          color: context.uiMuted,
                         ),
                       ),
                     ),
@@ -456,13 +457,13 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
         ],
       ),
       bottomNavigationBar: Container(
-        color: carSurface(context),
+        color: context.uiSurface,
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-            child: CarCtaButton(
-              buttonKey: const ValueKey('car-pay'),
-              label: labels.pay(totalText),
+            child: AppButton.label(
+              key: const ValueKey('car-pay'),
+              text: labels.pay(totalText),
               loading: _submitting,
               onPressed: _pay,
             ),
@@ -483,7 +484,7 @@ class _Heading extends StatelessWidget {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w800,
-          color: carInk(context),
+          color: context.uiInk,
         ),
       );
 }
@@ -521,8 +522,7 @@ class _Stop extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style:
-                            TextStyle(fontSize: 12, color: carMuted(context)),
+                        style: TextStyle(fontSize: 12, color: context.uiMuted),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -530,14 +530,14 @@ class _Stop extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
-                          color: carInk(context),
+                          color: context.uiInk,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         place,
                         style:
-                            TextStyle(fontSize: 12.5, color: carMuted(context)),
+                            TextStyle(fontSize: 12.5, color: context.uiMuted),
                       ),
                     ],
                   ),
@@ -567,7 +567,7 @@ class _PriceRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(fontSize: 13, color: carMuted(context)),
+                style: TextStyle(fontSize: 13, color: context.uiMuted),
               ),
             ),
             Text(
@@ -575,7 +575,7 @@ class _PriceRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
-                color: carInk(context),
+                color: context.uiInk,
               ),
             ),
           ],

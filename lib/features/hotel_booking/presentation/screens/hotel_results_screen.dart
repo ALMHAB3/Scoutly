@@ -6,10 +6,10 @@ import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/hotel_model.dart';
 import '../../../../routes/app_routes.dart';
-import '../../../car_rental/presentation/widgets/car_widgets.dart';
 import '../../logic/hotel_controller.dart';
 import '../hotel_labels.dart';
 import '../widgets/hotel_widgets.dart';
+import '../../../../global_widgets/ui/ui.dart';
 
 /// Hotels found for the search: price range chips, sort chips and large
 /// photo cards (same design as the car rental list). Prices follow the
@@ -60,9 +60,9 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
               : const [],
     );
     return Scaffold(
-      backgroundColor: carPageBackground(context),
+      backgroundColor: context.uiPageBackground,
       appBar: AppBar(
-        backgroundColor: carPageBackground(context),
+        backgroundColor: context.uiPageBackground,
         surfaceTintColor: AppColors.transparent,
         centerTitle: true,
         title: ListenableBuilder(
@@ -77,7 +77,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 17,
-                    color: carInk(context),
+                    color: context.uiInk,
                   ),
                 ),
                 if (params != null)
@@ -85,7 +85,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                     '${labels.dayMonth(params.checkIn)} – '
                     '${labels.dayMonth(params.checkOut)} · '
                     '${labels.stay(params.nights.clamp(1, 99), params.rooms, params.guests)}',
-                    style: TextStyle(fontSize: 11, color: carMuted(context)),
+                    style: TextStyle(fontSize: 11, color: context.uiMuted),
                   ),
               ],
             );
@@ -102,10 +102,10 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _ChipsRow(
+                    AppChipRow(
                       children: [
                         for (final f in HotelFilter.values)
-                          _Chip(
+                          AppChip(
                             label: labels.filter(f),
                             selected: ctrl.filter == f,
                             onTap: () => ctrl.setFilter(f),
@@ -113,16 +113,16 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    _ChipsRow(
+                    AppChipRow(
                       children: [
                         Icon(Icons.sort_rounded,
-                            size: 18, color: carMuted(context)),
+                            size: 18, color: context.uiMuted),
                         const SizedBox(width: 6),
                         for (final s in HotelSort.values)
-                          _Chip(
+                          AppChip(
                             label: labels.sort(s),
                             selected: ctrl.sort == s,
-                            small: true,
+                            soft: true,
                             onTap: () => ctrl.setSort(s),
                           ),
                       ],
@@ -149,7 +149,7 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                             ? Icons.cloud_off_rounded
                             : Icons.hotel_rounded,
                         size: 48,
-                        color: carMuted(context),
+                        color: context.uiMuted,
                       ),
                       const SizedBox(height: 10),
                       Text(
@@ -157,14 +157,14 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
                             ? labels.searchUnavailable
                             : labels.noResults,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: carMuted(context)),
+                        style: TextStyle(color: context.uiMuted),
                       ),
                       if (ctrl.searchParams != null) ...[
                         const SizedBox(height: 14),
                         SizedBox(
                           width: 220,
-                          child: CarCtaButton(
-                            label: labels.tryAgain,
+                          child: AppButton.label(
+                            text: labels.tryAgain,
                             onPressed: () => ctrl.search(ctrl.searchParams!),
                           ),
                         ),
@@ -203,70 +203,6 @@ class _HotelResultsScreenState extends State<HotelResultsScreen> {
   }
 }
 
-class _ChipsRow extends StatelessWidget {
-  final List<Widget> children;
-  const _ChipsRow({required this.children});
-
-  @override
-  Widget build(BuildContext context) => SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(children: children),
-      );
-}
-
-class _Chip extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final bool small;
-  final VoidCallback onTap;
-
-  const _Chip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    this.small = false,
-  });
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsetsDirectional.only(end: 8),
-        child: Semantics(
-          button: true,
-          selected: selected,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: EdgeInsets.symmetric(
-                  horizontal: small ? 12 : 16, vertical: small ? 7 : 9),
-              decoration: BoxDecoration(
-                color: selected
-                    ? (small
-                        ? AppColors.primary.withValues(alpha: 0.10)
-                        : AppColors.primary)
-                    : carSurface(context),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: selected ? AppColors.primary : carBorder(context),
-                ),
-              ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: selected
-                      ? (small ? AppColors.primary : AppColors.white)
-                      : carInk(context),
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                  fontSize: small ? 12 : 13,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-}
-
 class _HotelCard extends StatelessWidget {
   final HotelModel hotel;
   final int rooms;
@@ -293,7 +229,7 @@ class _HotelCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: CarCard(
+        child: AppCard(
           padding: EdgeInsets.zero,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +245,7 @@ class _HotelCard extends StatelessWidget {
                   PositionedDirectional(
                     top: 12,
                     end: 12,
-                    child: CarRatingBadge(
+                    child: AppRatingBadge(
                       rating: hotel.hasGoogleRating ? hotel.rating : 0,
                     ),
                   ),
@@ -317,7 +253,7 @@ class _HotelCard extends StatelessWidget {
                     PositionedDirectional(
                       top: 12,
                       start: 12,
-                      child: PhotoPill(
+                      child: AppPill(
                         icon: Icons.near_me_rounded,
                         text: labels.kmAway(hotel.distanceMeters!),
                       ),
@@ -326,7 +262,7 @@ class _HotelCard extends StatelessWidget {
                     PositionedDirectional(
                       top: 12,
                       start: 12,
-                      child: PhotoPill(
+                      child: AppPill(
                         icon: Icons.workspace_premium_rounded,
                         text: labels.featured,
                       ),
@@ -352,7 +288,7 @@ class _HotelCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
-                                  color: carInk(context),
+                                  color: context.uiInk,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -373,7 +309,7 @@ class _HotelCard extends StatelessWidget {
                       Row(
                         children: [
                           Icon(Icons.location_on_outlined,
-                              size: 15, color: carMuted(context)),
+                              size: 15, color: context.uiMuted),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
@@ -382,7 +318,7 @@ class _HotelCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: carMuted(context),
+                                color: context.uiMuted,
                               ),
                             ),
                           ),
@@ -416,7 +352,7 @@ class _HotelCard extends StatelessWidget {
                     ],
                     if (partner.isNotEmpty) ...[
                       const SizedBox(height: 10),
-                      Divider(height: 1, color: carBorder(context)),
+                      Divider(height: 1, color: context.uiBorder),
                       const SizedBox(height: 10),
                       HotelProviderLine(hotel: hotel, labels: labels),
                     ],
