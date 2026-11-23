@@ -687,7 +687,7 @@ public class PartnerController {
                 """ : "";
         String hotelReviewColumns = "hotel".equals(normalizedType)
                 ? ", COALESCE(review_summary.aggregated_rating, 0) AS aggregated_rating, "
-                        + "COALESCE(review_summary.aggregated_review_count, 0) AS aggregated_review_count"
+                        + "COALESCE(review_summary.aggregated_review_count, 0) AS aggregated_review_count\n"
                 : "";
         String sql = """
                 SELECT l.*, p.name AS partner_name, p.slug AS partner_slug
@@ -2318,17 +2318,20 @@ public class PartnerController {
         }
     }
 
-    private static List<String> stringArray(Object raw) {
+    static List<String> stringArray(Object raw) {
         try {
             List<?> values;
             if (raw instanceof List<?> list) {
                 values = list;
-            } else if (raw instanceof String json && !json.isBlank()) {
+            } else {
+                // JSONB columns arrive as PGobject, whose toString() is the
+                // JSON text (they were ignored before, so partner hotel
+                // amenities were never returned).
+                String json = raw == null ? "" : raw.toString();
+                if (json.isBlank()) return List.of();
                 values = JSON.readValue(
                         json,
                         JSON.getTypeFactory().constructCollectionType(List.class, Object.class));
-            } else {
-                return List.of();
             }
             return values.stream()
                     .filter(String.class::isInstance)

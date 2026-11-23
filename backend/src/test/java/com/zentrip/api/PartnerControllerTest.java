@@ -161,6 +161,22 @@ class PartnerControllerTest {
     }
 
     @Test
+    void hotelAmenitiesAreReadFromJsonbColumns() {
+        // JSONB values come from the driver as an object whose toString()
+        // is the JSON text (PGobject); they used to be dropped.
+        Object jsonb = new Object() {
+            @Override
+            public String toString() {
+                return "[\"Free Wi-Fi\", \"Breakfast\"]";
+            }
+        };
+        assertEquals(List.of("Free Wi-Fi", "Breakfast"),
+                PartnerController.stringArray(jsonb));
+        assertEquals(List.of("Pool"), PartnerController.stringArray(List.of("Pool")));
+        assertEquals(List.of(), PartnerController.stringArray(null));
+    }
+
+    @Test
     void carDetailsAreValidatedAndNormalized() {
         Map<String, Object> car = new java.util.HashMap<>(Map.of(
                 "category", "SUV",

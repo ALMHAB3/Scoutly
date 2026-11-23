@@ -11,6 +11,10 @@ import '../../../../models/flight_model.dart';
 import '../../../../models/hotel_destination_suggestion.dart';
 import '../../../../routes/app_routes.dart';
 import '../../logic/hotel_controller.dart';
+import '../../../../global_widgets/app_shell.dart';
+import '../../../car_rental/presentation/widgets/car_widgets.dart';
+import '../../../notifications/presentation/screens/notifications_screen.dart';
+import '../hotel_labels.dart';
 
 /// مفتاح تخزين آخر مدينة تم البحث عنها، يُستخدم من شاشة SearchHotelsScreen
 /// (لعرض اقتراح "كرر آخر بحث") ومن هذه الشاشة نفسها.
@@ -347,391 +351,460 @@ class _HotelSearchScreenState extends State<HotelSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context);
+    final labels = HotelLabels(l10n);
 
     return Scaffold(
-      appBar: AppBar(
-          title: Text(l10n.searchHotels),
-          flexibleSpace: const DecoratedBox(
-              decoration: BoxDecoration(gradient: AppColors.primaryGradient))),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // ── Destination ──────────────────────────────────────────────
-          _Label(l10n.destination),
-          const SizedBox(height: 8),
-          _InputBox(
-            isDark: isDark,
-            child: TextField(
-              controller: _cityCtrl,
-              focusNode: _destinationFocusNode,
-              textInputAction: TextInputAction.search,
-              onChanged: _onDestinationChanged,
-              onSubmitted: (_) => _loadDestinationSuggestions(),
-              decoration: InputDecoration(
-                hintText: l10n.hotelDestinationHint,
-                prefixIcon:
-                    const Icon(Icons.search_rounded, color: AppColors.primary),
-                suffixIcon: _isLoadingNearby
-                    ? const Padding(
-                        padding: EdgeInsets.all(14),
-                        child: SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : IconButton(
-                        tooltip: l10n.useCurrentLocation,
-                        onPressed: _searchNearby,
-                        icon: const Icon(Icons.my_location_rounded),
-                      ),
-                border: InputBorder.none,
-                filled: false,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-              ),
-            ),
-          ).animate().fade(duration: 300.ms),
-          ListenableBuilder(
-            listenable: _ctrl,
-            builder: (context, _) {
-              final query = _cityCtrl.text.trim();
-              if (query.length < 2 || _selectedDestination != null) {
-                return const SizedBox.shrink();
-              }
-              Widget? content;
-              if (_ctrl.isLoadingDestinationSuggestions) {
-                content = ListTile(
-                  dense: true,
-                  leading: const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  title: Text(l10n.hotelLoadingDestinations),
-                );
-              } else if (_ctrl.hasDestinationSuggestionError) {
-                content = ListTile(
-                  dense: true,
-                  leading: const Icon(Icons.error_outline_rounded),
-                  title: Text(l10n.hotelDestinationSuggestionsError),
-                );
-              } else if (_ctrl.destinationSuggestions.isEmpty) {
-                content = ListTile(
-                  dense: true,
-                  leading: const Icon(Icons.search_off_rounded),
-                  title: Text(l10n.hotelNoDestinationSuggestions),
-                );
-              } else {
-                content = ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 240),
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    shrinkWrap: true,
-                    children: _ctrl.destinationSuggestions.map((suggestion) {
-                      final displayName = suggestion.displayName(
-                        Localizations.localeOf(context).languageCode,
-                      );
-                      final country = suggestion.displayCountry(
-                        Localizations.localeOf(context).languageCode,
-                      );
-                      return ListTile(
-                        dense: true,
-                        leading: const Icon(Icons.place_outlined),
-                        title: Text.rich(_highlightSuggestion(displayName)),
-                        subtitle: country.isEmpty ? null : Text(country),
-                        onTap: () => _selectDestination(suggestion),
-                      );
-                    }).toList(growable: false),
-                  ),
-                );
-              }
-              return Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Material(
-                  elevation: 5,
-                  borderRadius: BorderRadius.circular(12),
-                  child: content,
+      backgroundColor: carPageBackground(context),
+      bottomNavigationBar: AppDockBar(
+        selectedIndex: 0,
+        onSelected: (index) => AppDockBar.leaveTo(context, index),
+      ),
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  onPressed: () => Navigator.maybePop(context),
+                  icon: Icon(Icons.arrow_back_rounded, color: carInk(context)),
                 ),
-              );
-            },
-          ),
-          if (_destinationError)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
-              child: Text(
-                l10n.hotelSelectDestination,
-                style:
-                    const TextStyle(color: AppColors.accentRed, fontSize: 12),
-              ),
+                const Spacer(),
+                IconButton(
+                  tooltip: l10n.notificationsTitle,
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationsScreen(),
+                    ),
+                  ),
+                  icon: Icon(Icons.notifications_none_rounded,
+                      color: carInk(context)),
+                ),
+              ],
             ),
-          if (_locationMessage != null)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+            const SizedBox(height: 14),
+            Text.rich(
+              TextSpan(children: [
+                TextSpan(text: '${labels.findYour}\n'),
+                TextSpan(
+                  text: labels.perfectStay,
+                  style: const TextStyle(color: AppColors.primary),
+                ),
+              ]),
+              style: TextStyle(
+                fontSize: 30,
+                height: 1.15,
+                fontWeight: FontWeight.w800,
+                color: carInk(context),
+              ),
+            ).animate().fade(duration: 250.ms),
+            const SizedBox(height: 18),
+
+            // ── Destination ────────────────────────────────────────────
+            CarCard(
+              padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
               child: Row(
                 children: [
+                  const Icon(Icons.location_on_outlined,
+                      size: 20, color: AppColors.primary),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      _locationMessage!,
-                      style: const TextStyle(
-                          color: AppColors.accentRed, fontSize: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          labels.destination,
+                          style:
+                              TextStyle(fontSize: 11, color: carMuted(context)),
+                        ),
+                        TextField(
+                          controller: _cityCtrl,
+                          focusNode: _destinationFocusNode,
+                          textInputAction: TextInputAction.search,
+                          onChanged: _onDestinationChanged,
+                          onSubmitted: (_) => _loadDestinationSuggestions(),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: carInk(context),
+                          ),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            hintText: l10n.hotelDestinationHint,
+                            filled: false,
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 6),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  if (_locationError != null)
-                    TextButton.icon(
-                      onPressed: _openLocationSettings,
-                      icon: const Icon(Icons.settings_outlined, size: 16),
-                      label: Text(l10n.openLocationSettings),
-                    ),
+                  _isLoadingNearby
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: l10n.useCurrentLocation,
+                          onPressed: _searchNearby,
+                          icon: const Icon(Icons.my_location_rounded,
+                              color: AppColors.primary, size: 20),
+                        ),
                 ],
               ),
+            ).animate().fade(duration: 300.ms),
+            ListenableBuilder(
+              listenable: _ctrl,
+              builder: (context, _) {
+                final query = _cityCtrl.text.trim();
+                if (query.length < 2 || _selectedDestination != null) {
+                  return const SizedBox.shrink();
+                }
+                Widget content;
+                if (_ctrl.isLoadingDestinationSuggestions) {
+                  content = ListTile(
+                    dense: true,
+                    leading: const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    title: Text(l10n.hotelLoadingDestinations),
+                  );
+                } else if (_ctrl.hasDestinationSuggestionError) {
+                  content = ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.error_outline_rounded),
+                    title: Text(l10n.hotelDestinationSuggestionsError),
+                  );
+                } else if (_ctrl.destinationSuggestions.isEmpty) {
+                  content = ListTile(
+                    dense: true,
+                    leading: const Icon(Icons.search_off_rounded),
+                    title: Text(l10n.hotelNoDestinationSuggestions),
+                  );
+                } else {
+                  content = ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 240),
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      shrinkWrap: true,
+                      children: _ctrl.destinationSuggestions.map((suggestion) {
+                        final language =
+                            Localizations.localeOf(context).languageCode;
+                        final displayName = suggestion.displayName(language);
+                        final country = suggestion.displayCountry(language);
+                        return ListTile(
+                          dense: true,
+                          leading: const Icon(Icons.place_outlined),
+                          title: Text.rich(_highlightSuggestion(displayName)),
+                          subtitle: country.isEmpty ? null : Text(country),
+                          onTap: () => _selectDestination(suggestion),
+                        );
+                      }).toList(growable: false),
+                    ),
+                  );
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Material(
+                    elevation: 5,
+                    color: carSurface(context),
+                    borderRadius: BorderRadius.circular(14),
+                    child: content,
+                  ),
+                );
+              },
             ),
-          const SizedBox(height: 16),
+            if (_destinationError)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+                child: Text(
+                  l10n.hotelSelectDestination,
+                  style:
+                      const TextStyle(color: AppColors.accentRed, fontSize: 12),
+                ),
+              ),
+            if (_locationMessage != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 12, top: 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _locationMessage!,
+                        style: const TextStyle(
+                            color: AppColors.accentRed, fontSize: 12),
+                      ),
+                    ),
+                    if (_locationError != null)
+                      TextButton.icon(
+                        onPressed: _openLocationSettings,
+                        icon: const Icon(Icons.settings_outlined, size: 16),
+                        label: Text(l10n.openLocationSettings),
+                      ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 12),
 
-          // ── Dates ─────────────────────────────────────────────────────
-          Row(children: [
-            Expanded(
-                child: _DatePick(
-                    label: l10n.checkIn,
-                    date: _checkIn,
-                    icon: Icons.login_rounded,
-                    isDark: isDark,
-                    onTap: _pickDateRange)),
-            const SizedBox(width: 12),
-            Expanded(
-                child: _DatePick(
-                    label: l10n.checkOut,
-                    date: _checkOut,
-                    icon: Icons.logout_rounded,
-                    isDark: isDark,
-                    onTap: _pickDateRange)),
-          ]).animate().fade(delay: 100.ms),
-          const SizedBox(height: 16),
+            // ── Dates ───────────────────────────────────────────────────
+            Row(children: [
+              Expanded(
+                child: _DateCard(
+                  label: labels.checkIn,
+                  date: labels.weekdayDate(_checkIn),
+                  icon: Icons.login_rounded,
+                  onTap: _pickDateRange,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _DateCard(
+                  label: labels.checkOut,
+                  date: labels.weekdayDate(_checkOut),
+                  icon: Icons.logout_rounded,
+                  onTap: _pickDateRange,
+                ),
+              ),
+            ]).animate().fade(delay: 80.ms),
+            const SizedBox(height: 12),
 
-          // ── Rooms + Guests ────────────────────────────────────────────
-          Row(children: [
-            Expanded(
-                child: _Stepper(
-                    label: l10n.hotelRoomsLabel,
-                    icon: Icons.hotel_rounded,
+            // ── Rooms + guests ──────────────────────────────────────────
+            CarCard(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              child: Column(
+                children: [
+                  _Counter(
+                    icon: Icons.bed_rounded,
+                    label: labels.rooms,
                     value: _rooms,
-                    isDark: isDark,
                     min: 1,
                     max: 10,
                     onChanged: (v) => setState(() {
-                          _rooms = v;
-                          if (_guests < v) _guests = v;
-                        }))),
-            const SizedBox(width: 12),
-            Expanded(
-                child: _Stepper(
-                    label: l10n.hotelGuestsLabel,
-                    icon: Icons.people_rounded,
+                      _rooms = v;
+                      if (_guests < v) _guests = v;
+                    }),
+                  ),
+                  Divider(height: 1, color: carBorder(context)),
+                  _Counter(
+                    icon: Icons.people_outline_rounded,
+                    label: labels.guests,
                     value: _guests,
-                    isDark: isDark,
                     min: _rooms,
                     max: 20,
-                    onChanged: (v) => setState(() => _guests = v))),
-          ]).animate().fade(delay: 180.ms),
-
-          // ── Summary ───────────────────────────────────────────────────
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-                color: AppColors.primarySurface,
-                borderRadius: BorderRadius.circular(12)),
-            child: Row(children: [
-              const Icon(Icons.nights_stay_rounded,
-                  color: AppColors.primary, size: 18),
-              const SizedBox(width: 10),
-              Text(
-                  '${l10n.hotelNightsSummary(_nightCount)} · '
-                  '${l10n.hotelRoomsSummary(_rooms)} · '
-                  '${l10n.hotelGuestsSummary(_guests)}',
-                  style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13)),
-            ]),
-          ).animate().fade(delay: 240.ms),
-          const SizedBox(height: 28),
-
-          // ── Search ─────────────────────────────────────────────────────
-          ListenableBuilder(
-            listenable: _ctrl,
-            builder: (_, __) => Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed:
-                        _ctrl.isLoading || _isLoadingNearby ? null : _search,
-                    icon: _ctrl.isLoading && !_isLoadingNearby
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Icon(Icons.search_rounded),
-                    label: Text(_ctrl.isLoading && !_isLoadingNearby
-                        ? l10n.hotelSearching
-                        : l10n.searchHotelsBtn),
+                    onChanged: (v) => setState(() => _guests = v),
                   ),
-                ),
-                const SizedBox(width: 10),
+                ],
+              ),
+            ).animate().fade(delay: 140.ms),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.nights_stay_rounded,
+                    color: AppColors.primary, size: 18),
+                const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _ctrl.isLoading || _isLoadingNearby
-                        ? null
-                        : _searchNearby,
-                    icon: _isLoadingNearby
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.near_me_outlined),
-                    label: Text(l10n.hotelSearchNearby),
+                  child: Text(
+                    labels.stay(_nightCount, _rooms, _guests),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
             ),
-          ).animate().fade(delay: 300.ms),
-        ]),
+            const SizedBox(height: 22),
+
+            // ── Search ──────────────────────────────────────────────────
+            ListenableBuilder(
+              listenable: _ctrl,
+              builder: (_, __) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  CarCtaButton(
+                    buttonKey: const ValueKey('hotel-search'),
+                    label: _ctrl.isLoading && !_isLoadingNearby
+                        ? l10n.hotelSearching
+                        : labels.searchHotels,
+                    loading: _ctrl.isLoading && !_isLoadingNearby,
+                    onPressed:
+                        _ctrl.isLoading || _isLoadingNearby ? null : _search,
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      onPressed: _ctrl.isLoading || _isLoadingNearby
+                          ? null
+                          : _searchNearby,
+                      icon: _isLoadingNearby
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.near_me_outlined),
+                      label: Text(labels.searchNearby),
+                      style: OutlinedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ).animate().fade(delay: 200.ms),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _Label extends StatelessWidget {
-  final String text;
-  const _Label(this.text);
-  @override
-  Widget build(BuildContext context) => Text(text,
-      style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-          color: AppColors.textSecondary));
-}
+class _DateCard extends StatelessWidget {
+  final String label;
+  final String date;
+  final IconData icon;
+  final VoidCallback onTap;
 
-class _InputBox extends StatelessWidget {
-  final Widget child;
-  final bool isDark;
-  const _InputBox({required this.child, required this.isDark});
+  const _DateCard({
+    required this.label,
+    required this.date,
+    required this.icon,
+    required this.onTap,
+  });
+
   @override
-  Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.border)),
-        child: child,
+  Widget build(BuildContext context) => Semantics(
+        button: true,
+        label: '$label $date',
+        excludeSemantics: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: CarCard(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label,
+                    style: TextStyle(fontSize: 11, color: carMuted(context))),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(icon, size: 16, color: AppColors.primary),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        date,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: carInk(context),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       );
 }
 
-class _DatePick extends StatelessWidget {
-  final String label;
-  final DateTime date;
+class _Counter extends StatelessWidget {
   final IconData icon;
-  final bool isDark;
-  final VoidCallback onTap;
-  const _DatePick(
-      {required this.label,
-      required this.date,
-      required this.icon,
-      required this.isDark,
-      required this.onTap});
+  final String label;
+  final int value, min, max;
+  final ValueChanged<int> onChanged;
+
+  const _Counter({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.border)),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 11, color: AppColors.textSecondary)),
-          const SizedBox(height: 6),
-          Row(children: [
-            Icon(icon, color: AppColors.primary, size: 16),
-            const SizedBox(width: 6),
-            Text('${date.day}/${date.month}/${date.year}',
-                style: const TextStyle(fontWeight: FontWeight.w700))
-          ]),
-        ]),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: AppColors.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: carInk(context),
+                ),
+              ),
+            ),
+            _RoundButton(
+              icon: Icons.remove_rounded,
+              tooltip: '$label -',
+              onTap: value > min ? () => onChanged(value - 1) : null,
+            ),
+            SizedBox(
+              width: 36,
+              child: Text(
+                '$value',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: carInk(context),
+                ),
+              ),
+            ),
+            _RoundButton(
+              icon: Icons.add_rounded,
+              tooltip: '$label +',
+              onTap: value < max ? () => onChanged(value + 1) : null,
+            ),
+          ],
+        ),
+      );
 }
 
-class _Stepper extends StatelessWidget {
-  final String label;
+class _RoundButton extends StatelessWidget {
   final IconData icon;
-  final int value, min, max;
-  final bool isDark;
-  final void Function(int) onChanged;
-  const _Stepper(
-      {required this.label,
-      required this.icon,
-      required this.value,
-      required this.isDark,
-      required this.min,
-      required this.max,
-      required this.onChanged});
+  final String tooltip;
+  final VoidCallback? onTap;
+  const _RoundButton(
+      {required this.icon, required this.tooltip, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.border)),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [
-          Icon(icon, color: AppColors.primary, size: 14),
-          const SizedBox(width: 5),
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 12, color: AppColors.textSecondary))
-        ]),
-        const SizedBox(height: 8),
-        Row(children: [
-          GestureDetector(
-              onTap: value > min ? () => onChanged(value - 1) : null,
-              child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                      color: AppColors.primarySurface,
-                      borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.remove_rounded,
-                      color: AppColors.primary, size: 16))),
-          Expanded(
-              child: Text('$value',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w800, fontSize: 18))),
-          GestureDetector(
-              onTap: value < max ? () => onChanged(value + 1) : null,
-              child: Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                      color: AppColors.primarySurface,
-                      borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.add_rounded,
-                      color: AppColors.primary, size: 16))),
-        ]),
-      ]),
-    );
-  }
+  Widget build(BuildContext context) => IconButton(
+        tooltip: tooltip,
+        onPressed: onTap,
+        style: IconButton.styleFrom(
+          backgroundColor: AppColors.primary.withValues(alpha: 0.08),
+          disabledBackgroundColor: carBorder(context).withValues(alpha: 0.4),
+        ),
+        icon: Icon(icon,
+            size: 18,
+            color: onTap == null ? carMuted(context) : AppColors.primary),
+      );
 }

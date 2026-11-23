@@ -221,6 +221,7 @@ class CarFeatureTile extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback? onTap;
+  final int maxLines;
 
   const CarFeatureTile({
     super.key,
@@ -228,6 +229,7 @@ class CarFeatureTile extends StatelessWidget {
     required this.label,
     this.selected = false,
     this.onTap,
+    this.maxLines = 1,
   });
 
   @override
@@ -253,7 +255,7 @@ class CarFeatureTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             label,
-            maxLines: 1,
+            maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: TextStyle(

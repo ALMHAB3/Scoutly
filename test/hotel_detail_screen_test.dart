@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zentrip/core/services/api_result.dart';
 import 'package:zentrip/core/services/price_comparison.dart';
+import 'package:zentrip/core/utils/price_format.dart';
 import 'package:zentrip/features/hotel_booking/logic/hotel_controller.dart';
 import 'package:zentrip/features/hotel_booking/presentation/screens/hotel_detail_screen.dart';
 import 'package:zentrip/global_widgets/booking_load_error.dart';
@@ -86,6 +87,12 @@ void _usePhoneViewport(WidgetTester tester) {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
+/// Price as the screen shows it: in the profile currency, converted from
+/// the hotel's currency.
+String _shown(WidgetTester tester, double amount, String currency) =>
+    formatPrice(tester.element(find.byType(HotelDetailScreen)), amount,
+        from: currency);
+
 void _expectNoFlutterException(WidgetTester tester) {
   final exception = tester.takeException();
   if (exception is FlutterError) {
@@ -105,8 +112,10 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Central Test Hotel'), findsOneWidget);
-    expect(find.text('USD 120'), findsOneWidget);
-    expect(find.text('USD 269'), findsOneWidget);
+    // Nightly price in the profile currency; the stay total is shown on the
+    // Booking & Payment screen.
+    expect(find.textContaining(_shown(tester, 120, 'USD'), findRichText: true),
+        findsWidgets);
     expect(find.text('A quiet hotel in the city centre.'), findsOneWidget);
     final image = tester.widget<Image>(find.byType(Image).first);
     expect((image.image as NetworkImage).url, contains('hotel.jpg'));
@@ -127,8 +136,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('GBP 125'), findsOneWidget);
-    expect(find.text('GBP 250.00'), findsOneWidget);
+    expect(find.textContaining(_shown(tester, 125, 'GBP'), findRichText: true),
+        findsWidgets);
+    expect(find.textContaining(_shown(tester, 250, 'GBP'), findRichText: true),
+        findsWidgets);
     expect(find.text('Double Room · Breakfast included'), findsOneWidget);
     await tester.drag(
       find.byType(CustomScrollView),
@@ -152,7 +163,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Central Test Hotel'), findsOneWidget);
-    expect(find.text('EUR 71'), findsOneWidget);
+    expect(find.textContaining(_shown(tester, 71, 'EUR'), findRichText: true),
+        findsWidgets);
     await tester.drag(
       find.byType(CustomScrollView),
       const Offset(0, -900),

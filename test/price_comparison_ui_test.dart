@@ -33,7 +33,7 @@ Widget _app(Widget child, Object controller, Locale locale) => MaterialApp(
 void main() {
   for (final locale in [const Locale('en'), const Locale('ar')]) {
     testWidgets(
-        'hotel failed-rate and empty-budget recovery at 360px ${locale.languageCode}',
+        'hotel results stay usable during a rate outage at 360px ${locale.languageCode}',
         (tester) async {
       tester.view.physicalSize = const Size(360, 800);
       tester.view.devicePixelRatio = 1;
@@ -61,18 +61,9 @@ void main() {
       await tester.pumpAndSettle();
       // The fallback comparison rate keeps the hotel filterable during outage.
       expect(ctrl.results.length, 1);
-      expect(find.byType(PriceComparisonControls), findsOneWidget);
-      expect(tester.takeException(), isNull);
-      final l10n = AppLocalizations.of(
-          tester.element(find.byType(PriceComparisonControls)));
-      expect(find.text(l10n.retryRates), findsOneWidget);
-      // Same-currency prices remain comparable even while the rate service is down.
-      await tester.tap(find.byType(DropdownButtonFormField<String>));
-      await tester.pumpAndSettle();
-      await tester.tap(find.textContaining('EUR').last);
-      await tester.pumpAndSettle();
-      expect(ctrl.results.length, 1);
-      expect(find.textContaining('€50.00'), findsWidgets);
+      expect(find.text('Example Hotel'), findsOneWidget);
+      // Prices follow the profile currency: no "Compare in" control.
+      expect(find.byType(PriceComparisonControls), findsNothing);
       expect(tester.takeException(), isNull);
       ctrl.dispose();
     });
