@@ -21,6 +21,7 @@ import '../../../../models/flight_model.dart';
 import '../../../../models/transfer_model.dart';
 import '../../../car_rental/presentation/car_labels.dart';
 import '../../logic/transfers_controller.dart';
+import '../widgets/taxi_ride_status_card.dart';
 
 class TransferSearchRouteArgs {
   final String initialFromLocation;
@@ -1407,6 +1408,7 @@ class TaxiBookingConfirmedScreen extends StatelessWidget {
         text: ride.partnerName ?? ride.providerName,
         color: AppColors.primary,
       ),
+      extra: TaxiRideStatusCard(ride: ride),
     );
   }
 }

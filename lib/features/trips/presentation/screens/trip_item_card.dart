@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../transfers/presentation/widgets/taxi_ride_status_card.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/utils/date_time_utils.dart';
@@ -288,13 +289,14 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
       item.status == TripTab.upcoming || item.status == TripTab.active;
   return showModalBottomSheet<bool>(
     context: context,
+    isScrollControlled: true,
     builder: (sheetContext) {
       var isCancelling = false;
       return StatefulBuilder(
         builder: (context, setModalState) {
           final l10n = AppLocalizations.of(context);
           return SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -307,6 +309,10 @@ Future<bool?> showBookingDetailsSheet(BuildContext context, TripItem item) {
                   Text(item.subtitle,
                       style: const TextStyle(color: AppColors.textSecondary)),
                   const SizedBox(height: 16),
+                  if (transfer != null && canCancel) ...[
+                    TaxiRideStatusCard(ride: transfer),
+                    const SizedBox(height: 16),
+                  ],
                   _DetailLine(
                       Icons.calendar_today_outlined,
                       DateTimeUtils.formatDate(

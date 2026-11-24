@@ -3643,4 +3643,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get payChooseNextStep => 'You\'ll choose how to pay on the next step.';
+
+  @override
+  String get taxiStatusScheduled => 'Ride scheduled';
+
+  @override
+  String get taxiStatusSoon => 'Pickup soon';
+
+  @override
+  String get taxiStatusOnRide => 'Ride time';
+
+  @override
+  String get taxiStatusFinished => 'Ride finished';
+
+  @override
+  String taxiStatusScheduledSub(String name, String place) {
+    return '$name will pick you up from $place';
+  }
+
+  @override
+  String taxiStatusSoonSub(String name, String time) {
+    return 'Get ready: $name picks you up at $time';
+  }
+
+  @override
+  String taxiStatusOnRideSub(String place) {
+    return 'Have a good trip to $place';
+  }
+
+  @override
+  String taxiStatusFinishedSub(String name) {
+    return 'Thanks for riding with $name';
+  }
+
+  @override
+  String get taxiUnitDays => 'days';
+
+  @override
+  String get taxiUnitHours => 'hours';
+
+  @override
+  String get taxiUnitMinutes => 'min';
+
+  @override
+  String taxiPickupAt(String date, String time) {
+    return 'Pickup $date · $time';
+  }
 }

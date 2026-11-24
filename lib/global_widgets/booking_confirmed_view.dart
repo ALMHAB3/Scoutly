@@ -26,6 +26,9 @@ class BookingConfirmedView extends StatelessWidget {
   final List<(IconData, String)> lines;
   final Widget? provider;
 
+  /// Optional card under the booked item (e.g. the taxi ride status).
+  final Widget? extra;
+
   const BookingConfirmedView({
     super.key,
     required this.title,
@@ -40,6 +43,7 @@ class BookingConfirmedView extends StatelessWidget {
     required this.name,
     required this.lines,
     this.provider,
+    this.extra,
   });
 
   static const _homeTab = 0;
@@ -157,6 +161,7 @@ class BookingConfirmedView extends StatelessWidget {
                   ],
                 ),
               ),
+              if (extra != null) ...[const SizedBox(height: 12), extra!],
               const SizedBox(height: 20),
               // OK closes the booking flow and returns to the home screen.
               AppButton.label(

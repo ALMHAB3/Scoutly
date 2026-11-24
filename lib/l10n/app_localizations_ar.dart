@@ -3622,4 +3622,50 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get payChooseNextStep => 'ستختار طريقة الدفع في الخطوة التالية.';
+
+  @override
+  String get taxiStatusScheduled => 'رحلتك محجوزة';
+
+  @override
+  String get taxiStatusSoon => 'موعد الاستلام قريب';
+
+  @override
+  String get taxiStatusOnRide => 'وقت الرحلة';
+
+  @override
+  String get taxiStatusFinished => 'انتهت الرحلة';
+
+  @override
+  String taxiStatusScheduledSub(String name, String place) {
+    return '$name سيقلّك من $place';
+  }
+
+  @override
+  String taxiStatusSoonSub(String name, String time) {
+    return 'استعد: $name سيقلّك الساعة $time';
+  }
+
+  @override
+  String taxiStatusOnRideSub(String place) {
+    return 'رحلة سعيدة إلى $place';
+  }
+
+  @override
+  String taxiStatusFinishedSub(String name) {
+    return 'شكرًا لركوبك مع $name';
+  }
+
+  @override
+  String get taxiUnitDays => 'يوم';
+
+  @override
+  String get taxiUnitHours => 'ساعة';
+
+  @override
+  String get taxiUnitMinutes => 'دقيقة';
+
+  @override
+  String taxiPickupAt(String date, String time) {
+    return 'الاستلام $date · $time';
+  }
 }

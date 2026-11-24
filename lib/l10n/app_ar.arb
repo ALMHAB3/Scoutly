@@ -1373,5 +1373,61 @@
   "taxiTapMapHint": "اضغط على الخريطة لتحديد وجهتك",
   "taxiConfirmedSubtitle": "تم حجز التاكسي، وسيصلك السائق في الموعد.",
   "taxiMyLocation": "موقعي",
-  "payChooseNextStep": "ستختار طريقة الدفع في الخطوة التالية."
+  "payChooseNextStep": "ستختار طريقة الدفع في الخطوة التالية.",
+  "taxiStatusScheduled": "رحلتك محجوزة",
+  "taxiStatusSoon": "موعد الاستلام قريب",
+  "taxiStatusOnRide": "وقت الرحلة",
+  "taxiStatusFinished": "انتهت الرحلة",
+  "taxiStatusScheduledSub": "{name} سيقلّك من {place}",
+  "@taxiStatusScheduledSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiStatusSoonSub": "استعد: {name} سيقلّك الساعة {time}",
+  "@taxiStatusSoonSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiStatusOnRideSub": "رحلة سعيدة إلى {place}",
+  "@taxiStatusOnRideSub": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiStatusFinishedSub": "شكرًا لركوبك مع {name}",
+  "@taxiStatusFinishedSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiUnitDays": "يوم",
+  "taxiUnitHours": "ساعة",
+  "taxiUnitMinutes": "دقيقة",
+  "taxiPickupAt": "الاستلام {date} · {time}",
+  "@taxiPickupAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

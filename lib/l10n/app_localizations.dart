@@ -6777,6 +6777,78 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'ستختار طريقة الدفع في الخطوة التالية.'**
   String get payChooseNextStep;
+
+  /// No description provided for @taxiStatusScheduled.
+  ///
+  /// In ar, this message translates to:
+  /// **'رحلتك محجوزة'**
+  String get taxiStatusScheduled;
+
+  /// No description provided for @taxiStatusSoon.
+  ///
+  /// In ar, this message translates to:
+  /// **'موعد الاستلام قريب'**
+  String get taxiStatusSoon;
+
+  /// No description provided for @taxiStatusOnRide.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت الرحلة'**
+  String get taxiStatusOnRide;
+
+  /// No description provided for @taxiStatusFinished.
+  ///
+  /// In ar, this message translates to:
+  /// **'انتهت الرحلة'**
+  String get taxiStatusFinished;
+
+  /// No description provided for @taxiStatusScheduledSub.
+  ///
+  /// In ar, this message translates to:
+  /// **'{name} سيقلّك من {place}'**
+  String taxiStatusScheduledSub(String name, String place);
+
+  /// No description provided for @taxiStatusSoonSub.
+  ///
+  /// In ar, this message translates to:
+  /// **'استعد: {name} سيقلّك الساعة {time}'**
+  String taxiStatusSoonSub(String name, String time);
+
+  /// No description provided for @taxiStatusOnRideSub.
+  ///
+  /// In ar, this message translates to:
+  /// **'رحلة سعيدة إلى {place}'**
+  String taxiStatusOnRideSub(String place);
+
+  /// No description provided for @taxiStatusFinishedSub.
+  ///
+  /// In ar, this message translates to:
+  /// **'شكرًا لركوبك مع {name}'**
+  String taxiStatusFinishedSub(String name);
+
+  /// No description provided for @taxiUnitDays.
+  ///
+  /// In ar, this message translates to:
+  /// **'يوم'**
+  String get taxiUnitDays;
+
+  /// No description provided for @taxiUnitHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'ساعة'**
+  String get taxiUnitHours;
+
+  /// No description provided for @taxiUnitMinutes.
+  ///
+  /// In ar, this message translates to:
+  /// **'دقيقة'**
+  String get taxiUnitMinutes;
+
+  /// No description provided for @taxiPickupAt.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاستلام {date} · {time}'**
+  String taxiPickupAt(String date, String time);
 }
 
 class _AppLocalizationsDelegate

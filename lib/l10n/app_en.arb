@@ -1438,5 +1438,61 @@
   "taxiTapMapHint": "Tap the map to set your destination",
   "taxiConfirmedSubtitle": "Your taxi is booked. The driver will pick you up on time.",
   "taxiMyLocation": "My location",
-  "payChooseNextStep": "You'll choose how to pay on the next step."
+  "payChooseNextStep": "You'll choose how to pay on the next step.",
+  "taxiStatusScheduled": "Ride scheduled",
+  "taxiStatusSoon": "Pickup soon",
+  "taxiStatusOnRide": "Ride time",
+  "taxiStatusFinished": "Ride finished",
+  "taxiStatusScheduledSub": "{name} will pick you up from {place}",
+  "@taxiStatusScheduledSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiStatusSoonSub": "Get ready: {name} picks you up at {time}",
+  "@taxiStatusSoonSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiStatusOnRideSub": "Have a good trip to {place}",
+  "@taxiStatusOnRideSub": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiStatusFinishedSub": "Thanks for riding with {name}",
+  "@taxiStatusFinishedSub": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiUnitDays": "days",
+  "taxiUnitHours": "hours",
+  "taxiUnitMinutes": "min",
+  "taxiPickupAt": "Pickup {date} · {time}",
+  "@taxiPickupAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }
