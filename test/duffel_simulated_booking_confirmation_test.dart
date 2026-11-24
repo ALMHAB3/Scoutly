@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/booking_confirmed_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/flight_booking_model.dart';
-import 'package:zentrip/models/flight_model.dart';
-import 'package:zentrip/models/trip_model.dart';
+import 'package:scoutly/features/flight_booking/presentation/screens/booking_confirmed_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/flight_booking_model.dart';
+import 'package:scoutly/models/flight_model.dart';
+import 'package:scoutly/models/trip_model.dart';
 
 void main() {
   testWidgets(

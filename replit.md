@@ -1,10 +1,10 @@
-# Zentrip on Replit
+# Scoutly on Replit
 
 This repository keeps its existing Flutter frontend and Java Spring Boot backend.
 
 ## Run
 
-Use the **Run** button (`Start Zentrip` workflow), or:
+Use the **Run** button (`Start Scoutly` workflow), or:
 
 ```sh
 bash scripts/start-replit.sh
@@ -101,7 +101,7 @@ Provider secrets configured in Supabase Vault or Edge Functions are not
 automatically injected into this Java process. Configure the keys above in this
 Replit project's Secrets for the corresponding features to work.
 
-For local preview only, `ZENTRIP_PROVIDER_ENV_FILE` can select an ignored uploaded
+For local preview only, `SCOUTLY_PROVIDER_ENV_FILE` can select an ignored uploaded
 environment file. The launcher reads only `GEMINI_API_KEY`, `GEMINI_MODEL`,
 `GEMINI_FALLBACK_MODEL`, `GEMINI_READ_TIMEOUT_SECONDS`, `SERPAPI_KEY`, and
 `GOOGLE_PLACES_API_KEY`; existing environment variables take

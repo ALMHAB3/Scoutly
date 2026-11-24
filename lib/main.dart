@@ -40,7 +40,7 @@ void main() {
     );
   };
 
-  runApp(const ZentripApp());
+  runApp(const ScoutlyApp());
   unawaited(_initializeServices());
 }
 
@@ -69,8 +69,8 @@ Future<void> _initializeSafely(
   }
 }
 
-class ZentripApp extends StatelessWidget {
-  const ZentripApp({super.key});
+class ScoutlyApp extends StatelessWidget {
+  const ScoutlyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

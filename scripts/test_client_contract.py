@@ -7,13 +7,13 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 API_CLIENT = (ROOT / "lib/core/services/api_service.dart").read_text()
 API_CONTROLLER = (
-    ROOT / "backend/src/main/java/com/zentrip/api/ApiController.java"
+    ROOT / "backend/src/main/java/com/scoutly/api/ApiController.java"
 ).read_text()
 SECURITY = (
-    ROOT / "backend/src/main/java/com/zentrip/api/SecurityConfig.java"
+    ROOT / "backend/src/main/java/com/scoutly/api/SecurityConfig.java"
 ).read_text()
 WEB_CONFIG = (
-    ROOT / "backend/src/main/java/com/zentrip/api/WebConfig.java"
+    ROOT / "backend/src/main/java/com/scoutly/api/WebConfig.java"
 ).read_text()
 
 
@@ -75,11 +75,11 @@ class ClientApiContractTest(unittest.TestCase):
     def test_nearby_attractions_are_explicitly_public_and_rate_limited(self):
         self.assertIn('"/api/attractions/nearby"', SECURITY)
         self.assertIn("REQUEST_SPACING_NANOS", (
-            ROOT / "backend/src/main/java/com/zentrip/api/"
+            ROOT / "backend/src/main/java/com/scoutly/api/"
             "OpenTripMapAttractionService.java"
         ).read_text())
         self.assertIn("waitForRequestSlot();", (
-            ROOT / "backend/src/main/java/com/zentrip/api/"
+            ROOT / "backend/src/main/java/com/scoutly/api/"
             "OpenTripMapAttractionService.java"
         ).read_text())
 

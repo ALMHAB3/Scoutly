@@ -8,7 +8,7 @@
 
 The directory is intentionally strict about fields required by the booking picker. The import excludes records that lack an IATA/ICAO code, coordinates, city, or country rather than inventing those values. A source snapshot checked on 2026-11-01 contained 3,858 qualifying airports across 233 countries. Counts change as OurAirports data changes.
 
-OurAirports lists airport locations; it does not provide schedules, fares, or bookable inventory. Zentrip's flight results still come from partner listings. Actual global flight offers and ticketing require a separate airline/GDS provider such as Amadeus and its own credentials, commercial terms, and booking workflow.
+OurAirports lists airport locations; it does not provide schedules, fares, or bookable inventory. Scoutly's flight results still come from partner listings. Actual global flight offers and ticketing require a separate airline/GDS provider such as Amadeus and its own credentials, commercial terms, and booking workflow.
 
 ## Refreshing Supabase
 

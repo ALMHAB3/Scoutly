@@ -1,10 +1,10 @@
 {
-  "name": "zentrip-diagram-tools",
+  "name": "scoutly-diagram-tools",
   "version": "1.0.0",
   "private": true,
-  "description": "Build and export the Zentrip activity diagram.",
+  "description": "Build and export the Scoutly activity diagram.",
   "scripts": {
-    "build:activity-diagram": "python3 scripts/build-zentrip-activity-diagram.py"
+    "build:activity-diagram": "python3 scripts/build-scoutly-activity-diagram.py"
   },
   "type": "commonjs",
   "dependencies": {

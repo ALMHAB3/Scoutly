@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/admin_dashboard_model.dart';
-import 'package:zentrip/models/partner_dashboard_model.dart';
-import 'package:zentrip/models/travel_package_model.dart';
-import 'package:zentrip/models/user_model.dart';
+import 'package:scoutly/models/admin_dashboard_model.dart';
+import 'package:scoutly/models/partner_dashboard_model.dart';
+import 'package:scoutly/models/travel_package_model.dart';
+import 'package:scoutly/models/user_model.dart';
 
 void main() {
   group('AdminDashboardData', () {

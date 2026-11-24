@@ -1,4 +1,4 @@
-# Zentrip backend and search audit
+# Scoutly backend and search audit
 
 ## Project context
 
@@ -22,7 +22,7 @@ Supabase client, or storage mechanism.
   results.
 - **Hotel search:** Partner inventory and read-only Hotelbeds availability and
   content results use the existing hotel response contract. Hotelbeds rate keys
-  are not exposed; booking stays in Zentrip's simulated payment flow. Provider
+  are not exposed; booking stays in Scoutly's simulated payment flow. Provider
   failures return safe warnings without removing partner results.
 - **Airport picker:** The flight picker now queries the backend airport
   directory rather than filtering only the built-in list. Input is debounced
@@ -103,7 +103,7 @@ commit an `.env` file.
   integration database.
 - `flutter test`: all 128 tests passed.
 - `flutter analyze`: no issues found.
-- Rebuilt and restarted `Start Zentrip`: the workflow is running, Spring Boot
+- Rebuilt and restarted `Start Scoutly`: the workflow is running, Spring Boot
   reports the PostgreSQL pool started, `/` returns HTTP 200, airport lookup
   returns DXB for `query=DXB`, and an unauthenticated travel-preferences request
   returns HTTP 401.

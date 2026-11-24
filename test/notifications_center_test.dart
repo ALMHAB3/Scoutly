@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/features/notifications/logic/notifications_store.dart';
-import 'package:zentrip/features/notifications/presentation/screens/notifications_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/features/notifications/logic/notifications_store.dart';
+import 'package:scoutly/features/notifications/presentation/screens/notifications_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

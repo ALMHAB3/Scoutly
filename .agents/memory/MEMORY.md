@@ -12,7 +12,7 @@
 - [Nonblocking startup](startup-initialization.md) — optional preferences and plugin initialization must not prevent the first screen from rendering.
 - [Currency comparison scope](currency-comparison-scope.md) — comparison estimates do not authorize booking-table or settlement changes.
 - [UI styling preservation](ui-styling-preservation.md) — keep existing screen design intact during backend and data integrations.
-- [LiteAPI hotel-data boundary](liteapi-hotel-data-boundary.md) — LiteAPI provides hotel data only; Zentrip retains simulated booking and partner fallback.
+- [LiteAPI hotel-data boundary](liteapi-hotel-data-boundary.md) — LiteAPI provides hotel data only; Scoutly retains simulated booking and partner fallback.
 - [OpenTripMap landmark source](opentripmap-landmarks.md) — keep landmark records on OpenTripMap, with only the requested Wikipedia image fallback; preserve Geoapify for airport/geocoding use.
 - [Flight checkout data boundary](flight-checkout-data-boundary.md) — use only existing trip and booking persistence; passenger passport and payment details remain transient.
 - [Replit preview framing](replit-preview-framing.md) — a default DENY frame header can blank the embedded preview while the app still works directly.

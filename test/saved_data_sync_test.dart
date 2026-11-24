@@ -4,11 +4,11 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/core/services/user_settings_sync.dart';
-import 'package:zentrip/features/favorites/logic/favorites_controller.dart';
-import 'package:zentrip/features/price_alerts/logic/price_alerts_store.dart';
-import 'package:zentrip/models/user_model.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/core/services/user_settings_sync.dart';
+import 'package:scoutly/features/favorites/logic/favorites_controller.dart';
+import 'package:scoutly/features/price_alerts/logic/price_alerts_store.dart';
+import 'package:scoutly/models/user_model.dart';
 
 /// Minimal in-memory stand-in for the saved-data endpoints.
 class _FakeServer implements HttpClientAdapter {

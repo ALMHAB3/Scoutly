@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/aircraft/airbus_a320.dart';
-import 'package:zentrip/features/aircraft/atr72.dart';
+import 'package:scoutly/features/aircraft/airbus_a320.dart';
+import 'package:scoutly/features/aircraft/atr72.dart';
 
 void main() {
   test('Airbus A320 exposes its 3-3 180-seat cabin', () {

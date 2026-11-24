@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/auth/presentation/models/country_phone_option.dart';
-import 'package:zentrip/global_widgets/locale_controller.dart';
+import 'package:scoutly/features/auth/presentation/models/country_phone_option.dart';
+import 'package:scoutly/global_widgets/locale_controller.dart';
 
 void main() {
   test('country phone lengths accept only valid national digit counts', () {

@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/constants/app_colors.dart';
-import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/global_widgets/ui/ui.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/flight_seat_widgets.dart';
-import 'package:zentrip/models/flight_model.dart';
-import 'package:zentrip/models/flight_seat_map.dart';
+import 'package:scoutly/core/constants/app_colors.dart';
+import 'package:scoutly/core/services/api_result.dart';
+import 'package:scoutly/global_widgets/ui/ui.dart';
+import 'package:scoutly/features/flight_booking/presentation/screens/flight_seat_widgets.dart';
+import 'package:scoutly/models/flight_model.dart';
+import 'package:scoutly/models/flight_seat_map.dart';
 
 import 'support/trip_details_harness.dart';
 
 FlightModel _partnerFlight() => FlightModel(
       id: '81',
       partnerListingId: 81,
-      airline: 'Zentrip Air',
+      airline: 'Scoutly Air',
       airlineCode: 'ZT',
       flightNumber: 'ZT 482',
       originCode: 'MRA',

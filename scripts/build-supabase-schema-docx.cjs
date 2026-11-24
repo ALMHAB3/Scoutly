@@ -29,8 +29,8 @@ const {
 const { ShapeCanvasRun } = require("docx/shapes");
 
 const ROOT = path.resolve(__dirname, "..");
-const OUTPUT = path.join(ROOT, "generated-artifacts", "ZenTrip-Supabase-Database-Diagram.docx");
-const ARABIC_OUTPUT = path.join(ROOT, "generated-artifacts", "Zentrip-Supabase-Database-Guide-Ar.docx");
+const OUTPUT = path.join(ROOT, "generated-artifacts", "Scoutly-Supabase-Database-Diagram.docx");
+const ARABIC_OUTPUT = path.join(ROOT, "generated-artifacts", "Scoutly-Supabase-Database-Guide-Ar.docx");
 const COLORS = {
   ink: "24364B",
   muted: "5F7183",
@@ -171,7 +171,7 @@ function pgEnvironment() {
   const channelBinding = url.searchParams.get("channelBinding")
     || url.searchParams.get("channel_binding");
   if (channelBinding) env.PGCHANNELBINDING = channelBinding;
-  env.PGAPPNAME = "zentrip-schema-diagram-readonly";
+  env.PGAPPNAME = "scoutly-schema-diagram-readonly";
   // Enforce read-only mode at the PostgreSQL session level, as well as using SELECT only.
   env.PGOPTIONS = "-c default_transaction_read_only=on";
   return env;
@@ -837,7 +837,7 @@ function arabicDiagramPage(spec, schema, tablesByName, pageIndex) {
         line: { color: "E1E7ED", width: 0.8 },
         fallback: true,
         altText: {
-          title: `مخطط قاعدة بيانات Zentrip: ${spec.titleAr}`,
+          title: `مخطط قاعدة بيانات Scoutly: ${spec.titleAr}`,
           description: "مربعات وموصلات Word أصلية قابلة للتحرير، مستخرجة من قيود Supabase الفعلية.",
         },
       })],
@@ -878,7 +878,7 @@ function arabicTableIndexSection(schema) {
       rtl: true,
       after: 70,
     }),
-    paragraph("يوضح الجدول الآتي دور كل جدول في تدفقات Zentrip. أسماء الجداول تبقى كما هي في PostgreSQL لتسهيل مطابقتها مع الكود والاستعلامات.", {
+    paragraph("يوضح الجدول الآتي دور كل جدول في تدفقات Scoutly. أسماء الجداول تبقى كما هي في PostgreSQL لتسهيل مطابقتها مع الكود والاستعلامات.", {
       size: 16,
       alignment: AlignmentType.RIGHT,
       rtl: true,
@@ -1091,7 +1091,7 @@ function buildArabicDocument(schema) {
     timeZone: "UTC",
   }).format(new Date());
   const content = [
-    paragraph("قاعدة بيانات Zentrip على Supabase", {
+    paragraph("قاعدة بيانات Scoutly على Supabase", {
       heading: HeadingLevel.TITLE,
       alignment: AlignmentType.CENTER,
       size: 32,
@@ -1123,7 +1123,7 @@ function buildArabicDocument(schema) {
       before: 150,
       after: 55,
     }),
-    paragraph("تستضيف منصة Zentrip بياناتها التشغيلية في قاعدة PostgreSQL ضمن مشروع Supabase. ويعتمد تطبيق الهاتف المبني بـ Flutter على واجهات REST في خدمة Java وSpring Boot للوصول إلى البيانات؛ لذلك تمر عمليات التسجيل والبحث والحجز والإدارة عبر الخادم قبل حفظها أو قراءتها من قاعدة البيانات.", {
+    paragraph("تستضيف منصة Scoutly بياناتها التشغيلية في قاعدة PostgreSQL ضمن مشروع Supabase. ويعتمد تطبيق الهاتف المبني بـ Flutter على واجهات REST في خدمة Java وSpring Boot للوصول إلى البيانات؛ لذلك تمر عمليات التسجيل والبحث والحجز والإدارة عبر الخادم قبل حفظها أو قراءتها من قاعدة البيانات.", {
       size: 17,
       alignment: AlignmentType.RIGHT,
       rtl: true,
@@ -1150,8 +1150,8 @@ function buildArabicDocument(schema) {
   content.push(...arabicRelationshipSection(schema));
   content.push(...arabicDictionarySection(schema));
   return new Document({
-    creator: "Zentrip",
-    title: "قاعدة بيانات Zentrip على Supabase",
+    creator: "Scoutly",
+    title: "قاعدة بيانات Scoutly على Supabase",
     subject: "شرح عربي للمخطط الحي والعلاقات وقاموس البيانات",
     description: "مستند عربي منشأ من قراءة وصفية للبيانات الوصفية في مخطط Supabase العام.",
     sections: [{
@@ -1175,7 +1175,7 @@ function buildDocument(schema) {
     timeZone: "UTC",
   }).format(new Date());
   const front = [
-    paragraph("ZenTrip — Supabase Database Diagram", {
+    paragraph("Scoutly — Supabase Database Diagram", {
       heading: HeadingLevel.TITLE,
       alignment: AlignmentType.CENTER,
       size: 34,
@@ -1224,8 +1224,8 @@ function buildDocument(schema) {
   content.push(...dictionarySection(schema));
 
   return new Document({
-    creator: "Zentrip",
-    title: "Zentrip Supabase Database Diagram",
+    creator: "Scoutly",
+    title: "Scoutly Supabase Database Diagram",
     subject: "Live public-schema ERD and editable data dictionary",
     description: "Generated from read-only PostgreSQL catalog metadata in Supabase.",
     sections: [{

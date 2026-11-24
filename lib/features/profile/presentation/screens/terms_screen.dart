@@ -81,7 +81,7 @@ class TermsScreen extends StatelessWidget {
             'تخضع سياسات الإلغاء والاسترداد لشروط مزوّد الخدمة لكل حجز. راجع تفاصيل سياسة الإلغاء الظاهرة قبل تأكيد أي حجز.'
           ),
           (
-            'Zen AI',
+            'Scoutly AI',
             'اقتراحات المساعد الذكي إرشادية فقط ولا تُعد التزاماً تعاقدياً. تحقق دائماً من التفاصيل النهائية قبل الحجز.'
           ),
           (
@@ -98,7 +98,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'التواصل',
-            'لأي استفسار حول هذه الشروط تواصل معنا عبر support@zentrip.app.'
+            'لأي استفسار حول هذه الشروط تواصل معنا عبر support@scoutly.app.'
           ),
         ]
       : [
@@ -119,7 +119,7 @@ class TermsScreen extends StatelessWidget {
             'Cancellation and refund policies follow the service provider\'s terms for each booking. Review the cancellation policy shown before confirming any booking.'
           ),
           (
-            'Zen AI',
+            'Scoutly AI',
             'Suggestions from the AI assistant are for guidance only and are not contractually binding. Always verify the final details before booking.'
           ),
           (
@@ -136,7 +136,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'Contact Us',
-            'For any questions about these terms, contact us at support@zentrip.app.'
+            'For any questions about these terms, contact us at support@scoutly.app.'
           ),
         ];
 
@@ -148,7 +148,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'كيف نستخدم بياناتك',
-            'نستخدم بياناتك لإتمام الحجوزات، وتخصيص الاقتراحات، وتحسين تجربة Zen AI، وإرسال إشعارات تخص رحلاتك.'
+            'نستخدم بياناتك لإتمام الحجوزات، وتخصيص الاقتراحات، وتحسين تجربة Scoutly AI، وإرسال إشعارات تخص رحلاتك.'
           ),
           (
             'مشاركة البيانات',
@@ -160,7 +160,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'حقوقك',
-            'يمكنك طلب نسخة من بياناتك أو تصحيحها أو حذف حسابك نهائياً في أي وقت من إعدادات الملف الشخصي أو عبر support@zentrip.app.'
+            'يمكنك طلب نسخة من بياناتك أو تصحيحها أو حذف حسابك نهائياً في أي وقت من إعدادات الملف الشخصي أو عبر support@scoutly.app.'
           ),
           (
             'ملفات الارتباط والتحليلات',
@@ -174,7 +174,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'How We Use Your Data',
-            'We use your data to complete bookings, personalize suggestions, improve the Zen AI experience, and send notifications about your trips.'
+            'We use your data to complete bookings, personalize suggestions, improve the Scoutly AI experience, and send notifications about your trips.'
           ),
           (
             'Data Sharing',
@@ -186,7 +186,7 @@ class TermsScreen extends StatelessWidget {
           ),
           (
             'Your Rights',
-            'You can request a copy of your data, correct it, or permanently delete your account at any time from profile settings or via support@zentrip.app.'
+            'You can request a copy of your data, correct it, or permanently delete your account at any time from profile settings or via support@scoutly.app.'
           ),
           (
             'Cookies & Analytics',

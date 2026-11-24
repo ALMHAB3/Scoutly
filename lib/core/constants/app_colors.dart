@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// ألوان التطبيق — مصدر الحقيقة الوحيد لكل ألوان Zentrip.
+/// ألوان التطبيق — مصدر الحقيقة الوحيد لكل ألوان Scoutly.
 /// استخدم هذه الثوابت مباشرةً في الـ Widgets بدل أي ألوان hardcoded.
 abstract class AppColors {
   // ── Primary ──────────────────────────────────────────────

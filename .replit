@@ -14,8 +14,8 @@ SUPABASE_ANON_KEY = "sb_publishable_RMsZOpssbB7g8wqIyM3yzQ_i7s8qUp1"
 SUPABASE_URL = "https://zrzhgotsnqclzrkybuzj.supabase.co"
 
 [userenv.development]
-ZENTRIP_PROVIDER_ENV_FILE = "attached_assets/_1793470398811.env"
-ZENTRIP_SECURITY_ALLOW_REPLIT_PREVIEW_EMBEDDING = "true"
+SCOUTLY_PROVIDER_ENV_FILE = "attached_assets/_1793470398811.env"
+SCOUTLY_SECURITY_ALLOW_REPLIT_PREVIEW_EMBEDDING = "true"
 
 [workflows]
 runButton = "Project"
@@ -27,10 +27,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start Zentrip"
+args = "Start Scoutly"
 
 [[workflows.workflow]]
-name = "Start Zentrip"
+name = "Start Scoutly"
 author = "agent"
 
 [[workflows.workflow.tasks]]

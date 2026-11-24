@@ -1,6 +1,6 @@
-# Zentrip Java
+# Scoutly Java
 
-This is a copy of the Zentrip Flutter app with the same assets and visual UI, paired with a Java Spring Boot backend in `backend/`.
+This is a copy of the Scoutly Flutter app with the same assets and visual UI, paired with a Java Spring Boot backend in `backend/`.
 
 ## Java toolchain
 
@@ -62,16 +62,16 @@ From this project root, run:
 
 ```powershell
 flutter pub get
-flutter run -d chrome --dart-define=ZENTRIP_API_URL=http://127.0.0.1:8080/api
+flutter run -d chrome --dart-define=SCOUTLY_API_URL=http://127.0.0.1:8080/api
 ```
 
-The copied app targets the Java API in `backend/`. Android emulators use `http://10.0.2.2:8080/api`; desktop and web builds use `http://127.0.0.1:8080/api`. VS Code's Run and Debug menu includes Chrome and Windows configurations pinned to the local API URL. For a physical phone, run Flutter with `--dart-define=ZENTRIP_API_URL=http://<computer-LAN-IP>:8080/api` and allow port 8080 through the computer's firewall.# zentrip
+The copied app targets the Java API in `backend/`. Android emulators use `http://10.0.2.2:8080/api`; desktop and web builds use `http://127.0.0.1:8080/api`. VS Code's Run and Debug menu includes Chrome and Windows configurations pinned to the local API URL. For a physical phone, run Flutter with `--dart-define=SCOUTLY_API_URL=http://<computer-LAN-IP>:8080/api` and allow port 8080 through the computer's firewall.# scoutly
 
 ## Admin dashboard
 
 The Flutter app includes a responsive, Arabic/English admin dashboard with live customer, reservation, and booked-value summaries. Admin endpoints verify the account role on every request; customer accounts remain the default.
 
-To grant the first admin role, create the intended account, then start the backend with `APP_ADMIN_EMAIL` set to that existing account's exact email. The backend promotes only that account at startup. Alternatively, a database administrator can promote an existing account directly with `UPDATE users SET role = 'admin' WHERE email = 'admin@example.com';`. Never expose admin promotion through a public endpoint.# zentrip
+To grant the first admin role, create the intended account, then start the backend with `APP_ADMIN_EMAIL` set to that existing account's exact email. The backend promotes only that account at startup. Alternatively, a database administrator can promote an existing account directly with `UPDATE users SET role = 'admin' WHERE email = 'admin@example.com';`. Never expose admin promotion through a public endpoint.# scoutly
 
 A new Flutter project.
 
@@ -142,6 +142,6 @@ Hotel availability and price data are requested from LiteAPI's `POST
 /hotels/rates` endpoint using `LITEAPI_API_KEY`. The guest nationality defaults
 to `LY` and can be changed with `LITEAPI_GUEST_NATIONALITY`; the API key and
 optional `LITEAPI_BASE_URL` belong in backend environment settings only.
-LiteAPI is read-only in Zentrip: hotel checkout continues through the existing
+LiteAPI is read-only in Scoutly: hotel checkout continues through the existing
 simulated partner-payment flow. Partner hotel listings remain available as a
 fallback if LiteAPI is unavailable.

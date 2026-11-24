@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/price_comparison.dart';
-import 'package:zentrip/features/hotel_booking/logic/hotel_controller.dart';
-import 'package:zentrip/features/hotel_booking/presentation/screens/hotel_results_screen.dart';
-import 'package:zentrip/global_widgets/price_comparison_controls.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/exchange_rates.dart';
-import 'package:zentrip/models/hotel_model.dart';
+import 'package:scoutly/core/services/price_comparison.dart';
+import 'package:scoutly/features/hotel_booking/logic/hotel_controller.dart';
+import 'package:scoutly/features/hotel_booking/presentation/screens/hotel_results_screen.dart';
+import 'package:scoutly/global_widgets/price_comparison_controls.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/exchange_rates.dart';
+import 'package:scoutly/models/hotel_model.dart';
 
 final _now = DateTime.utc(2026, 11, 1, 12);
 PriceComparison _comparison({bool fail = false}) => PriceComparison(

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/constants/app_colors.dart';
-import 'package:zentrip/features/trips/presentation/screens/offer_day_plan_view.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/offer_stop.dart';
-import 'package:zentrip/models/travel_package_model.dart';
+import 'package:scoutly/core/constants/app_colors.dart';
+import 'package:scoutly/features/trips/presentation/screens/offer_day_plan_view.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/offer_stop.dart';
+import 'package:scoutly/models/travel_package_model.dart';
 
 const _stops = [
   OfferStop(

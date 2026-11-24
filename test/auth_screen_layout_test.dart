@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/features/auth/presentation/screens/forgot_password_screen.dart';
-import 'package:zentrip/features/auth/presentation/screens/login_screen.dart';
-import 'package:zentrip/features/auth/presentation/screens/register_screen.dart';
-import 'package:zentrip/features/auth/presentation/screens/verify_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:scoutly/features/auth/presentation/screens/login_screen.dart';
+import 'package:scoutly/features/auth/presentation/screens/register_screen.dart';
+import 'package:scoutly/features/auth/presentation/screens/verify_screen.dart';
 
 void main() {
   setUp(() {

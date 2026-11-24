@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/features/trips/logic/trips_controller.dart';
-import 'package:zentrip/features/trips/presentation/screens/my_trips_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/booking_model.dart';
-import 'package:zentrip/models/transfer_model.dart';
-import 'package:zentrip/models/trip_model.dart';
+import 'package:scoutly/core/services/api_result.dart';
+import 'package:scoutly/features/trips/logic/trips_controller.dart';
+import 'package:scoutly/features/trips/presentation/screens/my_trips_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/booking_model.dart';
+import 'package:scoutly/models/transfer_model.dart';
+import 'package:scoutly/models/trip_model.dart';
 
 void main() {
   testWidgets('My Trips displays and opens a saved transfer', (tester) async {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/transfers/presentation/screens/transfers_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
+import 'package:scoutly/features/transfers/presentation/screens/transfers_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('route step places known cities and shows distance and time',

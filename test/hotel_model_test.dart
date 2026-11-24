@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/hotel_model.dart';
-import 'package:zentrip/models/mock_data_service.dart';
+import 'package:scoutly/models/hotel_model.dart';
+import 'package:scoutly/models/mock_data_service.dart';
 
 void main() {
   test('hotel photos keep the cover first and include gallery images', () {

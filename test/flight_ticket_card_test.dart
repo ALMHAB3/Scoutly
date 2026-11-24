@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/booking_confirmed_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/flight_model.dart';
+import 'package:scoutly/features/flight_booking/presentation/screens/booking_confirmed_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/flight_model.dart';
 
 void main() {
   testWidgets('confirmed flight ticket displays a scannable booking QR',
       (tester) async {
     final flight = FlightModel(
       id: 'partner-25',
-      airline: 'Zentrip Airways',
+      airline: 'Scoutly Airways',
       airlineCode: 'ZT',
       flightNumber: 'ZT-125',
       originCode: 'MJI',
@@ -54,7 +54,7 @@ void main() {
     expect(find.text('IST'), findsOneWidget);
     expect(find.text('4A, 4B'), findsOneWidget);
     expect(find.text('Arya Pratama Wijaya'), findsOneWidget);
-    expect(find.text('Zentrip Airways'), findsOneWidget);
+    expect(find.text('Scoutly Airways'), findsOneWidget);
     expect(find.text('\$213.60'), findsOneWidget);
   });
 }

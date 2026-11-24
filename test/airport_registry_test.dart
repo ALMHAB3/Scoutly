@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/flight_model.dart';
+import 'package:scoutly/models/flight_model.dart';
 
 void main() {
   test('airport registry supplies canonical Libya city codes', () {

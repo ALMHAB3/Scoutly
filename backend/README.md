@@ -1,4 +1,4 @@
-# Zentrip Java backend
+# Scoutly Java backend
 
 Spring Boot replacement API for the copied Flutter application. The API keeps the existing `/api` paths and JSON contract for authentication, trips, bookings, transfers, mock payments, and SerpAPI map search.
 
@@ -49,19 +49,19 @@ To configure the initial administrator, first create the account, then set `APP_
 
 ## Supplier partner portal
 
-The Flutter app also includes an Arabic/English partner extranet inspired by the supplier workflows used by travel marketplaces. It is not connected to Booking.com. A partner must first register as a normal Zentrip user; then add that account's exact email to `APP_PARTNER_ACCOUNTS` in `backend/.env` and restart the backend:
+The Flutter app also includes an Arabic/English partner extranet inspired by the supplier workflows used by travel marketplaces. It is not connected to Booking.com. A partner must first register as a normal Scoutly user; then add that account's exact email to `APP_PARTNER_ACCOUNTS` in `backend/.env` and restart the backend:
 
 ```dotenv
-APP_PARTNER_ACCOUNTS=libyanairlines@zentrip.ly|libyan-airlines|Libyan Airlines|airline;afriqiyahairlines@zentrip.ly|afriqiyah-airlines|Afriqiyah Airways|airline;buraqairlines@zentrip.ly|buraq-air|Buraq Air|airline;libyanwings@zentrip.ly|libyan-wings|Libyan Wings|airline;almasahotel@zentrip.ly|al-masa-hotel|Al-Masa Hotel|hotel;zentripcarrental@zentrip.com|zentrip-car-rental|Zentrip Car Rental|car
+APP_PARTNER_ACCOUNTS=libyanairlines@zentrip.ly|libyan-airlines|Libyan Airlines|airline;afriqiyahairlines@zentrip.ly|afriqiyah-airlines|Afriqiyah Airways|airline;buraqairlines@zentrip.ly|buraq-air|Buraq Air|airline;libyanwings@zentrip.ly|libyan-wings|Libyan Wings|airline;almasahotel@zentrip.ly|al-masa-hotel|Al-Masa Hotel|hotel;zentripcarrental@zentrip.com|zentrip-car-rental|Scoutly Car Rental|car
 ```
 
 Each entry uses `email|company-slug|company-name|service-type`, and multiple entries are separated by semicolons. Supported service types are `airline`, `hotel`, `car`, `attraction`, `transfer`, and `travel` (travel packages). Use only addresses that have registered and are authorized by the company. The exact configured accounts are the allow-list: removing an entry revokes that account's partner role and disables that company's listings on the next backend startup. Partner requests are checked against the active database role, and reservations, listings, and guest details are scoped to the assigned company.
 
-To add the Al-Masa Hotel and Zentrip Car Rental demo partners, first register accounts with `almasahotel@zentrip.ly` and `zentripcarrental@zentrip.com`. Add their entries from the configuration example above to the existing `APP_PARTNER_ACCOUNTS` value (preserving other authorized entries), then restart the backend. The startup bootstrap creates/activates each partner record and assigns the existing users' `role` and `partner_id`; it intentionally does not create accounts or passwords. Verify both accounts show `role = 'partner'` and the expected `partners.service_type`, then run `backend/scripts/seed_partner_demo_inventory.sql` against the Zentrip database. The script is safe to rerun: it adds one hotel listing with Standard, Deluxe, and Family Suite rates and three rental vehicles (economy sedan, SUV, and luxury sedan) only when their stable seed keys are absent. Restart the backend after seeding so the startup Google Places sync can populate the hotel's Google rating when the API key is configured.
+To add the Al-Masa Hotel and Scoutly Car Rental demo partners, first register accounts with `almasahotel@zentrip.ly` and `zentripcarrental@zentrip.com`. Add their entries from the configuration example above to the existing `APP_PARTNER_ACCOUNTS` value (preserving other authorized entries), then restart the backend. The startup bootstrap creates/activates each partner record and assigns the existing users' `role` and `partner_id`; it intentionally does not create accounts or passwords. Verify both accounts show `role = 'partner'` and the expected `partners.service_type`, then run `backend/scripts/seed_partner_demo_inventory.sql` against the Scoutly database. The script is safe to rerun: it adds one hotel listing with Standard, Deluxe, and Family Suite rates and three rental vehicles (economy sedan, SUV, and luxury sedan) only when their stable seed keys are absent. Restart the backend after seeding so the startup Google Places sync can populate the hotel's Google rating when the API key is configured.
 
 The seed includes an available-room count for the hotel and example vehicle counts and an availability schedule for the next 365 days as descriptive mock metadata. Hotel bookings reserve the requested room count atomically from `available_rooms`; cancellations restore the reserved rooms. This is global inventory, not date-specific capacity, and it is not automatically replenished after a completed stay. Rental booking endpoints do not enforce date-specific capacity.
 
-Hotel listings use the shared `partner_listings` table with explicit hotel columns for `location_name`, `google_maps_url`, `place_id`, `google_rating`, `google_review_count`, `amenities`, `tax_and_fees_percentage`, and `available_rooms`; the listing title and price columns are exposed as `name` and `price_per_night`. New databases receive the fields from `schema.sql`; on startup, the backend adds any missing hotel columns to existing databases and backfills location, amenities, tax values, and room inventory from legacy JSON attributes. `backend/scripts/migrate_hotel_listing_fields.sql` remains available for a manual migration before startup; do not run it after startup has already added the columns. Neither migration converts Zentrip customer-review aggregates into Google ratings.
+Hotel listings use the shared `partner_listings` table with explicit hotel columns for `location_name`, `google_maps_url`, `place_id`, `google_rating`, `google_review_count`, `amenities`, `tax_and_fees_percentage`, and `available_rooms`; the listing title and price columns are exposed as `name` and `price_per_night`. New databases receive the fields from `schema.sql`; on startup, the backend adds any missing hotel columns to existing databases and backfills location, amenities, tax values, and room inventory from legacy JSON attributes. `backend/scripts/migrate_hotel_listing_fields.sql` remains available for a manual migration before startup; do not run it after startup has already added the columns. Neither migration converts Scoutly customer-review aggregates into Google ratings.
 
 Hotel partners can enter a Google Maps URL, coordinates, or Place ID. Google rating and review count are read-only and fetched by the backend Places API service after a listing is created or its Maps/Place ID changes. The service also retries active listings with zero/unverified Google values when the backend starts. Configure `GOOGLE_PLACES_API_KEY` in `backend/.env`, enable the Google Places API (New), and restrict the key to server-side use; the key is never sent to Flutter. Hotel rows use `0.0` and `0` as explicit “not yet verified” database/API defaults; only successful Places responses replace them with official values. Sync attempts, outcomes, and failures are logged without exposing the API key. Coordinate pairs and coordinates embedded in full Google Maps URLs are parsed and stored as numeric latitude/longitude values. Nearby search logs and excludes active listings without valid coordinates.
 
@@ -84,7 +84,7 @@ cd backend
 mvn spring-boot:run
 ```
 
-The API runs at `http://127.0.0.1:8080/api`. Start the copied Flutter app from the `zentrip_java` root using `flutter run`.
+The API runs at `http://127.0.0.1:8080/api`. Start the copied Flutter app from the `scoutly` root using `flutter run`.
 
 ## Backend tests
 
@@ -98,7 +98,7 @@ The script creates a fresh disposable PostgreSQL cluster on loopback, loads `sch
 
 For Supabase, apply the migration files manually and in order using a database owner; the backend does not migrate production automatically. Back up first. If the configured JDBC login is not `postgres`, grant `zentrip_api_runtime` to that login. Confirm the runtime role is `NOLOGIN NOBYPASSRLS` and that request connections can switch to it.
 
-Zen AI uses the authenticated `POST /api/ai/chat` endpoint. The Java backend
+Scoutly AI uses the authenticated `POST /api/ai/chat` endpoint. The Java backend
 streams Google's Gemini `streamGenerateContent` response to the app as
 server-sent events, so text appears as it is generated. Conversation turns are
 translated to Gemini's `contents` format, while the travel-assistant guidance
@@ -127,11 +127,11 @@ Gemini streaming requests use
 Confirm the chosen model is available to the Google AI Studio project associated
 with the key.
 
-Users can edit their personalization profile under **Profile → Travel Preferences**. The authenticated `GET` and `PUT /api/preferences/travel` endpoints store budget level, travel pace, trip length, party size, interests, and preferred destination per account. Zen loads that profile for each chat response; users can still override it in their latest message.
+Users can edit their personalization profile under **Profile → Travel Preferences**. The authenticated `GET` and `PUT /api/preferences/travel` endpoints store budget level, travel pace, trip length, party size, interests, and preferred destination per account. Scoutly loads that profile for each chat response; users can still override it in their latest message.
 
 Flight trips are checked for schedule overlap per customer using UTC departure and arrival times. Legacy trips without an arrival time conservatively occupy 24 hours. Cancellation preserves the trip and records a refund request as `pending_airline_review`, targeting the original payment method if the fare is refundable. This is a demo workflow only: airline fare rules determine eligibility, and no real refund is issued until a payment provider and airline/refund integration are configured.
 
-While Zen is generating, the chat input becomes a Stop button; quick prompts and repeat sends are disabled. Stop cancels the app's stream and prevents a late reply from being saved. Closing the stream may not stop provider-side work or usage immediately.
+While Scoutly is generating, the chat input becomes a Stop button; quick prompts and repeat sends are disabled. Stop cancels the app's stream and prevents a late reply from being saved. Closing the stream may not stop provider-side work or usage immediately.
 
 Authenticated profile updates use `POST /api/profile` with multipart `name`, `phone`, and an optional `photo` (JPEG, PNG, or WebP; maximum 5 MB). The photo is served from `/uploads/` and stored in `UPLOAD_DIR` (defaults to `backend/uploads`). `PUT /api/profile/password` accepts `current_password`, `password`, and `password_confirmation` as JSON. Keep the upload directory writable and persistent; use private object storage and HTTPS for production deployments.
 
@@ -145,9 +145,9 @@ results from `POST /hotels/rates`. The API key stays server-side in
 environment. The guest nationality defaults to `LY` and can be changed with
 `LITEAPI_GUEST_NATIONALITY`.
 
-LiteAPI rate identifiers are not returned to the app, and Zentrip does not call
+LiteAPI rate identifiers are not returned to the app, and Scoutly does not call
 LiteAPI prebook, booking, or cancellation endpoints. Checkout continues to use
-Zentrip's existing simulated payment and booking-record flow. Provider errors,
+Scoutly's existing simulated payment and booking-record flow. Provider errors,
 including denied account access, are logged without credentials and do not hide
 partner inventory. Duffel remains enabled only for flight search; RapidAPI and
 Xotelo are not used for hotel search.
@@ -162,7 +162,7 @@ OpenTripMap's free plan is non-commercial and limited to 5,000 requests/day. Thi
 
 ### Canonical place records and deduplication
 
-The existing `landmark_places`, `landmark_place_aliases`, and `landmark_merge_candidates` tables provide the unified place catalog; they are the Zentrip equivalents of a golden-record table, source identities, aliases, and a review queue. Do not create parallel `places` or `place_sources` tables. OpenTripMap is the only supported landmark ingestion provider. Wikidata identifiers may be used as cross-reference metadata, and Wikipedia remains an image-only fallback; Google Maps, OSM, and Wikipedia are not independent POI ingestion sources.
+The existing `landmark_places`, `landmark_place_aliases`, and `landmark_merge_candidates` tables provide the unified place catalog; they are the Scoutly equivalents of a golden-record table, source identities, aliases, and a review queue. Do not create parallel `places` or `place_sources` tables. OpenTripMap is the only supported landmark ingestion provider. Wikidata identifiers may be used as cross-reference metadata, and Wikipedia remains an image-only fallback; Google Maps, OSM, and Wikipedia are not independent POI ingestion sources.
 
 Identity resolution checks the provider ID and Wikidata ID first. It then blocks candidates using indexed coordinate bounds and verifies actual distance with Haversine. A nearby place is automatically merged only when it is under 50 meters and its normalized name similarity is at least 0.85; uncertain candidates within 300 meters remain separate and are queued for review. This avoids merging adjacent attractions solely because their coordinates are close.
 

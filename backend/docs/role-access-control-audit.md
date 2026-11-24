@@ -1,4 +1,4 @@
-# Zentrip role and access-control audit
+# Scoutly role and access-control audit
 
 ## Assumptions and implementation mapping
 
@@ -127,7 +127,7 @@ and signed-out dashboard requests return to login.
 | `/admin-dashboard` | Admin |
 | `/partner-dashboard` | Partner |
 
-The user app-shell menu contains Explore, Nearby, Zen AI, My Trips, and Profile.
+The user app-shell menu contains Explore, Nearby, Scoutly AI, My Trips, and Profile.
 The admin dashboard contains Overview, Popularity, Partners, Offers,
 Reservations, and Customers. The partner dashboard contains Overview,
 Listings, Reservations, and Customers. The user shell has no admin or partner

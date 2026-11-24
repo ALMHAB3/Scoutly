@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/transfers/presentation/widgets/taxi_ride_status_card.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/transfer_model.dart';
+import 'package:scoutly/features/transfers/presentation/widgets/taxi_ride_status_card.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/transfer_model.dart';
 
 final _pickup = DateTime(2026, 11, 27, 10);
 final _ride = TransferModel(

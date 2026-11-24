@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zentrip/features/home/presentation/screens/packages_list_screen.dart';
-import 'package:zentrip/features/profile/logic/profile_controller.dart';
-import 'package:zentrip/features/trips/logic/trips_controller.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/core/constants/app_colors.dart';
-import 'package:zentrip/models/booking_model.dart';
-import 'package:zentrip/features/favorites/logic/favorites_controller.dart';
-import 'package:zentrip/models/flight_model.dart';
-import 'package:zentrip/models/hotel_model.dart';
-import 'package:zentrip/models/map_search_result.dart';
-import 'package:zentrip/models/mock_data_service.dart';
-import 'package:zentrip/models/payment_session.dart';
-import 'package:zentrip/models/trip_model.dart';
-import 'package:zentrip/models/travel_package_model.dart';
-import 'package:zentrip/models/travel_preferences.dart';
-import 'package:zentrip/models/transfer_model.dart';
-import 'package:zentrip/global_widgets/payment_checkout_screen.dart';
-import 'package:zentrip/global_widgets/confirm_dialog.dart';
+import 'package:scoutly/features/home/presentation/screens/packages_list_screen.dart';
+import 'package:scoutly/features/profile/logic/profile_controller.dart';
+import 'package:scoutly/features/trips/logic/trips_controller.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/core/constants/app_colors.dart';
+import 'package:scoutly/models/booking_model.dart';
+import 'package:scoutly/features/favorites/logic/favorites_controller.dart';
+import 'package:scoutly/models/flight_model.dart';
+import 'package:scoutly/models/hotel_model.dart';
+import 'package:scoutly/models/map_search_result.dart';
+import 'package:scoutly/models/mock_data_service.dart';
+import 'package:scoutly/models/payment_session.dart';
+import 'package:scoutly/models/trip_model.dart';
+import 'package:scoutly/models/travel_package_model.dart';
+import 'package:scoutly/models/travel_preferences.dart';
+import 'package:scoutly/models/transfer_model.dart';
+import 'package:scoutly/global_widgets/payment_checkout_screen.dart';
+import 'package:scoutly/global_widgets/confirm_dialog.dart';
 
 void main() {
   testWidgets('mock payment loader stays centered while payment completes',
@@ -99,12 +99,12 @@ void main() {
         'pickup_time': '2026-09-17T15:00:00.000Z',
         'duration_minutes': 25,
         'status': 'confirmed',
-        'provider_name': 'Zentrip Executive',
+        'provider_name': 'Scoutly Executive',
         'included_services': ['Wi-Fi', 'Water'],
       });
 
       expect(model.id, '9');
-      expect(model.providerName, 'Zentrip Executive');
+      expect(model.providerName, 'Scoutly Executive');
       expect(model.price, 35.0);
       expect(model.status, 'confirmed');
     });

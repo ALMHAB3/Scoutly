@@ -94,12 +94,12 @@ class ApiService {
   static final ValueNotifier<int> transfersRevision = ValueNotifier(0);
 
   static const String _configuredBaseUrl =
-      String.fromEnvironment('ZENTRIP_API_URL');
+      String.fromEnvironment('SCOUTLY_API_URL');
   static String get baseUrl {
     if (_configuredBaseUrl.isNotEmpty) return _configuredBaseUrl;
 
     // Android emulators need 10.0.2.2 to reach the host machine. Physical
-    // devices should provide a LAN IP via --dart-define=ZENTRIP_API_URL or by
+    // devices should provide a LAN IP via --dart-define=SCOUTLY_API_URL or by
     // setting the environment before running the app.
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8080/api';
@@ -270,7 +270,7 @@ class ApiService {
     if (useMockMode) {
       return _request(() async {
         await Future.delayed(_mockDelay);
-        final user = _mockUser('$provider-user@zentrip.app');
+        final user = _mockUser('$provider-user@scoutly.app');
         await _saveToken('mock-token-${user.id}');
         await _saveUserLocally(user);
         currentUser = user;
@@ -496,7 +496,7 @@ class ApiService {
         await Future.delayed(_mockDelay);
         final base = currentUser ??
             await _loadLocalUser() ??
-            _mockUser('demo@zentrip.app');
+            _mockUser('demo@scoutly.app');
         final user = base.copyWith(
           name: name,
           phone: phone,
@@ -949,7 +949,7 @@ class ApiService {
       );
       final body = res.data;
       if (body == null) {
-        throw const FormatException('Zen returned an empty response stream');
+        throw const FormatException('Scoutly returned an empty response stream');
       }
 
       final reply = StringBuffer();
@@ -996,7 +996,7 @@ class ApiService {
       }
       if (!completed) {
         throw const FormatException(
-            'Zen ended the response before it was complete');
+            'Scoutly ended the response before it was complete');
       }
       return reply.toString();
     });
@@ -1312,7 +1312,7 @@ class ApiService {
     }
   }
 
-  // Search requests go through Zentrip's backend so provider credentials stay
+  // Search requests go through Scoutly's backend so provider credentials stay
   // server-side and provider responses use the app's existing model contracts.
 
   Future<AirportSearchResult> searchAirportDirectory(String query) async {

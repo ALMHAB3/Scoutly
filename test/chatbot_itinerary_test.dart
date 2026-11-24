@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zentrip/features/chatbot/logic/chatbot_controller.dart';
+import 'package:scoutly/features/chatbot/logic/chatbot_controller.dart';
 
 void main() {
-  group('Zen AI itinerary parsing', () {
+  group('Scoutly AI itinerary parsing', () {
     test('parses English day headings, activities, destination and budget', () {
       final itinerary = ChatbotController.parseItineraryResponse(
         '''
@@ -66,7 +66,7 @@ void main() {
     });
   });
 
-  group('Zen AI itinerary saving', () {
+  group('Scoutly AI itinerary saving', () {
     setUp(() => SharedPreferences.setMockInitialValues({}));
 
     test('saves itinerary state into the existing local chat history',

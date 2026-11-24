@@ -1,5 +1,5 @@
 -- =====================================================================
--- Zentrip: bring the Supabase database in line with the project schema
+-- Scoutly: bring the Supabase database in line with the project schema
 -- =====================================================================
 -- Paste the WHOLE file into Supabase SQL Editor and press Run.
 --

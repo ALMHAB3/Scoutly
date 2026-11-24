@@ -29,6 +29,6 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Zentrip lets hotel partners choose property photos to upload to their listings.</string>
+	<string>Scoutly lets hotel partners choose property photos to upload to their listings.</string>
 </dict>
 </plist>

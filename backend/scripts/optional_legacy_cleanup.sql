@@ -1,4 +1,4 @@
--- OPTIONAL cleanup of objects the Zentrip backend never reads or writes.
+-- OPTIONAL cleanup of objects the Scoutly backend never reads or writes.
 -- Back up the database first. Run only after production_preflight.sql is
 -- all "OK" and the app has been checked against the migrated database.
 -- Each statement is guarded so it does nothing if the object is absent or

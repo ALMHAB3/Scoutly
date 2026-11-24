@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/flight_booking/logic/flight_controller.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/search_flight_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/flight_model.dart';
-import 'package:zentrip/routes/app_routes.dart';
+import 'package:scoutly/features/flight_booking/logic/flight_controller.dart';
+import 'package:scoutly/features/flight_booking/presentation/screens/search_flight_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/flight_model.dart';
+import 'package:scoutly/routes/app_routes.dart';
 
 void main() {
   testWidgets('renders the route header, seven dates, and ticket data',
@@ -37,7 +37,7 @@ void main() {
     expect(find.text('1 airline'), findsOneWidget);
     // Class is chosen in Trip Details: no cabin dropdown, no CLASS column.
     expect(find.text('Economy'), findsNothing);
-    expect(find.text('Zentrip Air'), findsOneWidget);
+    expect(find.text('Scoutly Air'), findsOneWidget);
     expect(find.text('ZA 204'), findsOneWidget);
     expect(find.text('FLIGHT NUMBER'), findsOneWidget);
     expect(find.text('CLASS'), findsNothing);
@@ -49,7 +49,7 @@ void main() {
     );
     expect(tester.takeException(), isNull);
 
-    await tester.tap(find.text('Zentrip Air'));
+    await tester.tap(find.text('Scoutly Air'));
     await tester.pumpAndSettle();
     expect(controller.selectedFlight?.id, 'flight-1');
     expect(find.text('Trip details route'), findsOneWidget);
@@ -150,7 +150,7 @@ FlightController _loadedController() => FlightController()
 
 FlightModel _flight() => FlightModel(
       id: 'flight-1',
-      airline: 'Zentrip Air',
+      airline: 'Scoutly Air',
       airlineCode: 'ZA',
       flightNumber: 'ZA 204',
       originCode: 'MJI',

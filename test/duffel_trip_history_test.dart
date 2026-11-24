@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/trips/logic/trips_controller.dart';
-import 'package:zentrip/features/trips/presentation/screens/trip_item_card.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/trip_model.dart';
+import 'package:scoutly/features/trips/logic/trips_controller.dart';
+import 'package:scoutly/features/trips/presentation/screens/trip_item_card.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/trip_model.dart';
 
 void main() {
   test('Duffel simulation metadata round-trips through the existing trip model',

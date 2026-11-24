@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:zentrip/features/auth/presentation/widgets/photo_picker_avatar.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
+import 'package:scoutly/features/auth/presentation/widgets/photo_picker_avatar.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
 
 void main() {
   testWidgets('removing a selected profile photo clears its preview and value',

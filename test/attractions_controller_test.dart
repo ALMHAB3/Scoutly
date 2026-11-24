@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/core/services/current_location_service.dart';
-import 'package:zentrip/features/attractions/logic/attractions_controller.dart';
-import 'package:zentrip/models/attraction_model.dart';
-import 'package:zentrip/models/attraction_place_suggestion.dart';
-import 'package:zentrip/models/attraction_search_page.dart';
-import 'package:zentrip/models/attraction_recent_destination.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/core/services/current_location_service.dart';
+import 'package:scoutly/features/attractions/logic/attractions_controller.dart';
+import 'package:scoutly/models/attraction_model.dart';
+import 'package:scoutly/models/attraction_place_suggestion.dart';
+import 'package:scoutly/models/attraction_search_page.dart';
+import 'package:scoutly/models/attraction_recent_destination.dart';
 
 void main() {
   test('debounces place suggestions and ignores an older query', () async {

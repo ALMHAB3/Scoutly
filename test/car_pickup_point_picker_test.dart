@@ -3,10 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:zentrip/core/services/current_location_service.dart';
-import 'package:zentrip/features/admin/presentation/screens/car_pickup_point_picker.dart';
-import 'package:zentrip/global_widgets/ui/ui.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
+import 'package:scoutly/core/services/current_location_service.dart';
+import 'package:scoutly/features/admin/presentation/screens/car_pickup_point_picker.dart';
+import 'package:scoutly/global_widgets/ui/ui.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
 
 class _AtTheCar extends CurrentLocationService {
   @override

@@ -110,7 +110,7 @@ COMMIT;
 def download_csv(filename: str) -> list[dict[str, str]]:
     request = Request(
         f"{DATA_ROOT}/{filename}",
-        headers={"User-Agent": "Zentrip-airport-directory-sync/1.0"},
+        headers={"User-Agent": "Scoutly-airport-directory-sync/1.0"},
     )
     with urlopen(request, timeout=60) as response:
         reader = csv.DictReader(
@@ -204,7 +204,7 @@ def pg_environment() -> dict[str, str]:
     environment["PGDATABASE"] = unquote(parsed.path.lstrip("/")) or "postgres"
     parameters = parse_qs(parsed.query)
     environment["PGSSLMODE"] = parameters.get("sslmode", ["require"])[0]
-    environment["PGAPPNAME"] = "zentrip-airport-directory-sync"
+    environment["PGAPPNAME"] = "scoutly-airport-directory-sync"
     return environment
 
 
@@ -213,7 +213,7 @@ def apply_import(airports: list[dict[str, str]]) -> None:
     if not psql:
         raise RuntimeError("psql is required to apply the airport directory.")
 
-    with tempfile.TemporaryDirectory(prefix="zentrip-airports-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="scoutly-airports-") as temporary:
         csv_path = Path(temporary) / "airports.csv"
         with csv_path.open("w", encoding="utf-8", newline="") as output:
             writer = csv.DictWriter(output, fieldnames=CSV_FIELDS)

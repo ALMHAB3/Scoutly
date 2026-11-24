@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/hotel_destination_suggestion.dart';
+import 'package:scoutly/models/hotel_destination_suggestion.dart';
 
 void main() {
   test('parses city country code and place ID from backend suggestions', () {

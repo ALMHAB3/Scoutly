@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/core/services/current_location_service.dart';
-import 'package:zentrip/features/home/presentation/screens/home_screen.dart';
-import 'package:zentrip/features/transfers/presentation/screens/transfers_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/routes/app_routes.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/core/services/current_location_service.dart';
+import 'package:scoutly/features/home/presentation/screens/home_screen.dart';
+import 'package:scoutly/features/transfers/presentation/screens/transfers_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/routes/app_routes.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

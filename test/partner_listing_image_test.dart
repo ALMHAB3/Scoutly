@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/partner_dashboard_model.dart';
+import 'package:scoutly/models/partner_dashboard_model.dart';
 
 void main() {
   test('flight listing payload omits its image while other types retain it',

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/utils/car_geo.dart';
-import 'package:zentrip/models/car_model.dart';
+import 'package:scoutly/core/utils/car_geo.dart';
+import 'package:scoutly/models/car_model.dart';
 
 CarModel _car(String id, double? latitude, double? longitude) => CarModel(
       id: id,

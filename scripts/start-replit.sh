@@ -18,7 +18,7 @@ artifact_is_stale() {
 }
 
 web_artifact="build/web/index.html"
-backend_artifact="backend/target/zentrip-api-1.0.0.jar"
+backend_artifact="backend/target/scoutly-api-1.0.0.jar"
 needs_build=false
 
 if [ ! -f "$web_artifact" ] || [ ! -f "$backend_artifact" ]; then

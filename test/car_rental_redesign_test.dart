@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/features/car_rental/logic/car_controller.dart';
-import 'package:zentrip/features/car_rental/presentation/screens/car_detail_screen.dart';
-import 'package:zentrip/features/car_rental/presentation/screens/car_search_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/booking_model.dart';
-import 'package:zentrip/models/car_model.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/features/car_rental/logic/car_controller.dart';
+import 'package:scoutly/features/car_rental/presentation/screens/car_detail_screen.dart';
+import 'package:scoutly/features/car_rental/presentation/screens/car_search_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/booking_model.dart';
+import 'package:scoutly/models/car_model.dart';
 
 CarModel _car(
   String id, {

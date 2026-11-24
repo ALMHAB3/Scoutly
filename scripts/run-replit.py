@@ -15,7 +15,7 @@ PROVIDER_SETTINGS = frozenset({
 def provider_environment(source):
     """Load an explicitly selected local file without executing it or importing DB/role settings."""
     env = dict(source)
-    filename = env.get("ZENTRIP_PROVIDER_ENV_FILE")
+    filename = env.get("SCOUTLY_PROVIDER_ENV_FILE")
     if not filename:
         return env
     path = Path(filename)
@@ -105,5 +105,5 @@ if __name__ == "__main__":
     os.chdir(ROOT / "backend")
     java = ROOT / ".local/toolchains/jdk/bin/java"
     os.execve(str(java), [
-        str(java), "-jar", "target/zentrip-api-1.0.0.jar",
+        str(java), "-jar", "target/scoutly-api-1.0.0.jar",
     ], environment)

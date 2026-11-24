@@ -432,7 +432,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
                   TileLayer(
                     urlTemplate:
                         'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'com.zentrip.app',
+                    userAgentPackageName: 'com.scoutly.app',
                   ),
                 if (a != null && b != null)
                   PolylineLayer(

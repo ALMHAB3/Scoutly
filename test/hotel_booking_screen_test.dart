@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/utils/price_format.dart';
-import 'package:zentrip/features/hotel_booking/logic/hotel_controller.dart';
-import 'package:zentrip/features/hotel_booking/presentation/screens/hotel_booking_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/hotel_model.dart';
+import 'package:scoutly/core/utils/price_format.dart';
+import 'package:scoutly/features/hotel_booking/logic/hotel_controller.dart';
+import 'package:scoutly/features/hotel_booking/presentation/screens/hotel_booking_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/hotel_model.dart';
 
 HotelModel _hotel() => HotelModel.fromJson({
       'id': 'partner-hotel-1',

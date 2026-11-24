@@ -77,7 +77,7 @@ class ChatSession {
 
 // ── Controller ────────────────────────────────────────────────────────────────
 
-/// Chat state and local transcript persistence for Zen AI.
+/// Chat state and local transcript persistence for Scoutly AI.
 class ChatbotController extends ChangeNotifier {
   static final RegExp _itineraryIntent = RegExp(
     r'\b(?:itinerary|travel plan|trip plan|plan (?:a |my |our )?trip)\b|برنامج|خطة سفر|جدول الرحلة|مسار الرحلة',
@@ -140,7 +140,7 @@ class ChatbotController extends ChangeNotifier {
     messages.add(ChatMessage(
       text: _welcomeText.isNotEmpty
           ? _welcomeText
-          : 'أهلاً! أنا Zen AI، مساعدك الذكي للسفر 🌍\nأخبرني بوجهتك المفضلة وسأساعدك في التخطيط لرحلة مثالية. يمكنك أيضاً طرح أسئلة عن الميزانية، أفضل وقت للسفر، أو طلب برنامج سفر كامل ✨',
+          : 'أهلاً! أنا Scoutly AI، مساعدك الذكي للسفر 🌍\nأخبرني بوجهتك المفضلة وسأساعدك في التخطيط لرحلة مثالية. يمكنك أيضاً طرح أسئلة عن الميزانية، أفضل وقت للسفر، أو طلب برنامج سفر كامل ✨',
       isUser: false,
       timestamp: DateTime.now(),
     ));

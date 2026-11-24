@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 
-/// شعار زنتريب — بوصلة + خط أفق + نقطة وجهة. يُرسم بـ CustomPainter.
+/// شعار سكاوتلي — بوصلة + خط أفق + نقطة وجهة. يُرسم بـ CustomPainter.
 class AppLogo extends StatelessWidget {
   final double size;
   final Color? color;
@@ -24,16 +24,16 @@ class AppLogo extends StatelessWidget {
       child: Center(
         child: CustomPaint(
           size: Size(size, size),
-          painter: _ZentripLogoPainter(color: logoColor),
+          painter: _ScoutlyLogoPainter(color: logoColor),
         ),
       ),
     );
   }
 }
 
-class _ZentripLogoPainter extends CustomPainter {
+class _ScoutlyLogoPainter extends CustomPainter {
   final Color color;
-  const _ZentripLogoPainter({required this.color});
+  const _ScoutlyLogoPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -101,5 +101,5 @@ class _ZentripLogoPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_ZentripLogoPainter old) => old.color != color;
+  bool shouldRepaint(_ScoutlyLogoPainter old) => old.color != color;
 }

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/attraction_model.dart';
-import 'package:zentrip/models/travel_package_model.dart';
+import 'package:scoutly/models/attraction_model.dart';
+import 'package:scoutly/models/travel_package_model.dart';
 
 void main() {
   test('monument model maps admin fields onto the customer attraction schema',

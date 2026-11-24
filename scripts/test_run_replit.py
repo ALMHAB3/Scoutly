@@ -81,7 +81,7 @@ class ConnectionSettingsTest(unittest.TestCase):
             path.write_text("GEMINI_API_KEY=example\nSUPABASE_DB_URL=other\n"
                             "APP_ADMIN_EMAIL=other@example.invalid\nDB_SCHEMA_INIT=always\n"
                             "SUPABASE_SERVICE_ROLE_KEY=not-for-this-process\n")
-            result = provider_environment({"ZENTRIP_PROVIDER_ENV_FILE": str(path)})
+            result = provider_environment({"SCOUTLY_PROVIDER_ENV_FILE": str(path)})
         self.assertEqual(result["GEMINI_API_KEY"], "example")
         self.assertNotIn("SUPABASE_DB_URL", result)
         self.assertNotIn("APP_ADMIN_EMAIL", result)
@@ -93,7 +93,7 @@ class ConnectionSettingsTest(unittest.TestCase):
             path = Path(folder) / "test.env"
             path.write_text("GEMINI_API_KEY=file-example\n")
             result = provider_environment({
-                "ZENTRIP_PROVIDER_ENV_FILE": str(path), "GEMINI_API_KEY": "environment-example"
+                "SCOUTLY_PROVIDER_ENV_FILE": str(path), "GEMINI_API_KEY": "environment-example"
             })
         self.assertEqual(result["GEMINI_API_KEY"], "environment-example")
 
@@ -103,7 +103,7 @@ class ConnectionSettingsTest(unittest.TestCase):
             path.write_text('export GEMINI_API_KEY="example#key" # comment\n'
                             "SERPAPI_KEY='another-example'\nGEMINI_MODEL=example-model # comment\n"
                             "GEMINI_FALLBACK_MODEL=example-fallback\n")
-            result = provider_environment({"ZENTRIP_PROVIDER_ENV_FILE": str(path)})
+            result = provider_environment({"SCOUTLY_PROVIDER_ENV_FILE": str(path)})
         self.assertEqual(result["GEMINI_API_KEY"], "example#key")
         self.assertEqual(result["SERPAPI_KEY"], "another-example")
         self.assertEqual(result["GEMINI_MODEL"], "example-model")
@@ -114,7 +114,7 @@ class ConnectionSettingsTest(unittest.TestCase):
             path = Path(folder) / "test.env"
             path.write_text('GEMINI_API_KEY="example-secret\n')
             with self.assertRaisesRegex(ValueError, "^A provider setting has invalid quoting.$"):
-                provider_environment({"ZENTRIP_PROVIDER_ENV_FILE": str(path)})
+                provider_environment({"SCOUTLY_PROVIDER_ENV_FILE": str(path)})
 
     def test_no_provider_file_preserves_environment(self):
         self.assertEqual(provider_environment({"EXAMPLE": "test"}), {"EXAMPLE": "test"})

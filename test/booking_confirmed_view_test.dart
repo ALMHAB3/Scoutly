@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/global_widgets/app_shell.dart';
-import 'package:zentrip/global_widgets/booking_confirmed_view.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
+import 'package:scoutly/global_widgets/app_shell.dart';
+import 'package:scoutly/global_widgets/booking_confirmed_view.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
 
 Widget _confirmed() => const BookingConfirmedView(
       title: 'Booking Confirmed!',

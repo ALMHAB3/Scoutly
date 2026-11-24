@@ -1,14 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/constants/currency_rates.dart';
-import 'package:zentrip/features/flight_booking/logic/flight_checkout_passenger.dart';
-import 'package:zentrip/features/flight_booking/logic/tickets_pdf.dart';
-import 'package:zentrip/models/flight_model.dart';
+import 'package:scoutly/core/constants/currency_rates.dart';
+import 'package:scoutly/features/flight_booking/logic/flight_checkout_passenger.dart';
+import 'package:scoutly/features/flight_booking/logic/tickets_pdf.dart';
+import 'package:scoutly/models/flight_model.dart';
 
 FlightModel _flight() => FlightModel(
       id: '81',
-      airline: 'Zentrip Air',
+      airline: 'Scoutly Air',
       airlineCode: 'ZT',
       flightNumber: 'ZT 482',
       originCode: 'MRA',

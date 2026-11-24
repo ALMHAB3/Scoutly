@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/features/auth/logic/auth_controller.dart';
-import 'package:zentrip/features/auth/presentation/screens/forgot_password_screen.dart';
-import 'package:zentrip/features/auth/presentation/screens/reset_password_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/routes/app_routes.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/features/auth/logic/auth_controller.dart';
+import 'package:scoutly/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:scoutly/features/auth/presentation/screens/reset_password_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/routes/app_routes.dart';
 
 void main() {
   test('demo reset mode is limited to Replit preview hosts', () {

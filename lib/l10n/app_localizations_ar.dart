@@ -24,7 +24,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get navTrips => 'رحلاتي';
 
   @override
-  String get navChatbot => 'Zen AI';
+  String get navChatbot => 'Scoutly AI';
 
   @override
   String get navNearby => 'قريب منك';
@@ -113,7 +113,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noUpcomingTrip => 'لا توجد رحلة قادمة';
 
   @override
-  String get startPlanningWithZen => 'ابدأ التخطيط مع Zen AI';
+  String get startPlanningWithZen => 'ابدأ التخطيط مع Scoutly AI';
 
   @override
   String get inspiredDestinations => 'وجهات مقترحة لك';
@@ -495,7 +495,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get promotionsDesc => 'صفقات وعروض حصرية';
 
   @override
-  String get zenMessages => 'رسائل Zen AI';
+  String get zenMessages => 'رسائل Scoutly AI';
 
   @override
   String get zenMessagesDesc => 'ردود المحادثة والاقتراحات';
@@ -669,7 +669,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingDesc1 =>
-      'يساعدك Zen AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.';
+      'يساعدك Scoutly AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.';
 
   @override
   String get onboardingTitle2 => 'اكتشف ما بالقرب منك';
@@ -695,17 +695,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingSkip => 'تخطي';
 
   @override
-  String get chatbotTitle => 'Zen AI';
+  String get chatbotTitle => 'Scoutly AI';
 
   @override
   String get chatbotSubtitle => 'مدعوم بالذكاء الاصطناعي';
 
   @override
   String get chatbotWelcome =>
-      'أهلاً! أنا Zen AI، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨';
+      'أهلاً! أنا Scoutly AI، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨';
 
   @override
-  String get chatbotInputHint => 'اسأل Zen AI أي شيء...';
+  String get chatbotInputHint => 'اسأل Scoutly AI أي شيء...';
 
   @override
   String get chatbotSend => 'إرسال';
@@ -720,7 +720,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noChatHistory => 'لا توجد محادثات سابقة';
 
   @override
-  String get noChatHistorySubtitle => 'ستظهر محادثاتك مع Zen AI هنا';
+  String get noChatHistorySubtitle => 'ستظهر محادثاتك مع Scoutly AI هنا';
 
   @override
   String get clearChatTitle => 'محادثة جديدة';
@@ -733,7 +733,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get suggestItinerary => 'اقترح برنامجاً';
 
   @override
-  String get zenTyping => 'يفكر Zen AI...';
+  String get zenTyping => 'يفكر Scoutly AI...';
 
   @override
   String get quickPrompt1 => 'خطط رحلة إلى إسطنبول';
@@ -2029,7 +2029,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonEnterSixDigitCode => 'أدخل الرمز المكوّن من 6 أرقام';
 
   @override
-  String get commonWelcomeToZentrip => 'أهلاً بك في سكاوتلي! 🎉';
+  String get commonWelcomeToScoutly => 'أهلاً بك في سكاوتلي! 🎉';
 
   @override
   String get commonReadyToExplore => 'جاهز لاستكشاف العالم؟';

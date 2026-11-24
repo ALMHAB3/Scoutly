@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/features/flight_booking/logic/flight_controller.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/flight_trip_details_screen.dart';
-import 'package:zentrip/models/flight_model.dart';
-import 'package:zentrip/models/flight_seat_map.dart';
+import 'package:scoutly/core/services/api_result.dart';
+import 'package:scoutly/features/flight_booking/logic/flight_controller.dart';
+import 'package:scoutly/features/flight_booking/presentation/screens/flight_trip_details_screen.dart';
+import 'package:scoutly/models/flight_model.dart';
+import 'package:scoutly/models/flight_seat_map.dart';
 
 void main() {
   if (!const bool.fromEnvironment('CAPTURE_FLIGHT_SEATS')) return;

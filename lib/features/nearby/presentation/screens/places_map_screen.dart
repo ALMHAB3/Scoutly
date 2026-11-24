@@ -484,7 +484,7 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                         TileLayer(
                           urlTemplate:
                               'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.zentrip.app',
+                          userAgentPackageName: 'com.scoutly.app',
                         ),
                         MarkerLayer(markers: [
                           if (selectedPlace != null &&

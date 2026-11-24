@@ -848,7 +848,7 @@ class _RouteMap extends StatelessWidget {
         if (showTiles)
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.zentrip.app',
+            userAgentPackageName: 'com.scoutly.app',
           ),
         if (points.length > 1)
           PolylineLayer(

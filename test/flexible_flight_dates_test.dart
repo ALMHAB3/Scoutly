@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/flight_booking/logic/flexible_flight_selection.dart';
-import 'package:zentrip/features/flight_booking/presentation/widgets/flexible_flight_dates_button.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/global_widgets/ui/ui.dart';
+import 'package:scoutly/features/flight_booking/logic/flexible_flight_selection.dart';
+import 'package:scoutly/features/flight_booking/presentation/widgets/flexible_flight_dates_button.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/global_widgets/ui/ui.dart';
 
 void main() {
   Widget app(ValueChanged<FlexibleFlightSelection?> onChanged) => MaterialApp(

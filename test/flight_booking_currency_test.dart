@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/trip_model.dart';
+import 'package:scoutly/models/trip_model.dart';
 
 void main() {
   test('selected booking currency survives trip JSON round trips', () {

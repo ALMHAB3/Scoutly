@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/models/user_model.dart';
-import 'package:zentrip/routes/app_routes.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/models/user_model.dart';
+import 'package:scoutly/routes/app_routes.dart';
 
 void main() {
   final api = ApiService.instance;

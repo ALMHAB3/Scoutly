@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/car_model.dart';
+import 'package:scoutly/models/car_model.dart';
 
 void main() {
   test('parses partner vehicle fields from listing attributes', () {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/attractions/logic/attractions_controller.dart';
-import 'package:zentrip/models/attraction_model.dart';
+import 'package:scoutly/features/attractions/logic/attractions_controller.dart';
+import 'package:scoutly/models/attraction_model.dart';
 
 void main() {
   test('featured places rank by visits, then rating', () {

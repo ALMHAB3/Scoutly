@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/admin/logic/hotel_location_parser.dart';
+import 'package:scoutly/features/admin/logic/hotel_location_parser.dart';
 
 void main() {
   test('accepts a Google Maps short link', () {

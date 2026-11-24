@@ -1,4 +1,4 @@
-# Zentrip UX and Wiring Audit
+# Scoutly UX and Wiring Audit
 
 **Audit date:** 2026-11-04  
 **Scope:** Current Flutter client, Spring Boot API, provider wiring, navigation, controls, loading/error states, accessibility, and existing tests.  
@@ -8,7 +8,7 @@
 
 The repository is a Flutter application backed by Spring Boot and PostgreSQL/Supabase, rather than a Flask application. The audit follows the implementation that is actually in the repository.
 
-The running `Start Zentrip` workflow served the Flutter web app successfully. A direct browser preview of `/#/auth` rendered the login screen, and a settled headless browser capture of `/` rendered onboarding. The first root screenshot was taken before Flutter had painted its first frame; it was not evidence of a persistent blank-page failure. Browser logs showed a CPU-only/WebGL fallback warning, but no Flutter runtime exception.
+The running `Start Scoutly` workflow served the Flutter web app successfully. A direct browser preview of `/#/auth` rendered the login screen, and a settled headless browser capture of `/` rendered onboarding. The first root screenshot was taken before Flutter had painted its first frame; it was not evidence of a persistent blank-page failure. Browser logs showed a CPU-only/WebGL fallback warning, but no Flutter runtime exception.
 
 The main booking flows are wired, with the flight simulator and hotel detail states receiving the best test coverage. This was a code-and-test audit, not a signed-in end-to-end acceptance run. No authenticated test account was available in the preview, so live booking, role dashboards, and user-specific records were not exercised in the browser.
 
@@ -17,7 +17,7 @@ Static inventory: 28 named routes, 5 AppShell tabs, 67 classes named as screens/
 ### Coverage counts
 
 - **28 named routes inventoried:** 9 route/screen families have direct widget-test coverage, 4 have route/model/controller coverage, and 15 are code-read only.
-- **5 main tabs inventoried:** Home has widget coverage; My Trips has controller tests and the Nearby map component has viewport tests, but those two tab screens were not widget-tested. Zen AI and Profile are code-read only.
+- **5 main tabs inventoried:** Home has widget coverage; My Trips has controller tests and the Nearby map component has viewport tests, but those two tab screens were not widget-tested. Scoutly AI and Profile are code-read only.
 - **415 callback sites catalogued:** they are mapped by screen/control family below, but were not all manually tapped in a signed-in browser.
 - **Known incomplete behavior:** weather and visa have no live provider; currency preference uses fixed sample rates; attraction map is explicitly “coming soon”; several English-only labels remain in Arabic mode.
 - **Live/unverified:** external provider responses/permissions and authenticated account-specific browser flows.
@@ -38,7 +38,7 @@ Static inventory: 28 named routes, 5 AppShell tabs, 67 classes named as screens/
 | UX-10 | Low | Icon-button accessibility is not verified globally. | There are tooltips and semantic labels in shared navigation, but no automated accessibility scan or screen-reader/device test was run across every icon action. | Not verified |
 | UX-11 | Medium | Confirm OpenTripMap commercial terms before production use. | The running backend warns that the configured OpenTripMap free plan is for non-commercial use and recommends confirming a commercial plan. No live provider request was made in this audit. | Code-read only |
 
-No provider order or real payment path was found in the flight/hotel booking integrations. Duffel supplies flight offers and LiteAPI supplies hotel data; booking/payment proceeds through Zentrip’s simulated checkout and its own saved trip/booking records. The simulator explicitly presents success and failure choices, and Flutter tests cover both flight-payment outcomes.
+No provider order or real payment path was found in the flight/hotel booking integrations. Duffel supplies flight offers and LiteAPI supplies hotel data; booking/payment proceeds through Scoutly’s simulated checkout and its own saved trip/booking records. The simulator explicitly presents success and failure choices, and Flutter tests cover both flight-payment outcomes.
 
 ## Screen, route, and control inventory
 
@@ -71,7 +71,7 @@ Repeated controls inside a builder (for example, every flight card’s select ac
 | `/attractions` Places/attractions | User | Search, category/filter selection, clear search, list/map entry, item selection, refresh where shown | OpenTripMap/cached landmark catalog; visit and map endpoints | Controller/model tests; screen not end-to-end |
 | `/attraction-detail` Place details | User | Back, favorite/review, visit tracking, map action | OpenTripMap/catalog detail and visit API; map action currently says “coming soon” | Code-read only |
 | `/packages-list` Packages/offers | User | Refresh, filter/type selection, package/offer card open | `/offers` or package/partner inventory | Code-read only |
-| `/transfers` Transfers | User | Pickup/dropoff, location map picker, date/time, passenger count, vehicle choice, submit/confirm | Transfer availability and Zentrip booking endpoint | Code-read only; no transfer screen test |
+| `/transfers` Transfers | User | Pickup/dropoff, location map picker, date/time, passenger count, vehicle choice, submit/confirm | Transfer availability and Scoutly booking endpoint | Code-read only; no transfer screen test |
 | `/terms` | User | Back/scroll | Static legal text | Code-read only |
 | `/privacy` | User | Back/scroll | Static privacy text | Code-read only |
 | `/admin-dashboard` | Admin only | Dashboard tabs/sections, refresh, navigation to partners/bookings/customers/offers/monuments/popularity, logout | Admin dashboard and management endpoints | Route/model tests; no signed-in browser session |
@@ -117,7 +117,7 @@ The AppShell tab widgets are `HomeScreen`, `NearbyScreen` (`lib/features/nearby/
 |---|---|---|
 | Home tab | Flight search form; Hotels/Cars/Transfers shortcuts; offer/destination cards; pull-to-refresh | Widget-tested home navigation/layout |
 | Nearby tab | Location permission/retry/settings action; local search; category chips; place cards; map open | Controller/map viewport tests; not live geolocation/API tested |
-| Zen AI tab | Suggested prompt chips, message entry/send, cancel in-flight response, conversation history/new conversation | Code-read only; Gemini server contract tested, not live AI |
+| Scoutly AI tab | Suggested prompt chips, message entry/send, cancel in-flight response, conversation history/new conversation | Code-read only; Gemini server contract tested, not live AI |
 | My Trips tab | Flight/booking segments, refresh, trip/booking cards, detail/cancel actions | Controller-tested source merge/failure/refresh; browser session not available |
 | Profile tab | Profile/edit, favorites, settings, travel preferences, password, notification settings, currency, language, appearance, terms/privacy, logout | Code-read only; route/session behavior not browser-tested |
 | Flight choose-fare screen | Fare cards, selected fare, continue/back | Widget-tested as part of flight reference flow |
@@ -164,7 +164,7 @@ The AppShell tab widgets are `HomeScreen`, `NearbyScreen` (`lib/features/nearby/
 |---|---|---|---|
 | Supabase PostgreSQL | Spring backend persistence for users, sessions, trips/bookings, partner/admin records, attractions, and chat history; Flutter uses the Spring API, not Supabase directly | Existing database connection remains server-side | PostgreSQL integration suite previously passed; no production rows inspected/changed in this audit |
 | Duffel Flights | Spring flight search endpoints; returns offers, not provider orders | Access token is configured in server environment | `DuffelFlightServiceTest` and Flutter offer/simulator tests; no live search |
-| LiteAPI Hotels | Hotel search/detail data; partner results remain available and Zentrip simulator handles booking | API key is configured; no provider booking flow found | `LiteApiHotelServiceTest` and hotel-detail widget tests; no live search |
+| LiteAPI Hotels | Hotel search/detail data; partner results remain available and Scoutly simulator handles booking | API key is configured; no provider booking flow found | `LiteApiHotelServiceTest` and hotel-detail widget tests; no live search |
 | OpenTripMap | Attraction search/details/destination suggestions | API key configured | `OpenTripMapAttractionServiceTest`, attraction controller tests; no live request |
 | Geoapify | Airport/geocoding fallback when the local airport directory does not resolve a query | API key configured | Airport directory/controller contract tests; no live request |
 | SerpAPI | `/maps/search`, used by Nearby for category/location searches | Key configured | API/controller code path; no live request |
@@ -173,8 +173,8 @@ The AppShell tab widgets are `HomeScreen`, `NearbyScreen` (`lib/features/nearby/
 | Exchange-rate service | `/exchange-rates` used by flight/hotel `PriceComparison` | Server service and endpoint are wired; separate currency preference still uses fixed mock rates | Backend service/controller and Flutter price-comparison tests |
 | Weather/visa | Package detail calls client methods, but there are no corresponding server routes/providers in production mode | Sample-only methods return failure when mock mode is off | Code-read only; destination row degrades to unavailable/partial |
 | Push notifications | Client registers/removes FCM token through `/users/fcm-token` | Live FCM setup/delivery not confirmed | Code-read only |
-| Partner packages/inventory | Zentrip database/partner endpoints; no external package supplier was found | Local partner database | Code-read only and existing model/backend tests |
-| Payments/bookings | Zentrip simulator and local persistence; checkout displays explicit test/simulator language | No live Stripe/payment-gateway or Duffel/LiteAPI order creation path found | Flight simulator success/failure widget tests; no real payment/order |
+| Partner packages/inventory | Scoutly database/partner endpoints; no external package supplier was found | Local partner database | Code-read only and existing model/backend tests |
+| Payments/bookings | Scoutly simulator and local persistence; checkout displays explicit test/simulator language | No live Stripe/payment-gateway or Duffel/LiteAPI order creation path found | Flight simulator success/failure widget tests; no real payment/order |
 
 The API client declares 28 application route constants, and Spring controllers expose the auth, profile/preferences, offers, attractions, trips/bookings, flight/seat, hotel, car, transfer, payment-simulator, map, partner, admin, and AI endpoints. The Flutter caller index was checked against controller mappings. Two notable gaps are the unavailable weather/visa data and the unused hotel-location autocomplete method. External APIs were not called to avoid changing provider state or consuming credits.
 
@@ -190,7 +190,7 @@ No active HotelBeds or RapidAPI integration was found in the current source; hot
 | Car rental | Search/detail/booking routes read; model/location tests exist | Full UI flow and booking persistence in browser |
 | Transfers | Search, map picker, vehicle selection, submit, and API wiring read | No screen-level end-to-end test or signed-in browser run |
 | Packages/attractions | Attraction search/map/controller and visit-ranking tests; package navigation read | Package booking and all detail actions in a signed-in browser; live weather/visa |
-| Zen AI | Gemini primary/fallback smoke requests and streaming contract tests | Live authenticated prompt/reply/history browser flow in the app |
+| Scoutly AI | Gemini primary/fallback smoke requests and streaming contract tests | Live authenticated prompt/reply/history browser flow in the app |
 | Profile/settings | Route and persistence code read | Signed-in browser; restart persistence; notifications/device permission |
 | Admin/partner | Role route tests and backend/model tests | CRUD, ownership, and dashboard data in signed-in browser accounts |
 
@@ -212,7 +212,7 @@ No active HotelBeds or RapidAPI integration was found in the current source; hot
 
 | Check | Result |
 |---|---|
-| Replit workflow | `Start Zentrip` was running; HTML and Flutter web artifacts returned HTTP 200. |
+| Replit workflow | `Start Scoutly` was running; HTML and Flutter web artifacts returned HTTP 200. |
 | Browser preview | Workflow restarted successfully. Immediate screenshot capture sometimes returned white, but a settled Chromium capture of `/#/auth` rendered the login screen; `/` rendered onboarding after Flutter settled. No signed-in session was used. |
 | Browser console | No Flutter runtime exception observed. A CPU-only/WebGL fallback warning was emitted. |
 | Flutter analyzer/tests | `flutter analyze`: no issues. `flutter test`: 169 tests passed, including the new invalid-route-argument test. |

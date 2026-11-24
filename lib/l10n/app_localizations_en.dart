@@ -25,7 +25,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navTrips => 'My Trips';
 
   @override
-  String get navChatbot => 'Zen AI';
+  String get navChatbot => 'Scoutly AI';
 
   @override
   String get navNearby => 'Nearby';
@@ -114,7 +114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noUpcomingTrip => 'No upcoming trip yet';
 
   @override
-  String get startPlanningWithZen => 'Start planning with Zen AI';
+  String get startPlanningWithZen => 'Start planning with Scoutly AI';
 
   @override
   String get inspiredDestinations => 'Destinations For You';
@@ -501,7 +501,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get promotionsDesc => 'Special deals and discounts';
 
   @override
-  String get zenMessages => 'Zen AI Messages';
+  String get zenMessages => 'Scoutly AI Messages';
 
   @override
   String get zenMessagesDesc => 'Chat responses and suggestions';
@@ -676,7 +676,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingDesc1 =>
-      'Zen AI helps you design the perfect itinerary based on your budget, interests, and travel style.';
+      'Scoutly AI helps you design the perfect itinerary based on your budget, interests, and travel style.';
 
   @override
   String get onboardingTitle2 => 'Discover Nearby Wonders';
@@ -702,17 +702,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingSkip => 'Skip';
 
   @override
-  String get chatbotTitle => 'Zen AI';
+  String get chatbotTitle => 'Scoutly AI';
 
   @override
   String get chatbotSubtitle => 'Powered by AI';
 
   @override
   String get chatbotWelcome =>
-      'Hello! I\'m Zen, your AI travel companion. Tell me your dream destination and I\'ll plan the perfect trip for you ✨';
+      'Hello! I\'m Scoutly, your AI travel companion. Tell me your dream destination and I\'ll plan the perfect trip for you ✨';
 
   @override
-  String get chatbotInputHint => 'Ask Zen anything...';
+  String get chatbotInputHint => 'Ask Scoutly anything...';
 
   @override
   String get chatbotSend => 'Send';
@@ -728,7 +728,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noChatHistorySubtitle =>
-      'Your conversations with Zen will appear here';
+      'Your conversations with Scoutly will appear here';
 
   @override
   String get clearChatTitle => 'New Conversation';
@@ -741,7 +741,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get suggestItinerary => 'Suggest Itinerary';
 
   @override
-  String get zenTyping => 'Zen is thinking...';
+  String get zenTyping => 'Scoutly is thinking...';
 
   @override
   String get quickPrompt1 => 'Plan a trip to Istanbul';
@@ -2034,7 +2034,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonEnterSixDigitCode => 'Enter the 6-digit code';
 
   @override
-  String get commonWelcomeToZentrip => 'Welcome to Scoutly! 🎉';
+  String get commonWelcomeToScoutly => 'Welcome to Scoutly! 🎉';
 
   @override
   String get commonReadyToExplore => 'Ready to explore the world?';

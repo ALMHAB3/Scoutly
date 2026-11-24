@@ -348,7 +348,7 @@ pw.Widget _cell(String label, String value, {bool end = false}) => pw.Column(
 /// Saves/shares the PDF: download on web, share sheet (Files, WhatsApp…)
 /// on phones.
 Future<void> shareTicketsPdf(Uint8List bytes, String reference) =>
-    Printing.sharePdf(bytes: bytes, filename: 'zentrip-tickets-$reference.pdf');
+    Printing.sharePdf(bytes: bytes, filename: 'scoutly-tickets-$reference.pdf');
 
 /// Ticket entries from the travelers (one per person, own code).
 List<TicketPdfEntry> ticketEntries({

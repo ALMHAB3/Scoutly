@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/core/services/price_comparison.dart';
-import 'package:zentrip/core/utils/price_format.dart';
-import 'package:zentrip/features/hotel_booking/logic/hotel_controller.dart';
-import 'package:zentrip/features/hotel_booking/presentation/screens/hotel_detail_screen.dart';
-import 'package:zentrip/global_widgets/booking_load_error.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/exchange_rates.dart';
-import 'package:zentrip/models/hotel_model.dart';
-import 'package:zentrip/models/review_model.dart';
+import 'package:scoutly/core/services/api_result.dart';
+import 'package:scoutly/core/services/price_comparison.dart';
+import 'package:scoutly/core/utils/price_format.dart';
+import 'package:scoutly/features/hotel_booking/logic/hotel_controller.dart';
+import 'package:scoutly/features/hotel_booking/presentation/screens/hotel_detail_screen.dart';
+import 'package:scoutly/global_widgets/booking_load_error.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/exchange_rates.dart';
+import 'package:scoutly/models/hotel_model.dart';
+import 'package:scoutly/models/review_model.dart';
 
 PriceComparison _comparison() => PriceComparison(
       loadRates: () async => ExchangeRates(

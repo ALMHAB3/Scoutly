@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/global_widgets/ui/ui.dart';
-import 'package:zentrip/global_widgets/payment_checkout_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/flight_model.dart';
-import 'package:zentrip/models/payment_session.dart';
-import 'package:zentrip/models/trip_model.dart';
+import 'package:scoutly/core/services/api_result.dart';
+import 'package:scoutly/global_widgets/ui/ui.dart';
+import 'package:scoutly/global_widgets/payment_checkout_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/flight_model.dart';
+import 'package:scoutly/models/payment_session.dart';
+import 'package:scoutly/models/trip_model.dart';
 
 import 'support/trip_details_harness.dart';
 

@@ -1,11 +1,11 @@
-# Zentrip Application Audit
+# Scoutly Application Audit
 
 **Audit date:** 2026-11-04  
 **Scope:** Review of the Flutter client, Spring Boot API, database schema/migrations, external integrations, security boundaries, and available tests, followed by focused RLS/test-harness fixes. The remediation did not change frontend styling or unrelated app features.
 
 ## Executive summary
 
-Zentrip is a Flutter travel app backed by a Spring Boot API and PostgreSQL hosted through Supabase. The project has a broad feature set, role-based API authorization, a usable test suite, and working development startup. Flight and hotel search combine external data with partner inventory, while checkout remains simulated.
+Scoutly is a Flutter travel app backed by a Spring Boot API and PostgreSQL hosted through Supabase. The project has a broad feature set, role-based API authorization, a usable test suite, and working development startup. Flight and hotel search combine external data with partner inventory, while checkout remains simulated.
 
 The main blockers are not general startup failures. The RLS migration chain, endpoint access changes, exact-origin CORS policy, and safe client behavior for unfinished integrations are implemented; remaining production-provider and account configuration gaps are called out below.
 
@@ -26,7 +26,7 @@ The development server starts, the Flutter checks pass, and the complete backend
 - **Backend:** Spring Boot 3.5.6 on Java 25. Controllers expose the `/api` contract; services call external providers; JDBC/JPA connect to PostgreSQL.
 - **Database:** PostgreSQL through Supabase connection settings. The Flutter code does not use Supabase as its application data API; database access is through the backend. `supabase_flutter` is declared in `pubspec.yaml`, but no application source use of `Supabase.instance` was found.
 - **Authentication:** The backend issues bearer tokens and stores their SHA-256 hashes in `api_tokens`. `TokenAuthFilter` looks up the token and loads the current role and partner ID from `users`; it does not trust a role from the request body. The Flutter client persists its bearer token in `SharedPreferences`.
-- **Web/API address:** Flutter web uses relative `/api`; Android emulator builds default to `http://10.0.2.2:8080/api`; other non-web targets default to loopback unless `ZENTRIP_API_URL` is supplied.
+- **Web/API address:** Flutter web uses relative `/api`; Android emulator builds default to `http://10.0.2.2:8080/api`; other non-web targets default to loopback unless `SCOUTLY_API_URL` is supplied.
 
 ### Major user journeys
 
@@ -34,8 +34,8 @@ The development server starts, the Flutter checks pass, and the complete backend
 |---|---|---|
 | Sign-in and account recovery | Flutter auth screens → `/auth/*` → `users`, `password_reset_codes`, `api_tokens` | Social controls stay hidden until a real backend/provider setup exists. Mail delivery depends on SMTP configuration. |
 | Flight search | Flight search UI → regular/flexible partner search → partner listings plus Duffel offer requests → normalized Flutter flight models | Search integration exists. Duffel is search-only; it does not create an airline order. |
-| Flight booking | Fare/passenger/seat/review screens → seat holds and local trip/booking confirmation → mock payment path | Local Zentrip records can be created for supported partner flows. The project does not submit an order to Duffel or a card payment to a processor. |
-| Hotel search | Destination catalog/autocomplete → LiteAPI rates plus partner inventory → normalized hotel results and details | Search/data integration exists. LiteAPI is read-only in Zentrip; booking uses the simulated partner flow. |
+| Flight booking | Fare/passenger/seat/review screens → seat holds and local trip/booking confirmation → mock payment path | Local Scoutly records can be created for supported partner flows. The project does not submit an order to Duffel or a card payment to a processor. |
+| Hotel search | Destination catalog/autocomplete → LiteAPI rates plus partner inventory → normalized hotel results and details | Search/data integration exists. LiteAPI is read-only in Scoutly; booking uses the simulated partner flow. |
 | My Trips/history | Customer token → `/trips` and `/bookings` → Flutter merges the two sources | The existing tests cover merged data and error refresh behavior. The endpoint returns are not paginated. |
 | Tourist places | Flutter search/map → OpenTripMap, Geoapify geocoding where needed, landmark catalog/cache | Nearby endpoint is allowlisted; provider requests are cached and paced to avoid repeated bursts. |
 | AI assistant | Chat screen → authenticated `/ai/chat` SSE stream → Google Gemini | Backend uses Gemini's native streaming API; the Google AI Studio key is configured. Two configured models have both returned successful live stream smoke responses. |
@@ -46,7 +46,7 @@ The development server starts, the Flutter checks pass, and the complete backend
 
 The named route generator includes splash, onboarding, login/register/recovery/verification, home, trip details, flight search/results/booking, hotel search/results/detail, car search/detail, attractions/detail, package list/detail, transfers, terms/privacy, and admin/partner dashboards. Feature folders also include nearby/map, favorites, chat/history, profile/settings, itinerary/My Trips, and the fare/passenger/seat/review/payment/confirmation stages.
 
-The customer shell has Home/Explore, Nearby, Zen AI, My Trips, and Profile navigation. Admin and partner accounts are redirected to their own dashboard by the client route generator; server authorization is the actual security boundary. A direct unauthenticated navigation to a non-dashboard Flutter route is not uniformly blocked by the route generator, so those screens must continue to rely on authenticated API responses.
+The customer shell has Home/Explore, Nearby, Scoutly AI, My Trips, and Profile navigation. Admin and partner accounts are redirected to their own dashboard by the client route generator; server authorization is the actual security boundary. A direct unauthenticated navigation to a non-dashboard Flutter route is not uniformly blocked by the route generator, so those screens must continue to rely on authenticated API responses.
 
 ## Backend endpoint and access matrix
 
@@ -194,7 +194,7 @@ No active Hotelbeds, RapidAPI, or Amadeus service implementation was found in ba
 - Flight search merges Duffel offers and partner inventory into the same client model. Duffel is not a booking provider in the current implementation.
 - Hotel results merge LiteAPI rates and partner listings. LiteAPI is explicitly read-only; it does not book or pay for a room.
 - `/api/payments/checkout` returns a `mock://checkout` URL and a `mock_...` session ID. The current implementation is a simulator, not a card processor.
-- Zentrip can persist local trip/booking records for supported partner flows. That is not the same as issuing a real airline/hotel order to the external provider.
+- Scoutly can persist local trip/booking records for supported partner flows. That is not the same as issuing a real airline/hotel order to the external provider.
 - Do not represent the current checkout as collecting or settling real payments.
 
 ## Database and data integrity
@@ -247,7 +247,7 @@ The recent booking-history implementation returns customer-scoped booking/trip d
 - `bash scripts/test-backend.sh`: **224 tests run, zero failures/errors, 29 PostgreSQL integration tests skipped by design**; the 4-test Flutter/Spring source-contract check passes.
 - `bash scripts/test-postgres.sh`: **224 tests passed, zero failures/errors/skips** against a disposable local PostgreSQL instance. The chain includes both new migrations and reapplies them to verify idempotency.
 - The core RLS tests prove customer/partner/admin isolation, including user-owned push-token reads/deletes; HTTP tests cover FCM authentication, nearby-attraction public access, and exact CORS preflight behavior. Production Supabase has not been modified.
-- The configured Start Zentrip workflow rebuilds the Flutter web bundle and backend JAR and starts successfully against the development database. Preview screenshots confirmed onboarding and the login screen; authenticated admin/partner/booking/hotel-detail screens were not visually verified.
+- The configured Start Scoutly workflow rebuilds the Flutter web bundle and backend JAR and starts successfully against the development database. Preview screenshots confirmed onboarding and the login screen; authenticated admin/partner/booking/hotel-detail screens were not visually verified.
 - Maven `dependency:analyze` could not inspect compiled output: its analyzer rejected Java 25 class-file version 69. This is a tooling compatibility limitation, not a demonstrated application compile failure. The project-wide dependency vulnerability scanner reported zero vulnerabilities.
 - The two generic PostgreSQL URL fixtures in `scripts/test_run_replit.py` now assemble URLs from synthetic components; the static SAST scan was not rerun after that edit. HoundDog reported zero findings in the prior scan.
 
@@ -268,7 +268,7 @@ The recent booking-history implementation returns customer-scoped booking/trip d
 
 ## Stakeholder presentation points
 
-- Zentrip is a Flutter client with a Spring Boot API and a Supabase-hosted PostgreSQL database; keys stay on the backend.
+- Scoutly is a Flutter client with a Spring Boot API and a Supabase-hosted PostgreSQL database; keys stay on the backend.
 - The app currently combines partner inventory with Duffel flight offers and LiteAPI hotel prices, but checkout is simulated and does not place an external provider order.
 - The backend derives roles from stored user records, restricts admin/partner APIs, and applies customer ownership filters.
 - Core PostgreSQL RLS is enabled and tested locally; applying the migration and verifying grants on production Supabase remain manual.
@@ -293,13 +293,13 @@ The 18 directly opened project files were:
 1. `lib/core/services/api_service.dart`
 2. `lib/routes/app_routes.dart`
 3. `test/app_role_route_guard_test.dart`
-4. `backend/src/main/java/com/zentrip/api/SecurityConfig.java`
-5. `backend/src/main/java/com/zentrip/api/TokenAuthFilter.java`
-6. `backend/src/main/java/com/zentrip/api/RlsContextFilter.java`
-7. `backend/src/main/java/com/zentrip/api/WebConfig.java`
-8. `backend/src/main/java/com/zentrip/api/ApiController.java`
-9. `backend/src/main/java/com/zentrip/api/DuffelFlightService.java`
-10. `backend/src/main/java/com/zentrip/api/LiteApiHotelService.java`
+4. `backend/src/main/java/com/scoutly/api/SecurityConfig.java`
+5. `backend/src/main/java/com/scoutly/api/TokenAuthFilter.java`
+6. `backend/src/main/java/com/scoutly/api/RlsContextFilter.java`
+7. `backend/src/main/java/com/scoutly/api/WebConfig.java`
+8. `backend/src/main/java/com/scoutly/api/ApiController.java`
+9. `backend/src/main/java/com/scoutly/api/DuffelFlightService.java`
+10. `backend/src/main/java/com/scoutly/api/LiteApiHotelService.java`
 11. `backend/src/main/resources/application.properties`
 12. `backend/src/main/resources/migrations/20261101_role_access_rls.sql`
 13. `scripts/test-postgres.sh`

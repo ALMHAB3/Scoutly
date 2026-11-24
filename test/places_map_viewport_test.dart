@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/features/nearby/presentation/screens/places_map_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/attraction_map_viewport.dart';
-import 'package:zentrip/models/map_search_result.dart';
+import 'package:scoutly/features/nearby/presentation/screens/places_map_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/attraction_map_viewport.dart';
+import 'package:scoutly/models/map_search_result.dart';
 
 void main() {
   testWidgets('loads attractions for the selected place viewport',

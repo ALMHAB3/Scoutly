@@ -1,4 +1,4 @@
--- Zentrip production pre-flight check (READ-ONLY).
+-- Scoutly production pre-flight check (READ-ONLY).
 -- Paste into the Supabase SQL Editor and run. It changes nothing.
 -- Each row says whether an object the backend expects exists, and which
 -- migration file creates it. Run the migrations whose rows say "MISSING",

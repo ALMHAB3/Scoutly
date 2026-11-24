@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/location_settings_service.dart';
+import 'package:scoutly/core/services/location_settings_service.dart';
 
 void main() {
   test('does not call native settings APIs on web', () async {

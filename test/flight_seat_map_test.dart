@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/flight_seat_map.dart';
+import 'package:scoutly/models/flight_seat_map.dart';
 
 Map<String, dynamic> response({int seatsPerRow = 4}) => {
   'row_count': 4,

@@ -15,7 +15,7 @@ const {
 
 const root = path.resolve(__dirname, "..");
 const outputDir = path.join(root, "generated-artifacts");
-const outputPath = path.join(outputDir, "Zentrip-MySQL-to-PostgreSQL-Ar.docx");
+const outputPath = path.join(outputDir, "Scoutly-MySQL-to-PostgreSQL-Ar.docx");
 const colors = {
   ink: "243447",
   muted: "617181",
@@ -122,7 +122,7 @@ function callout(label, text) {
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
   const children = [
-    paragraph("الانتقال من MySQL إلى PostgreSQL في مشروع Zentrip", {
+    paragraph("الانتقال من MySQL إلى PostgreSQL في مشروع Scoutly", {
       heading: HeadingLevel.TITLE,
       size: 34,
       bold: true,
@@ -139,13 +139,13 @@ async function main() {
       after: 220,
     }),
     paragraph(
-      "يمثل الانتقال من MySQL إلى PostgreSQL في Zentrip تغييرًا في طبقة التخزين والاتصال، وليس مجرد تبديل اسم محرك قاعدة البيانات. فقد تطلبت مواءمة إعدادات خدمة Spring Boot، وتعريف المخطط، وصياغة الاستعلامات، وآلية الاختبار مع PostgreSQL المستضافة عبر Supabase. ويعرض هذا النص ما تسنده سجلات المشروع وكوده الحالي، مع التمييز بين التغييرات المحلية وما ثبت تطبيقه على قاعدة الإنتاج.",
+      "يمثل الانتقال من MySQL إلى PostgreSQL في Scoutly تغييرًا في طبقة التخزين والاتصال، وليس مجرد تبديل اسم محرك قاعدة البيانات. فقد تطلبت مواءمة إعدادات خدمة Spring Boot، وتعريف المخطط، وصياغة الاستعلامات، وآلية الاختبار مع PostgreSQL المستضافة عبر Supabase. ويعرض هذا النص ما تسنده سجلات المشروع وكوده الحالي، مع التمييز بين التغييرات المحلية وما ثبت تطبيقه على قاعدة الإنتاج.",
       { size: 22, after: 180 },
     ),
 
     sectionTitle("1. نطاق الانتقال في المشروع"),
     paragraph(
-      "تشير سجلات التطوير إلى أن خدمة Zentrip الخلفية كانت مهيأة في مرحلة سابقة للاتصال بـ MySQL. ثم جرى تحويل إعدادات الاتصال في Java وSpring Boot إلى مشغل PostgreSQL وعنوان اتصال Supabase، مع نقل بيانات الاتصال إلى متغيرات بيئية. كما عُدّل تعريف الجداول والاستعلامات لتتوافق مع PostgreSQL. يتصل تطبيق Flutter بالخدمة الخلفية عبر واجهات REST API؛ ولا يتصل مباشرة بقاعدة البيانات في مسار التطبيق المعتاد.",
+      "تشير سجلات التطوير إلى أن خدمة Scoutly الخلفية كانت مهيأة في مرحلة سابقة للاتصال بـ MySQL. ثم جرى تحويل إعدادات الاتصال في Java وSpring Boot إلى مشغل PostgreSQL وعنوان اتصال Supabase، مع نقل بيانات الاتصال إلى متغيرات بيئية. كما عُدّل تعريف الجداول والاستعلامات لتتوافق مع PostgreSQL. يتصل تطبيق Flutter بالخدمة الخلفية عبر واجهات REST API؛ ولا يتصل مباشرة بقاعدة البيانات في مسار التطبيق المعتاد.",
       { size: 21 },
     ),
     ...callout(
@@ -225,7 +225,7 @@ async function main() {
 
     sectionTitle("6. خلاصة"),
     paragraph(
-      "أظهر انتقال Zentrip من MySQL إلى PostgreSQL أن تغيير محرك قاعدة البيانات يتطلب معالجة متكاملة تشمل الاتصال والمخطط والاستعلامات وإدارة المفاتيح والاختبارات والصلاحيات. وكانت أبرز الصعوبات ناتجة عن اعتماد الاستعلامات القديمة على خصائص MySQL، وعن الفروق التي لا تكشفها المحاكاة وحدها. وبعد معالجة هذه الفروق، صار مسار الخلفية متوافقًا مع PostgreSQL المستضاف عبر Supabase، وأصبح اختبار الترحيلات والتعامل مع البيانات المنظمة والعلاقات أكثر وضوحًا. وتبقى دقة وصف المرحلة مرتبطة بالتفريق بين نجاح التوافق المحلي وبين اكتمال الترحيل الفعلي لقاعدة الإنتاج وبياناتها.",
+      "أظهر انتقال Scoutly من MySQL إلى PostgreSQL أن تغيير محرك قاعدة البيانات يتطلب معالجة متكاملة تشمل الاتصال والمخطط والاستعلامات وإدارة المفاتيح والاختبارات والصلاحيات. وكانت أبرز الصعوبات ناتجة عن اعتماد الاستعلامات القديمة على خصائص MySQL، وعن الفروق التي لا تكشفها المحاكاة وحدها. وبعد معالجة هذه الفروق، صار مسار الخلفية متوافقًا مع PostgreSQL المستضاف عبر Supabase، وأصبح اختبار الترحيلات والتعامل مع البيانات المنظمة والعلاقات أكثر وضوحًا. وتبقى دقة وصف المرحلة مرتبطة بالتفريق بين نجاح التوافق المحلي وبين اكتمال الترحيل الفعلي لقاعدة الإنتاج وبياناتها.",
       { size: 21 },
     ),
 
@@ -242,10 +242,10 @@ async function main() {
   ];
 
   const document = new Document({
-    creator: "Zentrip",
-    title: "الانتقال من MySQL إلى PostgreSQL في مشروع Zentrip",
+    creator: "Scoutly",
+    title: "الانتقال من MySQL إلى PostgreSQL في مشروع Scoutly",
     subject: "عرض أكاديمي لمسار الانتقال والعقبات والمزايا",
-    description: "نص عربي أكاديمي مبني على توثيق Zentrip وكوده الحالي.",
+    description: "نص عربي أكاديمي مبني على توثيق Scoutly وكوده الحالي.",
     styles: {
       default: {
         document: {
@@ -286,7 +286,7 @@ async function main() {
                 bidirectional: true,
                 alignment: AlignmentType.CENTER,
                 children: [
-                  ...runs("Zentrip | ", { size: 16, color: colors.muted }),
+                  ...runs("Scoutly | ", { size: 16, color: colors.muted }),
                   new TextRun({ children: [PageNumber.CURRENT], font: "Arial", size: 16 }),
                 ],
               }),

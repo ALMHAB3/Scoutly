@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/admin_dashboard_model.dart';
+import 'package:scoutly/models/admin_dashboard_model.dart';
 
 void main() {
   test('admin partner parsing tolerates optional database columns', () {

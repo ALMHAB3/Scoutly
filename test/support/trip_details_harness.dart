@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zentrip/core/services/currency_service.dart';
-import 'package:zentrip/core/utils/price_format.dart';
-import 'package:zentrip/features/flight_booking/logic/flight_controller.dart';
-import 'package:zentrip/features/flight_booking/presentation/screens/flight_trip_details_screen.dart';
-import 'package:zentrip/l10n/app_localizations.dart';
-import 'package:zentrip/models/flight_model.dart';
+import 'package:scoutly/core/services/currency_service.dart';
+import 'package:scoutly/core/utils/price_format.dart';
+import 'package:scoutly/features/flight_booking/logic/flight_controller.dart';
+import 'package:scoutly/features/flight_booking/presentation/screens/flight_trip_details_screen.dart';
+import 'package:scoutly/l10n/app_localizations.dart';
+import 'package:scoutly/models/flight_model.dart';
 
 /// Sets the user's profile currency (Profile → Preferences → Currency).
 Future<void> setProfileCurrency(String code) async {

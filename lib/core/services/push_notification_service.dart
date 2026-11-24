@@ -6,7 +6,7 @@ import 'api_service.dart';
 
 /// استقبال الإشعارات (Push Notifications) عن طريق Firebase Cloud Messaging.
 /// FCM handles device notifications only; account data remains in the
-/// authenticated Zentrip API and PostgreSQL.
+/// authenticated Scoutly API and PostgreSQL.
 ///
 /// FCM delivery is intentionally disabled until Firebase client configuration
 /// and backend Admin credentials are installed. Booking confirmations are
@@ -17,7 +17,7 @@ class PushNotificationService {
 
   static const bool isConfigured = false;
 
-  static const String _androidChannelId = 'zentrip_default';
+  static const String _androidChannelId = 'scoutly_default';
   static const String _androidChannelName = 'Scoutly Notifications';
 
   final FlutterLocalNotificationsPlugin _local =

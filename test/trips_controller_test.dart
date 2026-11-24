@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/api_result.dart';
-import 'package:zentrip/core/services/api_service.dart';
-import 'package:zentrip/features/trips/logic/trips_controller.dart';
-import 'package:zentrip/models/booking_model.dart';
-import 'package:zentrip/models/trip_model.dart';
-import 'package:zentrip/models/transfer_model.dart';
+import 'package:scoutly/core/services/api_result.dart';
+import 'package:scoutly/core/services/api_service.dart';
+import 'package:scoutly/features/trips/logic/trips_controller.dart';
+import 'package:scoutly/models/booking_model.dart';
+import 'package:scoutly/models/trip_model.dart';
+import 'package:scoutly/models/transfer_model.dart';
 
 void main() {
   TripModel flightTrip() => TripModel(

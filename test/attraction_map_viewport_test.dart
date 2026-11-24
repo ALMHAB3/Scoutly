@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/models/attraction_map_viewport.dart';
+import 'package:scoutly/models/attraction_map_viewport.dart';
 
 void main() {
   test('viewport response safely parses places, clusters and warnings', () {

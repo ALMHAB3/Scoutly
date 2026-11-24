@@ -131,7 +131,7 @@ abstract class AppLocalizations {
   /// No description provided for @navChatbot.
   ///
   /// In ar, this message translates to:
-  /// **'Zen AI'**
+  /// **'Scoutly AI'**
   String get navChatbot;
 
   /// No description provided for @navNearby.
@@ -305,7 +305,7 @@ abstract class AppLocalizations {
   /// No description provided for @startPlanningWithZen.
   ///
   /// In ar, this message translates to:
-  /// **'ابدأ التخطيط مع Zen AI'**
+  /// **'ابدأ التخطيط مع Scoutly AI'**
   String get startPlanningWithZen;
 
   /// No description provided for @inspiredDestinations.
@@ -1043,7 +1043,7 @@ abstract class AppLocalizations {
   /// No description provided for @zenMessages.
   ///
   /// In ar, this message translates to:
-  /// **'رسائل Zen AI'**
+  /// **'رسائل Scoutly AI'**
   String get zenMessages;
 
   /// No description provided for @zenMessagesDesc.
@@ -1374,7 +1374,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingDesc1.
   ///
   /// In ar, this message translates to:
-  /// **'يساعدك Zen AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.'**
+  /// **'يساعدك Scoutly AI في تصميم برنامج سفر مثالي يناسب ميزانيتك واهتماماتك وأسلوب سفرك.'**
   String get onboardingDesc1;
 
   /// No description provided for @onboardingTitle2.
@@ -1422,7 +1422,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatbotTitle.
   ///
   /// In ar, this message translates to:
-  /// **'Zen AI'**
+  /// **'Scoutly AI'**
   String get chatbotTitle;
 
   /// No description provided for @chatbotSubtitle.
@@ -1434,13 +1434,13 @@ abstract class AppLocalizations {
   /// No description provided for @chatbotWelcome.
   ///
   /// In ar, this message translates to:
-  /// **'أهلاً! أنا Zen AI، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨'**
+  /// **'أهلاً! أنا Scoutly AI، مساعدك الذكي للسفر. أخبرني بوجهتك المفضلة وسأخطط لك رحلة مثالية ✨'**
   String get chatbotWelcome;
 
   /// No description provided for @chatbotInputHint.
   ///
   /// In ar, this message translates to:
-  /// **'اسأل Zen AI أي شيء...'**
+  /// **'اسأل Scoutly AI أي شيء...'**
   String get chatbotInputHint;
 
   /// No description provided for @chatbotSend.
@@ -1470,7 +1470,7 @@ abstract class AppLocalizations {
   /// No description provided for @noChatHistorySubtitle.
   ///
   /// In ar, this message translates to:
-  /// **'ستظهر محادثاتك مع Zen AI هنا'**
+  /// **'ستظهر محادثاتك مع Scoutly AI هنا'**
   String get noChatHistorySubtitle;
 
   /// No description provided for @clearChatTitle.
@@ -1494,7 +1494,7 @@ abstract class AppLocalizations {
   /// No description provided for @zenTyping.
   ///
   /// In ar, this message translates to:
-  /// **'يفكر Zen AI...'**
+  /// **'يفكر Scoutly AI...'**
   String get zenTyping;
 
   /// No description provided for @quickPrompt1.
@@ -3772,11 +3772,11 @@ abstract class AppLocalizations {
   /// **'أدخل الرمز المكوّن من 6 أرقام'**
   String get commonEnterSixDigitCode;
 
-  /// No description provided for @commonWelcomeToZentrip.
+  /// No description provided for @commonWelcomeToScoutly.
   ///
   /// In ar, this message translates to:
   /// **'أهلاً بك في سكاوتلي! 🎉'**
-  String get commonWelcomeToZentrip;
+  String get commonWelcomeToScoutly;
 
   /// No description provided for @commonReadyToExplore.
   ///

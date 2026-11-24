@@ -1,6 +1,6 @@
 import 'flight_model.dart';
 
-/// Search/summary estimate for a flight. Partner inventory uses Zentrip's
+/// Search/summary estimate for a flight. Partner inventory uses Scoutly's
 /// existing 12% tax and $12 service-fee rules; Duffel supplies a total quote
 /// whose tax split is not available in the normalized offer.
 class FlightPriceBreakdown {

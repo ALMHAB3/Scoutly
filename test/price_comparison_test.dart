@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zentrip/core/services/currency_service.dart';
-import 'package:zentrip/core/services/price_comparison.dart';
-import 'package:zentrip/core/utils/money_format.dart';
-import 'package:zentrip/features/flight_booking/logic/flight_controller.dart';
-import 'package:zentrip/features/hotel_booking/logic/hotel_controller.dart';
-import 'package:zentrip/models/exchange_rates.dart';
-import 'package:zentrip/models/flight_model.dart';
-import 'package:zentrip/models/flight_price_breakdown.dart';
-import 'package:zentrip/models/hotel_model.dart';
+import 'package:scoutly/core/services/currency_service.dart';
+import 'package:scoutly/core/services/price_comparison.dart';
+import 'package:scoutly/core/utils/money_format.dart';
+import 'package:scoutly/features/flight_booking/logic/flight_controller.dart';
+import 'package:scoutly/features/hotel_booking/logic/hotel_controller.dart';
+import 'package:scoutly/models/exchange_rates.dart';
+import 'package:scoutly/models/flight_model.dart';
+import 'package:scoutly/models/flight_price_breakdown.dart';
+import 'package:scoutly/models/hotel_model.dart';
 
 final now = DateTime.utc(2026, 11, 1, 12);
 
