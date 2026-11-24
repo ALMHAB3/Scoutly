@@ -2634,8 +2634,8 @@ abstract class AppLocalizations {
   /// No description provided for @transferPassengersCount.
   ///
   /// In ar, this message translates to:
-  /// **'{count} ركاب'**
-  String transferPassengersCount(Object count);
+  /// **'{count, plural, =1{راكب واحد} =2{راكبان} few{{count} ركاب} other{{count} راكبًا}}'**
+  String transferPassengersCount(num count);
 
   /// No description provided for @transferRouteTitle.
   ///
@@ -6621,6 +6621,162 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'أدخل معالم مفصولة بفواصل'**
   String get adminOfferHighlightsArabicHint;
+
+  /// No description provided for @payHowTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'كيف تريد أن تدفع؟'**
+  String get payHowTitle;
+
+  /// No description provided for @paySubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستؤكد الدفع بأمان في الخطوة التالية.'**
+  String get paySubtitle;
+
+  /// No description provided for @payGroupCards.
+  ///
+  /// In ar, this message translates to:
+  /// **'البطاقات'**
+  String get payGroupCards;
+
+  /// No description provided for @payGroupWallets.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحافظ الرقمية'**
+  String get payGroupWallets;
+
+  /// No description provided for @payGroupOther.
+  ///
+  /// In ar, this message translates to:
+  /// **'طرق أخرى'**
+  String get payGroupOther;
+
+  /// No description provided for @payPayingWith.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع بواسطة'**
+  String get payPayingWith;
+
+  /// No description provided for @payContinue.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة'**
+  String get payContinue;
+
+  /// No description provided for @taxiStepRoute.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسار'**
+  String get taxiStepRoute;
+
+  /// No description provided for @taxiStepCar.
+  ///
+  /// In ar, this message translates to:
+  /// **'السيارة'**
+  String get taxiStepCar;
+
+  /// No description provided for @taxiStepPayment.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدفع'**
+  String get taxiStepPayment;
+
+  /// No description provided for @taxiPickup.
+  ///
+  /// In ar, this message translates to:
+  /// **'الانطلاق'**
+  String get taxiPickup;
+
+  /// No description provided for @taxiPickupCurrent.
+  ///
+  /// In ar, this message translates to:
+  /// **'الانطلاق · موقعك الحالي'**
+  String get taxiPickupCurrent;
+
+  /// No description provided for @taxiDestination.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوجهة'**
+  String get taxiDestination;
+
+  /// No description provided for @taxiWhereTo.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى أين؟'**
+  String get taxiWhereTo;
+
+  /// No description provided for @taxiPickupHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'عنوان الانطلاق'**
+  String get taxiPickupHint;
+
+  /// No description provided for @taxiDistanceKm.
+  ///
+  /// In ar, this message translates to:
+  /// **'{km} كم'**
+  String taxiDistanceKm(String km);
+
+  /// No description provided for @taxiDriveMinutes.
+  ///
+  /// In ar, this message translates to:
+  /// **'~{duration} بالسيارة'**
+  String taxiDriveMinutes(String duration);
+
+  /// No description provided for @taxiChooseCar.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر السيارة'**
+  String get taxiChooseCar;
+
+  /// No description provided for @taxiChooseRideTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر رحلتك'**
+  String get taxiChooseRideTitle;
+
+  /// No description provided for @taxiRidesCount.
+  ///
+  /// In ar, this message translates to:
+  /// **'{count} رحلات متاحة'**
+  String taxiRidesCount(int count);
+
+  /// No description provided for @taxiBookFor.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز · {price}'**
+  String taxiBookFor(String price);
+
+  /// No description provided for @taxiChangeRoute.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المسار'**
+  String get taxiChangeRoute;
+
+  /// No description provided for @taxiTapMapHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط على الخريطة لتحديد وجهتك'**
+  String get taxiTapMapHint;
+
+  /// No description provided for @taxiConfirmedSubtitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم حجز التاكسي، وسيصلك السائق في الموعد.'**
+  String get taxiConfirmedSubtitle;
+
+  /// No description provided for @taxiMyLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'موقعي'**
+  String get taxiMyLocation;
+
+  /// No description provided for @payChooseNextStep.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستختار طريقة الدفع في الخطوة التالية.'**
+  String get payChooseNextStep;
 }
 
 class _AppLocalizationsDelegate

@@ -511,7 +511,7 @@
   "transferBookedSuccess": "🚕 Taxi booked successfully!",
   "transferUpToPassengers": "Up to {count} passengers",
   "transferMinutes": "{count} min",
-  "transferPassengersCount": "{count} passengers",
+  "transferPassengersCount": "{count, plural, =1{1 passenger} other{{count} passengers}}",
   "transferRouteTitle": "Where should your taxi pick you up?",
   "transferPickupLabel": "Pickup",
   "transferDropoffLabel": "Drop-off",
@@ -1384,5 +1384,59 @@
   "adminOfferCountryArabic": "Country (Arabic)",
   "adminOfferDescriptionArabic": "Offer description (Arabic)",
   "adminOfferHighlightsArabic": "Offer highlights (Arabic)",
-  "adminOfferHighlightsArabicHint": "Enter highlights separated by commas"
+  "adminOfferHighlightsArabicHint": "Enter highlights separated by commas",
+  "payHowTitle": "How would you like to pay?",
+  "paySubtitle": "You'll confirm the payment securely on the next step.",
+  "payGroupCards": "CARDS",
+  "payGroupWallets": "DIGITAL WALLETS",
+  "payGroupOther": "OTHER",
+  "payPayingWith": "Paying with",
+  "payContinue": "Continue",
+  "taxiStepRoute": "Route",
+  "taxiStepCar": "Car",
+  "taxiStepPayment": "Payment",
+  "taxiPickup": "Pick up",
+  "taxiPickupCurrent": "Pick up · Current location",
+  "taxiDestination": "Destination",
+  "taxiWhereTo": "Where to?",
+  "taxiPickupHint": "Pickup address",
+  "taxiDistanceKm": "{km} km",
+  "@taxiDistanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiDriveMinutes": "~{duration} drive",
+  "@taxiDriveMinutes": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiChooseCar": "Choose a car",
+  "taxiChooseRideTitle": "Choose your ride",
+  "taxiRidesCount": "{count} rides available",
+  "@taxiRidesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "taxiBookFor": "Book · {price}",
+  "@taxiBookFor": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiChangeRoute": "Change route",
+  "taxiTapMapHint": "Tap the map to set your destination",
+  "taxiConfirmedSubtitle": "Your taxi is booked. The driver will pick you up on time.",
+  "taxiMyLocation": "My location",
+  "payChooseNextStep": "You'll choose how to pay on the next step."
 }

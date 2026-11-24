@@ -1,23 +1,26 @@
-import '../../../../core/utils/price_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:latlong2/latlong.dart';
+
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/services/location_settings_service.dart';
+import '../../../../core/services/api_service.dart';
 import '../../../../core/services/current_location_service.dart';
+import '../../../../core/utils/money_format.dart';
+import '../../../../core/utils/price_format.dart';
 import '../../../../global_widgets/app_network_image.dart';
 import '../../../../global_widgets/app_snackbar.dart';
+import '../../../../global_widgets/booking_confirmed_view.dart';
 import '../../../../global_widgets/booking_loading_overlay.dart';
-import '../../../../global_widgets/booking_confirmation_screen.dart';
 import '../../../../global_widgets/currency_amount_text.dart';
-import '../../../../l10n/app_localizations.dart';
-import '../../../../models/transfer_model.dart';
-import '../../logic/transfers_controller.dart';
-import '../../../../core/services/api_service.dart';
 import '../../../../global_widgets/payment_checkout_screen.dart';
 import '../../../../global_widgets/ui/ui.dart';
+import '../../../../l10n/app_localizations.dart';
+import '../../../../models/flight_model.dart';
+import '../../../../models/transfer_model.dart';
+import '../../../car_rental/presentation/car_labels.dart';
+import '../../logic/transfers_controller.dart';
 
 class TransferSearchRouteArgs {
   final String initialFromLocation;
@@ -29,14 +32,25 @@ class TransferSearchRouteArgs {
   });
 }
 
+enum _Point { pickup, destination }
+
+/// Taxi booking: 1 Route (map + pickup/destination) → 2 Car (partner rides
+/// for the route) → 3 Payment ("How would you like to pay?" when the gateway
+/// offers methods, then the payment page) → Booking confirmed.
 class TransfersScreen extends StatefulWidget {
   final String? initialFromLocation;
   final String? initialToLocation;
+  final CurrentLocationService locationService;
+
+  /// Tests turn the map tiles off (no network).
+  final bool showMapTiles;
 
   const TransfersScreen({
     super.key,
     this.initialFromLocation,
     this.initialToLocation,
+    this.locationService = const CurrentLocationService(),
+    @visibleForTesting this.showMapTiles = true,
   });
 
   @override
@@ -44,21 +58,39 @@ class TransfersScreen extends StatefulWidget {
 }
 
 class _TransfersScreenState extends State<TransfersScreen> {
+  static const _defaultCenter = LatLng(32.3754, 15.0925); // Misrata
+
   final _ctrl = TransferController();
+  final _map = MapController();
   final _fromCtrl = TextEditingController();
   final _toCtrl = TextEditingController();
-  DateTime _pickupDateTime = DateTime.now().add(const Duration(days: 3));
-  int _passengers = 1;
-  bool _isBooking = false;
-  bool _hasSearched = false;
   LatLng? _pickupPoint;
   LatLng? _dropoffPoint;
+
+  /// Supported city of each point, used to match partner rides.
+  String? _pickupCity;
+  String? _dropoffCity;
+  bool _pickupIsCurrent = false;
+  _Point _mapTarget = _Point.destination;
+  DateTime _pickupDateTime = DateTime.now().add(const Duration(days: 3));
+  int _passengers = 1;
+  bool _showRides = false;
+  bool _locating = false;
+  bool _mapReady = false;
+  String? _bookingId;
 
   @override
   void initState() {
     super.initState();
-    _fromCtrl.text = widget.initialFromLocation ?? '';
-    _toCtrl.text = widget.initialToLocation ?? '';
+    final from = widget.initialFromLocation?.trim() ?? '';
+    final to = widget.initialToLocation?.trim() ?? '';
+    _fromCtrl.text = from;
+    _toCtrl.text = to;
+    _matchCity(_Point.pickup, from);
+    _matchCity(_Point.destination, to);
+    if (from.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _useMyLocation());
+    }
   }
 
   @override
@@ -69,1016 +101,1032 @@ class _TransfersScreenState extends State<TransfersScreen> {
     super.dispose();
   }
 
-  Future<void> _search() async {
-    final from = _fromCtrl.text.trim();
-    final to = _toCtrl.text.trim();
-    if (from.isEmpty || to.isEmpty) {
-      AppSnackbar.error(
-          context, AppLocalizations.of(context).transferLocationRequired);
-      return;
+  AppLocalizations get _l10n => AppLocalizations.of(context);
+
+  // ── Points ────────────────────────────────────────────────────────────
+
+  /// A typed or preset supported city also places its point on the map.
+  void _matchCity(_Point which, String text) {
+    final airport = AirportOption.byCity(text);
+    final c = airport?.coordinates;
+    final point = c == null ? null : LatLng(c.$1, c.$2);
+    if (which == _Point.pickup) {
+      _pickupPoint = point;
+      _pickupCity = airport?.city;
+    } else {
+      _dropoffPoint = point;
+      _dropoffCity = airport?.city;
     }
-    _ctrl.fromLocation = from;
-    _ctrl.toLocation = to;
-    _ctrl.date = _pickupDateTime;
-    _ctrl.passengers = _passengers;
-    await BookingLoadingOverlay.run<void>(
-      context,
-      title: AppLocalizations.of(context).quickActionTransfers,
-      subtitle: '$from  →  $to',
-      serviceIcon: Icons.local_taxi_rounded,
-      action: _ctrl.search,
-    );
-    if (mounted) setState(() => _hasSearched = true);
   }
 
-  Future<void> _selectDate() async {
-    final selected = await showDatePicker(
-      context: context,
-      initialDate: _pickupDateTime,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    if (selected == null || !mounted) return;
+  void _onTyped(_Point which) {
     setState(() {
-      _pickupDateTime = DateTime(
-        selected.year,
-        selected.month,
-        selected.day,
-        _pickupDateTime.hour,
-        _pickupDateTime.minute,
-      );
-      _hasSearched = false;
+      if (which == _Point.pickup) _pickupIsCurrent = false;
+      _matchCity(
+          which, (which == _Point.pickup ? _fromCtrl : _toCtrl).text.trim());
     });
+    _fitRoute();
   }
 
-  Future<void> _selectTime() async {
-    final selected = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_pickupDateTime),
-    );
-    if (selected == null || !mounted) return;
-    setState(() {
-      _pickupDateTime = DateTime(
-        _pickupDateTime.year,
-        _pickupDateTime.month,
-        _pickupDateTime.day,
-        selected.hour,
-        selected.minute,
-      );
-      _hasSearched = false;
-    });
-  }
-
-  void _swapLocations() {
-    final pickup = _fromCtrl.text;
-    _fromCtrl.text = _toCtrl.text;
-    _toCtrl.text = pickup;
-    final pickupPoint = _pickupPoint;
-    _pickupPoint = _dropoffPoint;
-    _dropoffPoint = pickupPoint;
-    setState(() => _hasSearched = false);
-  }
-
-  Future<void> _chooseMapLocation({required bool pickup}) async {
-    final l10n = AppLocalizations.of(context);
-    final point = await showModalBottomSheet<LatLng>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      builder: (_) => _TaxiMapPointPicker(
-        title:
-            pickup ? l10n.taxiSelectPickupOnMap : l10n.taxiSelectDropoffOnMap,
-        initialPoint: pickup ? _pickupPoint : _dropoffPoint,
-        confirmLabel: l10n.taxiConfirmMapPoint,
-        serviceDisabledMessage: l10n.taxiLocationServiceDisabled,
-        permissionDeniedMessage: l10n.taxiLocationPermissionDenied,
-        permissionDeniedForeverMessage:
-            l10n.taxiLocationPermissionDeniedForever,
-        locationUnavailableMessage: l10n.taxiLocationUnavailable,
-        retryLabel: l10n.retry,
-        settingsLabel: l10n.openSettings,
-        useCurrentLocationLabel: l10n.taxiUseCurrentLocation,
-      ),
-    );
-    if (point == null || !mounted) return;
-
-    setState(() {
-      if (pickup) {
-        _pickupPoint = point;
-      } else {
-        _dropoffPoint = point;
-      }
-      _hasSearched = false;
-    });
-
+  Future<String?> _addressOf(LatLng point) async {
     try {
-      final placemarks = await Geocoding()
+      final places = await Geocoding()
           .placemarkFromCoordinates(point.latitude, point.longitude);
-      if (!mounted) return;
-      final place = placemarks.isEmpty ? null : placemarks.first;
-      final address = [
-        place?.name,
-        place?.street,
-        place?.locality,
-        place?.administrativeArea,
-      ]
+      final place = places.isEmpty ? null : places.first;
+      final address = [place?.name, place?.street, place?.locality]
           .whereType<String>()
           .map((part) => part.trim())
           .where((part) => part.isNotEmpty)
           .toSet()
           .join(', ');
-      final location = address.isNotEmpty
-          ? address
-          : '${point.latitude.toStringAsFixed(6)}, '
-              '${point.longitude.toStringAsFixed(6)}';
-      setState(() {
-        (pickup ? _fromCtrl : _toCtrl).text = location;
-      });
+      return address.isEmpty ? null : address;
     } catch (_) {
-      if (!mounted) return;
-      (pickup ? _fromCtrl : _toCtrl).text =
-          '${point.latitude.toStringAsFixed(6)}, '
-          '${point.longitude.toStringAsFixed(6)}';
-      AppSnackbar.error(context, l10n.taxiMapAddressLookupFailed);
+      return null;
     }
   }
 
+  Future<void> _setPoint(_Point which, LatLng point,
+      {bool current = false}) async {
+    final city = AirportOption.nearestTo(point.latitude, point.longitude)?.city;
+    setState(() {
+      if (which == _Point.pickup) {
+        _pickupPoint = point;
+        _pickupCity = city;
+        _pickupIsCurrent = current;
+      } else {
+        _dropoffPoint = point;
+        _dropoffCity = city;
+      }
+      // After the pickup is set, the next map tap sets the destination.
+      _mapTarget = _Point.destination;
+    });
+    _fitRoute();
+    final address = await _addressOf(point);
+    if (!mounted) return;
+    final text = address ??
+        city ??
+        '${point.latitude.toStringAsFixed(5)}, ${point.longitude.toStringAsFixed(5)}';
+    setState(() => (which == _Point.pickup ? _fromCtrl : _toCtrl).text = text);
+  }
+
+  Future<void> _useMyLocation() async {
+    if (_locating) return;
+    setState(() => _locating = true);
+    try {
+      final position = await widget.locationService.getPosition();
+      if (!mounted) return;
+      await _setPoint(
+        _Point.pickup,
+        LatLng(position.latitude, position.longitude),
+        current: true,
+      );
+    } on CurrentLocationException catch (error) {
+      if (!mounted) return;
+      AppSnackbar.error(
+        context,
+        switch (error.reason) {
+          CurrentLocationError.serviceDisabled =>
+            _l10n.taxiLocationServiceDisabled,
+          CurrentLocationError.permissionDenied =>
+            _l10n.taxiLocationPermissionDenied,
+          CurrentLocationError.permissionDeniedForever =>
+            _l10n.taxiLocationPermissionDeniedForever,
+          CurrentLocationError.unableToDetermine =>
+            _l10n.taxiLocationUnavailable,
+        },
+      );
+    } catch (_) {
+      if (mounted) AppSnackbar.error(context, _l10n.taxiLocationUnavailable);
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
+  void _swap() {
+    setState(() {
+      final text = _fromCtrl.text;
+      _fromCtrl.text = _toCtrl.text;
+      _toCtrl.text = text;
+      final point = _pickupPoint;
+      _pickupPoint = _dropoffPoint;
+      _dropoffPoint = point;
+      final city = _pickupCity;
+      _pickupCity = _dropoffCity;
+      _dropoffCity = city;
+      _pickupIsCurrent = false;
+    });
+    _fitRoute();
+  }
+
+  void _fitRoute() {
+    if (!_mapReady) return;
+    final a = _pickupPoint;
+    final b = _dropoffPoint;
+    if (a != null && b != null) {
+      if (a == b) {
+        _map.move(a, 15);
+        return;
+      }
+      _map.fitCamera(CameraFit.coordinates(
+        coordinates: [a, b],
+        padding: const EdgeInsets.fromLTRB(60, 130, 60, 430),
+        maxZoom: 16,
+      ));
+    } else if ((a ?? b) != null) {
+      _map.move((a ?? b)!, 15);
+    }
+  }
+
+  double? get _distanceKm {
+    final a = _pickupPoint;
+    final b = _dropoffPoint;
+    if (a == null || b == null) return null;
+    return const Distance().as(LengthUnit.Meter, a, b) / 1000;
+  }
+
+  /// Rough driving time: straight-line distance × 1.3 for the roads, at
+  /// ~35 km/h in town and ~80 km/h between cities.
+  int _driveMinutes(double km) {
+    final roadKm = km * 1.3;
+    return (roadKm / (km > 30 ? 80 : 35) * 60).round().clamp(1, 1440);
+  }
+
+  String _driveTime(double km) {
+    final minutes = _driveMinutes(km);
+    final text = minutes < 60
+        ? _l10n.transferMinutes(minutes)
+        : _l10n.flightDurationShort(minutes ~/ 60, minutes % 60);
+    return _l10n.taxiDriveMinutes(text);
+  }
+
+  // ── Steps ─────────────────────────────────────────────────────────────
+
+  Future<void> _pickDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _pickupDateTime,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_pickupDateTime),
+    );
+    if (!mounted) return;
+    final t = time ?? TimeOfDay.fromDateTime(_pickupDateTime);
+    setState(() => _pickupDateTime =
+        DateTime(date.year, date.month, date.day, t.hour, t.minute));
+  }
+
+  Future<void> _findRides() async {
+    final from = _fromCtrl.text.trim();
+    final to = _toCtrl.text.trim();
+    if (from.isEmpty || to.isEmpty) {
+      AppSnackbar.error(context, _l10n.transferLocationRequired);
+      return;
+    }
+    _ctrl
+      ..fromLocation = _pickupCity ?? from
+      ..toLocation = _dropoffCity ?? to
+      ..date = _pickupDateTime
+      ..passengers = _passengers;
+    await BookingLoadingOverlay.run<void>(
+      context,
+      title: _l10n.quickActionTransfers,
+      subtitle: '$from  →  $to',
+      serviceIcon: Icons.local_taxi_rounded,
+      action: _ctrl.search,
+    );
+    if (mounted) setState(() => _showRides = true);
+  }
+
+  List<TransferModel> get _rides => _ctrl.results
+      .map((ride) => ride.copyWith(
+            pickupLocation: _fromCtrl.text.trim(),
+            dropoffLocation: _toCtrl.text.trim(),
+            pickupTime: _pickupDateTime,
+          ))
+      .toList();
+
+  Future<void> _book(TransferModel ride) async {
+    if (_bookingId != null) return;
+    final l10n = _l10n;
+    setState(() => _bookingId = ride.id);
+    try {
+      final reference =
+          'ZT-T-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+      final availability = await ApiService.instance.checkTransferAvailability(
+        pickupTime: ride.pickupTime,
+        durationMinutes: ride.durationMinutes,
+      );
+      if (!mounted) return;
+      if (availability.isFailure || availability.data != true) {
+        AppSnackbar.error(
+          context,
+          availability.isFailure
+              ? availability.errorMessage ?? l10n.genericError
+              : l10n.transferScheduleConflict,
+        );
+        return;
+      }
+
+      // Charged in the profile currency when a rate is available (as cars
+      // and hotels), otherwise in USD.
+      final converted = convertPrice(context, ride.priceUSD);
+      final currency = converted == null ? 'USD' : userCurrencyCode(context);
+      final amount = double.parse((converted ?? ride.priceUSD)
+          .toStringAsFixed(currencyDecimalDigits(currency)));
+      final km = _distanceKm;
+      final payment = await PaymentCheckoutScreen.start(
+        context,
+        amountUsd: amount,
+        currencyCode: currency,
+        description: '${ride.providerName} - ${ride.vehicleName}',
+        referenceId: reference,
+        methodHeader: const _TaxiSteps(current: 2),
+        methodSummary: _RouteSummary(
+          from: ride.pickupLocation,
+          to: ride.dropoffLocation,
+          distance:
+              km == null ? null : l10n.taxiDistanceKm(km.toStringAsFixed(1)),
+          duration: km == null ? null : _driveTime(km),
+        ),
+      );
+      if (!mounted) return;
+      if (payment?.paid != true) {
+        AppSnackbar.error(context, l10n.paymentFailedMessage);
+        return;
+      }
+
+      final result = await BookingLoadingOverlay.run(
+        context,
+        title: l10n.transferBookedSuccess,
+        subtitle: '${ride.pickupLocation} → ${ride.dropoffLocation}',
+        serviceIcon: Icons.local_taxi_rounded,
+        action: () => ApiService.instance.createTransferBooking(
+          ride,
+          passengers: _passengers,
+          referenceId: reference,
+          paymentAttemptId: payment?.attemptId,
+        ),
+      );
+      if (!mounted) return;
+      if (result.isFailure) {
+        AppSnackbar.error(
+          context,
+          result.errorMessage == 'TAXI_SCHEDULE_CONFLICT'
+              ? l10n.transferScheduleConflict
+              : result.errorMessage ?? l10n.genericError,
+        );
+        return;
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TaxiBookingConfirmedScreen(
+            ride: ride,
+            reference: reference,
+            passengers: _passengers,
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _bookingId = null);
+    }
+  }
+
+  // ── UI ────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-          title: Text(l10n.transferBookingTitle),
-          flexibleSpace: Container(
-              decoration:
-                  const BoxDecoration(gradient: AppColors.primaryGradient))),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 760),
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              Text(
-                l10n.transferRouteTitle,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w800),
+    final l10n = _l10n;
+    final a = _pickupPoint;
+    final b = _dropoffPoint;
+    return PopScope(
+      canPop: !_showRides,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) setState(() => _showRides = false);
+      },
+      child: Scaffold(
+        backgroundColor: context.uiPageBackground,
+        resizeToAvoidBottomInset: true,
+        body: Stack(
+          children: [
+            FlutterMap(
+              mapController: _map,
+              options: MapOptions(
+                initialCenter: a ?? b ?? _defaultCenter,
+                initialZoom: 13,
+                onMapReady: () {
+                  _mapReady = true;
+                  _fitRoute();
+                },
+                onTap: _showRides
+                    ? null
+                    : (_, point) => _setPoint(_mapTarget, point),
               ),
-              const SizedBox(height: 5),
-              Text(
-                l10n.transferSubtitle,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 18),
-              AppCard(
-                padding: const EdgeInsets.all(18),
-                radius: 18,
-                shadow: false,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _LocationField(
-                          controller: _fromCtrl,
-                          label: l10n.transferPickupLabel,
-                          hint: l10n.transferFromHint,
-                          icon: Icons.radio_button_checked_rounded,
-                          color: AppColors.accentGreen,
-                          isDark: isDark,
-                          mapTooltip: l10n.taxiSelectPickupOnMap,
-                          onMapTap: () => _chooseMapLocation(pickup: true),
-                          onChanged: () {
-                            _pickupPoint = null;
-                            setState(() => _hasSearched = false);
-                          }),
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(start: 25),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 1,
-                                color: isDark
-                                    ? AppColors.darkBorder
-                                    : AppColors.border,
-                              ),
-                            ),
-                            IconButton(
-                              tooltip: l10n.swapLocations,
-                              onPressed: _swapLocations,
-                              icon: const Icon(Icons.swap_vert_rounded,
-                                  color: AppColors.primary),
-                            ),
-                          ],
+              children: [
+                if (widget.showMapTiles)
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.zentrip.app',
+                  ),
+                if (a != null && b != null)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: [a, b],
+                        strokeWidth: 5,
+                        color: AppColors.primary,
+                        borderStrokeWidth: 2,
+                        borderColor: AppColors.white,
+                      ),
+                    ],
+                  ),
+                MarkerLayer(
+                  markers: [
+                    if (a != null)
+                      Marker(
+                        point: a,
+                        width: 26,
+                        height: 26,
+                        child: const _PickupDot(),
+                      ),
+                    if (b != null)
+                      Marker(
+                        point: b,
+                        width: 46,
+                        height: 46,
+                        alignment: Alignment.topCenter,
+                        child: const Icon(
+                          Icons.location_on_rounded,
+                          size: 46,
+                          color: AppColors.accentRed,
                         ),
                       ),
-                      _LocationField(
-                          controller: _toCtrl,
-                          label: l10n.transferDropoffLabel,
-                          hint: l10n.transferToHint,
-                          icon: Icons.location_on_rounded,
-                          color: AppColors.accentRed,
-                          isDark: isDark,
-                          mapTooltip: l10n.taxiSelectDropoffOnMap,
-                          onMapTap: () => _chooseMapLocation(pickup: false),
-                          onChanged: () {
-                            _dropoffPoint = null;
-                            setState(() => _hasSearched = false);
-                          }),
-                      const SizedBox(height: 18),
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          final dateTime = _DateTimeField(
-                            date: MaterialLocalizations.of(context)
-                                .formatMediumDate(_pickupDateTime),
-                            time: MaterialLocalizations.of(context)
-                                .formatTimeOfDay(
-                              TimeOfDay.fromDateTime(_pickupDateTime),
-                            ),
-                            dateLabel: l10n.transferChooseDate,
-                            timeLabel: l10n.transferChooseTime,
-                            onDateTap: _selectDate,
-                            onTimeTap: _selectTime,
-                          );
-                          if (constraints.maxWidth < 420) {
-                            return Column(
-                              children: [
-                                dateTime.dateButton,
-                                const SizedBox(height: 10),
-                                dateTime.timeButton,
-                                const SizedBox(height: 14),
-                                _PassengerSelector(
-                                  passengers: _passengers,
-                                  label: l10n.transferPassengers,
-                                  onChanged: (value) => setState(() {
-                                    _passengers = value;
-                                    _hasSearched = false;
-                                  }),
-                                ),
-                              ],
-                            );
-                          }
-                          return Row(
-                            children: [
-                              Expanded(child: dateTime.dateButton),
-                              const SizedBox(width: 10),
-                              Expanded(child: dateTime.timeButton),
-                              const SizedBox(width: 10),
-                              _PassengerSelector(
-                                passengers: _passengers,
-                                label: l10n.transferPassengers,
-                                onChanged: (value) => setState(() {
-                                  _passengers = value;
-                                  _hasSearched = false;
-                                }),
-                              ),
-                            ],
-                          );
-                        },
+                  ],
+                ),
+              ],
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: Row(
+                  children: [
+                    AppIconButton(
+                      icon: Icons.arrow_back_rounded,
+                      tooltip:
+                          MaterialLocalizations.of(context).backButtonTooltip,
+                      onPressed: () => _showRides
+                          ? setState(() => _showRides = false)
+                          : Navigator.maybePop(context),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(child: _TaxiSteps(current: _showRides ? 1 : 0)),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 620),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child:
+                            _showRides ? _ridesSheet(l10n) : _routeSheet(l10n),
                       ),
-                    ]),
-              ).animate().fade(duration: 300.ms),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ListenableBuilder(
-                  listenable: _ctrl,
-                  builder: (_, __) => AppButton.icon(
-                    onPressed: _ctrl.isLoading ? null : _search,
-                    icon: _ctrl.isLoading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: AppColors.white))
-                        : const Icon(Icons.search_rounded),
-                    label: Text(_ctrl.isLoading
-                        ? l10n.transferSearching
-                        : l10n.transferSearchButton),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      backgroundColor: AppColors.primary,
                     ),
                   ),
                 ),
-              ).animate().fade(delay: 150.ms),
-              if (_hasSearched) ...[
-                const SizedBox(height: 26),
-                Text(
-                  l10n.transferVehicleOptions,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w800),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _routeSheet(AppLocalizations l10n) {
+    final km = _distanceKm;
+    final date = MaterialLocalizations.of(context);
+    return Column(
+      key: const ValueKey('taxi-route'),
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: _MapHint(
+                  text: _mapTarget == _Point.pickup
+                      ? l10n.taxiSelectPickupOnMap
+                      : l10n.taxiTapMapHint,
                 ),
-                const SizedBox(height: 12),
+              ),
+            ),
+            const SizedBox(width: 10),
+            AppIconButton(
+              key: const ValueKey('taxi-my-location'),
+              icon: Icons.my_location_rounded,
+              tooltip: l10n.taxiUseCurrentLocation,
+              onPressed: _locating ? null : _useMyLocation,
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        AppCard(
+          radius: 24,
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _PointRow(
+                key: const ValueKey('taxi-pickup'),
+                icon: Icons.my_location_rounded,
+                iconColor: AppColors.primary,
+                label:
+                    _pickupIsCurrent ? l10n.taxiPickupCurrent : l10n.taxiPickup,
+                hint: _locating ? l10n.taxiMyLocation : l10n.taxiPickupHint,
+                controller: _fromCtrl,
+                mapTooltip: l10n.taxiSelectPickupOnMap,
+                pickingOnMap: _mapTarget == _Point.pickup,
+                onMapTap: () => setState(() => _mapTarget = _Point.pickup),
+                onChanged: () => _onTyped(_Point.pickup),
+              ),
+              Row(
+                children: [
+                  const SizedBox(width: 18),
+                  Container(width: 2, height: 18, color: context.uiBorder),
+                  const SizedBox(width: 18),
+                  Expanded(child: Divider(color: context.uiBorder, height: 1)),
+                  AppIconButton(
+                    icon: Icons.swap_vert_rounded,
+                    tooltip: l10n.swapLocations,
+                    onPressed: _swap,
+                    size: 20,
+                  ),
+                ],
+              ),
+              _PointRow(
+                key: const ValueKey('taxi-destination'),
+                icon: Icons.location_on_rounded,
+                iconColor: AppColors.accentRed,
+                label: l10n.taxiDestination,
+                hint: l10n.taxiWhereTo,
+                controller: _toCtrl,
+                mapTooltip: l10n.taxiSelectDropoffOnMap,
+                pickingOnMap: false,
+                onMapTap: () => setState(() => _mapTarget = _Point.destination),
+                onChanged: () => _onTyped(_Point.destination),
+              ),
+              const SizedBox(height: 14),
+              if (km != null) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InfoChip(
+                        icon: Icons.route_rounded,
+                        text: l10n.taxiDistanceKm(km.toStringAsFixed(1)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _InfoChip(
+                        icon: Icons.timer_outlined,
+                        text: _driveTime(km),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
               ],
+              Row(
+                children: [
+                  Expanded(
+                    child: _InfoChip(
+                      key: const ValueKey('taxi-when'),
+                      icon: Icons.event_rounded,
+                      text: '${date.formatShortMonthDay(_pickupDateTime)} · '
+                          '${date.formatTimeOfDay(TimeOfDay.fromDateTime(_pickupDateTime))}',
+                      onTap: _pickDateTime,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _PassengersChip(
+                    count: _passengers,
+                    tooltip: l10n.transferPassengers,
+                    onChanged: (value) => setState(() => _passengers = value),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
               ListenableBuilder(
                 listenable: _ctrl,
-                builder: (_, __) {
-                  if (_ctrl.isLoading) {
-                    return const Center(
-                        child: CircularProgressIndicator(
-                            color: AppColors.primary));
-                  }
-                  if (!_hasSearched) return const SizedBox.shrink();
-                  if (_hasSearched && _ctrl.results.isEmpty) {
-                    return _EmptyRides(
-                      message: l10n.transferNoSuitableRides,
-                      isDark: isDark,
-                    );
-                  }
-                  return Column(
-                    children: _ctrl.results
-                        .asMap()
-                        .entries
-                        .map((e) => _TransferCard(
-                              transfer: e.value,
-                              isDark: isDark,
-                              passengers: _passengers,
-                              isBooking: _isBooking,
-                              onBook: () async {
-                                if (_isBooking) return;
-                                _isBooking = true;
-                                setState(() {});
-                                final bookingL10n =
-                                    AppLocalizations.of(context);
-
-                                try {
-                                  final transfer = e.value;
-                                  final ref =
-                                      'ZT-T-${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
-                                  final total = transfer.priceUSD;
-
-                                  final availability = await ApiService.instance
-                                      .checkTransferAvailability(
-                                    pickupTime: transfer.pickupTime,
-                                    durationMinutes: transfer.durationMinutes,
-                                  );
-                                  if (!context.mounted) return;
-                                  if (availability.isFailure ||
-                                      availability.data != true) {
-                                    AppSnackbar.error(
-                                      context,
-                                      availability.isFailure
-                                          ? availability.errorMessage ??
-                                              bookingL10n.genericError
-                                          : bookingL10n
-                                              .transferScheduleConflict,
-                                    );
-                                    return;
-                                  }
-
-                                  final payment =
-                                      await PaymentCheckoutScreen.start(
-                                    context,
-                                    amountUsd: total,
-                                    description:
-                                        '${transfer.providerName} - ${transfer.vehicleType}',
-                                    referenceId: ref,
-                                  );
-
-                                  if (!context.mounted) return;
-                                  if (payment?.paid != true) {
-                                    AppSnackbar.error(context,
-                                        bookingL10n.paymentFailedMessage);
-                                    return;
-                                  }
-
-                                  final result =
-                                      await BookingLoadingOverlay.run(
-                                    context,
-                                    title: bookingL10n.transferBookedSuccess,
-                                    subtitle:
-                                        '${transfer.pickupLocation} → ${transfer.dropoffLocation}',
-                                    serviceIcon: Icons.local_taxi_rounded,
-                                    action: () => ApiService.instance
-                                        .createTransferBooking(
-                                      transfer,
-                                      passengers: _passengers,
-                                      referenceId: ref,
-                                      paymentAttemptId: payment?.attemptId,
-                                    ),
-                                  );
-
-                                  if (!context.mounted) return;
-
-                                  if (result.isFailure) {
-                                    AppSnackbar.error(
-                                      context,
-                                      result.errorMessage ==
-                                              'TAXI_SCHEDULE_CONFLICT'
-                                          ? bookingL10n.transferScheduleConflict
-                                          : result.errorMessage ??
-                                              bookingL10n.genericError,
-                                    );
-                                    return;
-                                  }
-
-                                  AppSnackbar.success(context,
-                                      bookingL10n.transferBookedSuccess);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => BookingConfirmationScreen(
-                                        serviceName:
-                                            bookingL10n.quickActionTransfers,
-                                        primaryText: transfer.pickupLocation,
-                                        secondaryText: transfer.dropoffLocation,
-                                        reference: ref,
-                                        dateLabel:
-                                            MaterialLocalizations.of(context)
-                                                .formatMediumDate(
-                                          transfer.pickupTime,
-                                        ),
-                                        priceLabel: formatPrice(context, total),
-                                        serviceIcon: Icons.local_taxi_rounded,
-                                      ),
-                                    ),
-                                  );
-                                } finally {
-                                  if (mounted) {
-                                    setState(() => _isBooking = false);
-                                  }
-                                }
-                              },
-                            )
-                                .animate(
-                                    delay: Duration(milliseconds: 80 * e.key))
-                                .fade()
-                                .slideY(begin: 0.05, end: 0))
-                        .toList(),
-                  );
-                },
+                builder: (_, __) => AppButton(
+                  key: const ValueKey('taxi-choose-car'),
+                  loading: _ctrl.isLoading,
+                  onPressed: _findRides,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(l10n.taxiChooseCar),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 20),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
         ),
+      ],
+    ).animate().fade(duration: 250.ms).slideY(begin: 0.05, end: 0);
+  }
+
+  Widget _ridesSheet(AppLocalizations l10n) {
+    final rides = _rides;
+    return ConstrainedBox(
+      key: const ValueKey('taxi-rides'),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.66,
       ),
-    );
-  }
-}
-
-class _LocationField extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final String hint;
-  final IconData icon;
-  final Color color;
-  final bool isDark;
-  final String mapTooltip;
-  final VoidCallback onMapTap;
-  final VoidCallback onChanged;
-  const _LocationField(
-      {required this.controller,
-      required this.label,
-      required this.hint,
-      required this.icon,
-      required this.color,
-      required this.isDark,
-      required this.mapTooltip,
-      required this.onMapTap,
-      required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      onChanged: (_) => onChanged(),
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: color),
-        suffixIcon: IconButton(
-          tooltip: mapTooltip,
-          onPressed: onMapTap,
-          icon: const Icon(Icons.map_outlined, color: AppColors.primary),
-        ),
-        filled: true,
-        fillColor: isDark
-            ? AppColors.darkSurfaceSecondary
-            : AppColors.surfaceSecondary,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-              color: isDark ? AppColors.darkBorder : AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-      ),
-    );
-  }
-}
-
-class _TaxiMapPointPicker extends StatefulWidget {
-  final String title;
-  final String confirmLabel;
-  final String serviceDisabledMessage;
-  final String permissionDeniedMessage;
-  final String permissionDeniedForeverMessage;
-  final String locationUnavailableMessage;
-  final String retryLabel;
-  final String settingsLabel;
-  final String useCurrentLocationLabel;
-  final LatLng? initialPoint;
-
-  const _TaxiMapPointPicker({
-    required this.title,
-    required this.confirmLabel,
-    required this.serviceDisabledMessage,
-    required this.permissionDeniedMessage,
-    required this.permissionDeniedForeverMessage,
-    required this.locationUnavailableMessage,
-    required this.retryLabel,
-    required this.settingsLabel,
-    required this.useCurrentLocationLabel,
-    this.initialPoint,
-  });
-
-  @override
-  State<_TaxiMapPointPicker> createState() => _TaxiMapPointPickerState();
-}
-
-class _TaxiMapPointPickerState extends State<_TaxiMapPointPicker> {
-  final _locationService = const CurrentLocationService();
-  final MapController _mapController = MapController();
-  LatLng? _currentLocation;
-  LatLng? _selectedPoint;
-  bool _isLoadingLocation = true;
-  String? _locationError;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedPoint = widget.initialPoint;
-    _loadCurrentLocation();
-  }
-
-  Future<void> _loadCurrentLocation() async {
-    setState(() {
-      _isLoadingLocation = true;
-      _locationError = null;
-    });
-
-    try {
-      final position = await _locationService.getPosition();
-      if (!mounted) return;
-      final point = LatLng(position.latitude, position.longitude);
-      setState(() {
-        _currentLocation = point;
-        _isLoadingLocation = false;
-        _locationError = null;
-      });
-    } on CurrentLocationException catch (error) {
-      if (!mounted) return;
-      setState(() {
-        _locationError = switch (error.reason) {
-          CurrentLocationError.serviceDisabled => widget.serviceDisabledMessage,
-          CurrentLocationError.permissionDenied =>
-            widget.permissionDeniedMessage,
-          CurrentLocationError.permissionDeniedForever =>
-            widget.permissionDeniedForeverMessage,
-          CurrentLocationError.unableToDetermine =>
-            widget.locationUnavailableMessage,
-        };
-        _isLoadingLocation = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _locationError = widget.locationUnavailableMessage;
-        _isLoadingLocation = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final mapCenter = widget.initialPoint ?? _currentLocation;
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * 0.78,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-            child: Text(widget.title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w800)),
-          ),
-          Expanded(
-            child: _isLoadingLocation
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary))
-                : _locationError != null && mapCenter == null
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.location_off_rounded,
-                                  color: AppColors.accentRed, size: 42),
-                              const SizedBox(height: 12),
-                              Text(_locationError!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: isDark
-                                        ? AppColors.darkTextSecondary
-                                        : AppColors.textSecondary,
-                                  )),
-                              const SizedBox(height: 12),
-                              Wrap(
-                                spacing: 8,
-                                children: [
-                                  AppButton.icon(
-                                    onPressed: _loadCurrentLocation,
-                                    icon: const Icon(Icons.refresh_rounded),
-                                    label: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        widget.retryLabel,
-                                        maxLines: 1,
-                                        softWrap: false,
-                                      ),
-                                    ),
-                                    variant: AppButtonVariant.secondary,
-                                  ),
-                                  if (_locationError ==
-                                      widget.permissionDeniedForeverMessage)
-                                    AppButton.icon(
-                                      onPressed:
-                                          LocationSettingsService.isSupported
-                                              ? LocationSettingsService
-                                                  .openAppSettings
-                                              : null,
-                                      icon: const Icon(Icons.settings_rounded),
-                                      label: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          widget.settingsLabel,
-                                          maxLines: 1,
-                                          softWrap: false,
-                                        ),
-                                      ),
-                                      variant: AppButtonVariant.secondary,
-                                    ),
-                                  if (_locationError ==
-                                      widget.serviceDisabledMessage)
-                                    AppButton.icon(
-                                      onPressed:
-                                          LocationSettingsService.isSupported
-                                              ? LocationSettingsService
-                                                  .openLocationSettings
-                                              : null,
-                                      icon: const Icon(Icons.settings_rounded),
-                                      label: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          widget.settingsLabel,
-                                          maxLines: 1,
-                                          softWrap: false,
-                                        ),
-                                      ),
-                                      variant: AppButtonVariant.secondary,
-                                    ),
-                                ],
-                              ),
-                            ],
+      child: AppCard(
+        radius: 24,
+        padding: EdgeInsets.zero,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 8, 6),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.taxiChooseRideTitle,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: context.uiInk,
                           ),
                         ),
-                      )
-                    : Stack(
-                        children: [
-                          FlutterMap(
-                            mapController: _mapController,
-                            options: MapOptions(
-                              initialCenter: mapCenter!,
-                              initialZoom: 16,
-                              onTap: (_, point) =>
-                                  setState(() => _selectedPoint = point),
-                            ),
-                            children: [
-                              TileLayer(
-                                urlTemplate:
-                                    'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                                userAgentPackageName: 'com.zentrip.app',
-                              ),
-                              MarkerLayer(
-                                markers: [
-                                  if (_currentLocation != null)
-                                    Marker(
-                                      point: _currentLocation!,
-                                      width: 24,
-                                      height: 24,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                              color: AppColors.white, width: 3),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: AppColors.black
-                                                  .withValues(alpha: 0.25),
-                                              blurRadius: 5,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  if (_selectedPoint != null)
-                                    Marker(
-                                      point: _selectedPoint!,
-                                      width: 48,
-                                      height: 48,
-                                      child: const Icon(
-                                        Icons.location_pin,
-                                        color: AppColors.accentRed,
-                                        size: 46,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ],
+                        if (rides.isNotEmpty)
+                          Text(
+                            l10n.taxiRidesCount(rides.length),
+                            style: TextStyle(
+                                fontSize: 12.5, color: context.uiMuted),
                           ),
-                          Positioned(
-                            right: 12,
-                            bottom: 12,
-                            child: FloatingActionButton.small(
-                              heroTag: 'taxi-map-my-location',
-                              tooltip: widget.useCurrentLocationLabel,
-                              onPressed: () {
-                                final point = _currentLocation;
-                                if (point == null) {
-                                  _loadCurrentLocation();
-                                  return;
-                                }
-                                _mapController.move(point, 16);
-                                setState(() => _selectedPoint = point);
-                              },
-                              child: const Icon(Icons.my_location_rounded),
-                            ),
-                          ),
-                        ],
-                      ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: AppButton.icon(
-                onPressed: _selectedPoint == null
-                    ? null
-                    : () => Navigator.pop(context, _selectedPoint),
-                icon: const Icon(Icons.check_rounded),
-                label: Text(widget.confirmLabel),
-                expand: false,
+                      ],
+                    ),
+                  ),
+                  AppButton(
+                    variant: AppButtonVariant.text,
+                    onPressed: () => setState(() => _showRides = false),
+                    child: Text(l10n.taxiChangeRoute),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                padding: const EdgeInsets.fromLTRB(14, 6, 14, 14),
+                children: rides.isEmpty
+                    ? [_EmptyRides(message: l10n.transferNoSuitableRides)]
+                    : [
+                        for (final (i, ride) in rides.indexed)
+                          _RideOffer(
+                            ride: ride,
+                            passengers: _passengers,
+                            booking: _bookingId == ride.id,
+                            enabled: _bookingId == null,
+                            onBook: () => _book(ride),
+                          )
+                              .animate(delay: (70 * i).ms)
+                              .fade()
+                              .slideY(begin: 0.06, end: 0),
+                      ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _DateTimeField {
-  final Widget dateButton;
-  final Widget timeButton;
-
-  _DateTimeField({
-    required String date,
-    required String time,
-    required String dateLabel,
-    required String timeLabel,
-    required VoidCallback onDateTap,
-    required VoidCallback onTimeTap,
-  })  : dateButton = _SelectionButton(
-          icon: Icons.calendar_today_rounded,
-          label: dateLabel,
-          value: date,
-          onTap: onDateTap,
-        ),
-        timeButton = _SelectionButton(
-          icon: Icons.schedule_rounded,
-          label: timeLabel,
-          value: time,
-          onTap: onTimeTap,
-        );
-}
-
-class _SelectionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final VoidCallback onTap;
-
-  const _SelectionButton({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.onTap,
-  });
+/// "1 Route — 2 Car — 3 Payment" progress pill.
+class _TaxiSteps extends StatelessWidget {
+  final int current;
+  const _TaxiSteps({required this.current});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return AppButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        alignment: AlignmentDirectional.centerStart,
-        side:
-            BorderSide(color: isDark ? AppColors.darkBorder : AppColors.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    final l10n = AppLocalizations.of(context);
+    final labels = [l10n.taxiStepRoute, l10n.taxiStepCar, l10n.taxiStepPayment];
+    return AppCard(
+      radius: 30,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // When the labels don't fit, only the current step keeps its own.
+          const style = TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800);
+          final textWidth = labels.fold<double>(
+            0,
+            (sum, label) =>
+                sum +
+                (TextPainter(
+                  text: TextSpan(text: label, style: style),
+                  textDirection: Directionality.of(context),
+                  textScaler: MediaQuery.textScalerOf(context),
+                )..layout())
+                    .width,
+          );
+          final allLabels = textWidth + labels.length * (22 + 5) + 2 * 28 <=
+              constraints.maxWidth;
+          return Row(
+            children: [
+              for (var i = 0; i < labels.length; i++) ...[
+                if (i > 0)
+                  Expanded(
+                    child: Container(
+                      height: 2,
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      color:
+                          i <= current ? AppColors.primary : context.uiBorder,
+                    ),
+                  ),
+                _StepDot(
+                    number: i + 1, done: i < current, active: i == current),
+                if (allLabels || i == current) ...[
+                  const SizedBox(width: 5),
+                  Text(
+                    labels[i],
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight:
+                          i == current ? FontWeight.w800 : FontWeight.w500,
+                      color: i == current ? context.uiInk : context.uiMuted,
+                    ),
+                  ),
+                ],
+              ],
+            ],
+          );
+        },
       ),
-      child: Row(
+    );
+  }
+}
+
+class _StepDot extends StatelessWidget {
+  final int number;
+  final bool done;
+  final bool active;
+  const _StepDot(
+      {required this.number, required this.done, required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    final filled = done || active;
+    return Container(
+      width: 22,
+      height: 22,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: filled ? AppColors.primary : context.uiBorder,
+      ),
+      child: done
+          ? const Icon(Icons.check_rounded, size: 14, color: AppColors.white)
+          : Text(
+              '$number',
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+                color: filled ? AppColors.white : context.uiMuted,
+              ),
+            ),
+    );
+  }
+}
+
+class _PickupDot extends StatelessWidget {
+  const _PickupDot();
+
+  @override
+  Widget build(BuildContext context) => Container(
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.white, width: 4),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withValues(alpha: 0.25),
+              blurRadius: 6,
+            ),
+          ],
+        ),
+      );
+}
+
+class _MapHint extends StatelessWidget {
+  final String text;
+  const _MapHint({required this.text});
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+        radius: 20,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.touch_app_outlined,
+                size: 16, color: AppColors.primary),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 12, color: context.uiInk),
+              ),
+            ),
+          ],
+        ),
+      );
+}
+
+class _PointRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String hint;
+  final TextEditingController controller;
+  final String mapTooltip;
+  final bool pickingOnMap;
+  final VoidCallback onMapTap;
+  final VoidCallback onChanged;
+
+  const _PointRow({
+    super.key,
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.hint,
+    required this.controller,
+    required this.mapTooltip,
+    required this.pickingOnMap,
+    required this.onMapTap,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) => Row(
         children: [
-          Icon(icon, color: AppColors.primary, size: 18),
-          const SizedBox(width: 8),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 20, color: iconColor),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: TextStyle(
-                        color: isDark
-                            ? AppColors.darkTextSecondary
-                            : AppColors.textSecondary,
-                        fontSize: 10)),
-                const SizedBox(height: 2),
-                Text(value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        color: isDark
-                            ? AppColors.darkTextPrimary
-                            : AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12)),
+                    style: TextStyle(fontSize: 11.5, color: context.uiMuted)),
+                TextField(
+                  controller: controller,
+                  onChanged: (_) => onChanged(),
+                  textInputAction: TextInputAction.next,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: context.uiInk,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    isDense: true,
+                    filled: false,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                  ),
+                ),
               ],
             ),
           ),
+          AppIconButton(
+            icon: pickingOnMap ? Icons.pin_drop_rounded : Icons.map_outlined,
+            tooltip: mapTooltip,
+            onPressed: onMapTap,
+            style: AppIconButtonStyle.tinted,
+            size: 20,
+          ),
         ],
-      ),
-      variant: AppButtonVariant.secondary,
-    );
-  }
+      );
 }
 
-class _PassengerSelector extends StatelessWidget {
-  final int passengers;
-  final String label;
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final VoidCallback? onTap;
+
+  const _InfoChip(
+      {super.key, required this.icon, required this.text, this.onTap});
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: context.uiIsDark
+            ? AppColors.darkSurfaceSecondary
+            : AppColors.surfaceSecondary,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 17, color: AppColors.primary),
+                const SizedBox(width: 7),
+                Flexible(
+                  child: Text(
+                    text,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: context.uiInk,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+}
+
+class _PassengersChip extends StatelessWidget {
+  final int count;
+  final String tooltip;
   final ValueChanged<int> onChanged;
 
-  const _PassengerSelector({
-    required this.passengers,
-    required this.label,
+  const _PassengersChip({
+    required this.count,
+    required this.tooltip,
     required this.onChanged,
   });
 
   @override
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(12),
+          color: context.uiIsDark
+              ? AppColors.darkSurfaceSecondary
+              : AppColors.surfaceSecondary,
+          borderRadius: BorderRadius.circular(14),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 5),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              tooltip: label,
+              tooltip: tooltip,
               visualDensity: VisualDensity.compact,
-              onPressed:
-                  passengers > 1 ? () => onChanged(passengers - 1) : null,
-              icon: const Icon(Icons.remove_circle_outline_rounded, size: 20),
+              onPressed: count > 1 ? () => onChanged(count - 1) : null,
+              icon: const Icon(Icons.remove_rounded, size: 18),
             ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(label,
-                    style: const TextStyle(
-                        color: AppColors.textSecondary, fontSize: 10)),
-                Text('$passengers',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w800, fontSize: 14)),
-              ],
+            const Icon(Icons.person_outline_rounded,
+                size: 17, color: AppColors.primary),
+            const SizedBox(width: 3),
+            Text(
+              '$count',
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: context.uiInk,
+              ),
             ),
             IconButton(
-              tooltip: label,
+              tooltip: tooltip,
               visualDensity: VisualDensity.compact,
-              onPressed:
-                  passengers < 12 ? () => onChanged(passengers + 1) : null,
-              icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
+              onPressed: count < 12 ? () => onChanged(count + 1) : null,
+              icon: const Icon(Icons.add_rounded, size: 18),
             ),
           ],
         ),
       );
 }
 
-class _TransferCard extends StatelessWidget {
-  final TransferModel transfer;
-  final bool isDark;
+String _initials(String name) {
+  final parts = name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
+  return parts.take(2).map((p) => p.characters.first.toUpperCase()).join();
+}
+
+/// One ride for the route: who drives, the vehicle and the price.
+class _RideOffer extends StatelessWidget {
+  final TransferModel ride;
   final int passengers;
-  final bool isBooking;
+  final bool booking;
+  final bool enabled;
   final VoidCallback onBook;
-  const _TransferCard(
-      {required this.transfer,
-      required this.isDark,
-      required this.passengers,
-      required this.isBooking,
-      required this.onBook});
+
+  const _RideOffer({
+    required this.ride,
+    required this.passengers,
+    required this.booking,
+    required this.enabled,
+    required this.onBook,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final who = ride.driverName ?? ride.partnerName ?? ride.providerName;
+    final soft = context.uiIsDark
+        ? AppColors.darkSurfaceSecondary
+        : AppColors.surfaceSecondary;
     return AppCard(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      radius: 18,
+      shadow: false,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: SizedBox(
-                  width: 104,
-                  height: 82,
-                  child: AppNetworkImage(
-                    url: transfer.vehicleImageUrl,
-                    fallbackIcon: switch (transfer.vehicleType) {
-                      'van' => Icons.airport_shuttle_rounded,
-                      'bus' => Icons.directions_bus_rounded,
-                      _ => Icons.local_taxi_rounded,
-                    },
-                    fallbackGradient: AppColors.destinationGradients[
-                        transfer.vehicleType == 'van' ? 1 : 0],
+              CircleAvatar(
+                radius: 22,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                child: Text(
+                  _initials(who),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            transfer.vehicleName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.w800, fontSize: 16),
-                          ),
-                        ),
-                        if (transfer.driverRating != null) ...[
-                          const Icon(Icons.star_rounded,
-                              size: 16, color: AppColors.amber),
-                          Text(transfer.driverRating!.toStringAsFixed(1),
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w700)),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 3),
                     Text(
-                      transfer.providerName,
+                      who,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          color: AppColors.textSecondary, fontSize: 12),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: context.uiInk,
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 5,
+                    const SizedBox(height: 2),
+                    Row(
                       children: [
-                        _RideFact(
-                          icon: Icons.people_alt_outlined,
-                          text: l10n
-                              .transferUpToPassengers(transfer.maxPassengers),
-                        ),
-                        _RideFact(
-                          icon: Icons.luggage_outlined,
-                          text: l10n.carBagsCount(transfer.maxLuggage),
-                        ),
-                        _RideFact(
-                          icon: Icons.schedule_rounded,
-                          text: l10n.transferMinutes(transfer.durationMinutes),
+                        if (ride.driverRating != null) ...[
+                          const Icon(Icons.star_rounded,
+                              size: 15, color: AppColors.amber),
+                          Text(
+                            ' ${ride.driverRating!.toStringAsFixed(1)} · ',
+                            style:
+                                TextStyle(fontSize: 12, color: context.uiMuted),
+                          ),
+                        ],
+                        Flexible(
+                          child: Text(
+                            ride.driverName != null
+                                ? ride.providerName
+                                : l10n.transferRidePrivate,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style:
+                                TextStyle(fontSize: 12, color: context.uiMuted),
+                          ),
                         ),
                       ],
                     ),
@@ -1087,77 +1135,109 @@ class _TransferCard extends StatelessWidget {
               ),
             ],
           ),
-          if (transfer.includedServices.isNotEmpty) ...[
-            const SizedBox(height: 12),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: soft,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: SizedBox(
+                    width: 96,
+                    height: 60,
+                    child: AppNetworkImage(
+                      url: ride.vehicleImageUrl,
+                      fallbackIcon: switch (ride.vehicleType) {
+                        'van' || 'minivan' => Icons.airport_shuttle_rounded,
+                        'bus' => Icons.directions_bus_rounded,
+                        _ => Icons.local_taxi_rounded,
+                      },
+                      fallbackGradient: AppColors.destinationGradients[0],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (ride.vehicleType.isNotEmpty)
+                        Text(
+                          ride.vehicleType.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            letterSpacing: 1,
+                            fontWeight: FontWeight.w700,
+                            color: context.uiMuted,
+                          ),
+                        ),
+                      Text(
+                        ride.vehicleName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                          color: context.uiInk,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${l10n.transferUpToPassengers(ride.maxPassengers)} · '
+                        '${l10n.carBagsCount(ride.maxLuggage)} · '
+                        '${l10n.transferMinutes(ride.durationMinutes)}',
+                        maxLines: 2,
+                        style:
+                            TextStyle(fontSize: 11.5, color: context.uiMuted),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (ride.includedServices.isNotEmpty) ...[
+            const SizedBox(height: 10),
             Wrap(
-              spacing: 8,
+              spacing: 6,
               runSpacing: 6,
-              children: transfer.includedServices.take(3).map((service) {
-                return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.accentGreen.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    service,
-                    style: const TextStyle(
-                        color: AppColors.accentGreen, fontSize: 10),
-                  ),
-                );
-              }).toList(),
+              children: [
+                for (final service in ride.includedServices.take(3))
+                  AppPill(icon: Icons.check_circle_outline, text: service),
+              ],
             ),
           ],
-          const SizedBox(height: 14),
-          Divider(
-              height: 1,
-              color: isDark ? AppColors.darkBorder : AppColors.divider),
           const SizedBox(height: 12),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l10n.transferRidePriceNote,
-                        style: const TextStyle(
-                            color: AppColors.textSecondary, fontSize: 11)),
-                    const SizedBox(height: 2),
-                    CurrencyAmountText(
-                        amount: transfer.priceUSD,
-                        decimalDigits: 0,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 22,
-                            color: AppColors.primary)),
-                    Text(l10n.transferPassengersCount(passengers),
-                        style: const TextStyle(
-                            color: AppColors.textSecondary, fontSize: 10)),
-                  ],
+                child: Text(
+                  '${l10n.transferRidePriceNote}\n'
+                  '${l10n.transferPassengersCount(passengers)}',
+                  style: TextStyle(fontSize: 11.5, color: context.uiMuted),
                 ),
               ),
-              AppButton(
-                onPressed: isBooking ? null : onBook,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 22, vertical: 13),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+              CurrencyAmountText(
+                amount: ride.priceUSD,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22,
+                  color: AppColors.primary,
                 ),
-                child: isBooking
-                    ? const SizedBox(
-                        height: 18,
-                        width: 18,
-                        child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.white))
-                    : Text(l10n.book,
-                        style: const TextStyle(fontWeight: FontWeight.w700)),
-                expand: false,
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          AppButton(
+            key: ValueKey('taxi-book-${ride.id}'),
+            loading: booking,
+            onPressed: enabled ? onBook : null,
+            child: Text(l10n.taxiBookFor(formatPrice(context, ride.priceUSD))),
           ),
         ],
       ),
@@ -1165,42 +1245,168 @@ class _TransferCard extends StatelessWidget {
   }
 }
 
-class _RideFact extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _RideFact({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) => Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppColors.textSecondary),
-          const SizedBox(width: 4),
-          Text(text,
-              style: const TextStyle(
-                  fontSize: 11, color: AppColors.textSecondary)),
-        ],
-      );
-}
-
 class _EmptyRides extends StatelessWidget {
   final String message;
-  final bool isDark;
-
-  const _EmptyRides({required this.message, required this.isDark});
+  const _EmptyRides({required this.message});
 
   @override
-  Widget build(BuildContext context) => AppCard(
-        padding: const EdgeInsets.all(24),
-        shadow: false,
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
         child: Column(
           children: [
             const Icon(Icons.local_taxi_rounded,
-                color: AppColors.primary, size: 38),
+                color: AppColors.primary, size: 40),
             const SizedBox(height: 10),
-            Text(message, textAlign: TextAlign.center),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: context.uiMuted),
+            ),
           ],
         ),
       );
+}
+
+/// Route summary at the top of "How would you like to pay?".
+class _RouteSummary extends StatelessWidget {
+  final String from;
+  final String to;
+  final String? distance;
+  final String? duration;
+
+  const _RouteSummary({
+    required this.from,
+    required this.to,
+    this.distance,
+    this.duration,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Widget stop(Color color, String text) => Row(
+          children: [
+            Icon(Icons.radio_button_checked_rounded, size: 16, color: color),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: context.uiInk,
+                ),
+              ),
+            ),
+          ],
+        );
+    return AppCard(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                stop(AppColors.primary, from),
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 7),
+                  child:
+                      Container(width: 2, height: 14, color: context.uiBorder),
+                ),
+                stop(AppColors.accentRed, to),
+              ],
+            ),
+          ),
+          if (distance != null) ...[
+            Container(
+              width: 1,
+              height: 44,
+              margin: const EdgeInsets.symmetric(horizontal: 14),
+              color: context.uiBorder,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  distance!,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: context.uiInk,
+                  ),
+                ),
+                if (duration != null)
+                  Text(duration!,
+                      style: TextStyle(fontSize: 12, color: context.uiMuted)),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// "Booking Confirmed!" for a taxi ride (same screen as car and hotel).
+class TaxiBookingConfirmedScreen extends StatelessWidget {
+  final TransferModel ride;
+  final String reference;
+  final int passengers;
+
+  const TaxiBookingConfirmedScreen({
+    super.key,
+    required this.ride,
+    required this.reference,
+    required this.passengers,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final labels = CarLabels(l10n);
+    final date = MaterialLocalizations.of(context);
+    return BookingConfirmedView(
+      title: labels.bookingConfirmed,
+      subtitle: l10n.taxiConfirmedSubtitle,
+      bookingIdLabel: labels.bookingId,
+      copyTooltip: labels.copy,
+      copiedMessage: labels.copied,
+      viewDetailsLabel: labels.viewBookingDetails,
+      okLabel: labels.ok,
+      reference: reference,
+      name: ride.vehicleName,
+      photo: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          height: 70,
+          child: AppNetworkImage(
+            url: ride.vehicleImageUrl,
+            fallbackIcon: Icons.local_taxi_rounded,
+            fallbackGradient: AppColors.destinationGradients[0],
+          ),
+        ),
+      ),
+      lines: [
+        (
+          Icons.calendar_today_outlined,
+          '${date.formatMediumDate(ride.pickupTime)} · '
+              '${date.formatTimeOfDay(TimeOfDay.fromDateTime(ride.pickupTime))}',
+        ),
+        (
+          Icons.location_on_outlined,
+          '${ride.pickupLocation} → ${ride.dropoffLocation}',
+        ),
+        (
+          Icons.person_outline_rounded,
+          l10n.transferPassengersCount(passengers)
+        ),
+        (Icons.payments_outlined, formatPrice(context, ride.priceUSD)),
+      ],
+      provider: AppIconLabel(
+        icon: Icons.storefront_rounded,
+        text: ride.partnerName ?? ride.providerName,
+        color: AppColors.primary,
+      ),
+    );
+  }
 }

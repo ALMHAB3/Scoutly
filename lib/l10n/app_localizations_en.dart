@@ -1349,8 +1349,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String transferPassengersCount(Object count) {
-    return '$count passengers';
+  String transferPassengersCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count passengers',
+      one: '1 passenger',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3549,4 +3555,92 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adminOfferHighlightsArabicHint =>
       'Enter highlights separated by commas';
+
+  @override
+  String get payHowTitle => 'How would you like to pay?';
+
+  @override
+  String get paySubtitle =>
+      'You\'ll confirm the payment securely on the next step.';
+
+  @override
+  String get payGroupCards => 'CARDS';
+
+  @override
+  String get payGroupWallets => 'DIGITAL WALLETS';
+
+  @override
+  String get payGroupOther => 'OTHER';
+
+  @override
+  String get payPayingWith => 'Paying with';
+
+  @override
+  String get payContinue => 'Continue';
+
+  @override
+  String get taxiStepRoute => 'Route';
+
+  @override
+  String get taxiStepCar => 'Car';
+
+  @override
+  String get taxiStepPayment => 'Payment';
+
+  @override
+  String get taxiPickup => 'Pick up';
+
+  @override
+  String get taxiPickupCurrent => 'Pick up · Current location';
+
+  @override
+  String get taxiDestination => 'Destination';
+
+  @override
+  String get taxiWhereTo => 'Where to?';
+
+  @override
+  String get taxiPickupHint => 'Pickup address';
+
+  @override
+  String taxiDistanceKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String taxiDriveMinutes(String duration) {
+    return '~$duration drive';
+  }
+
+  @override
+  String get taxiChooseCar => 'Choose a car';
+
+  @override
+  String get taxiChooseRideTitle => 'Choose your ride';
+
+  @override
+  String taxiRidesCount(int count) {
+    return '$count rides available';
+  }
+
+  @override
+  String taxiBookFor(String price) {
+    return 'Book · $price';
+  }
+
+  @override
+  String get taxiChangeRoute => 'Change route';
+
+  @override
+  String get taxiTapMapHint => 'Tap the map to set your destination';
+
+  @override
+  String get taxiConfirmedSubtitle =>
+      'Your taxi is booked. The driver will pick you up on time.';
+
+  @override
+  String get taxiMyLocation => 'My location';
+
+  @override
+  String get payChooseNextStep => 'You\'ll choose how to pay on the next step.';
 }

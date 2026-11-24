@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../models/payment_method_option.dart';
 import '../../models/payment_session.dart';
 import '../../models/payment_attempt_receipt.dart';
 import '../../models/review_model.dart';
@@ -692,6 +693,7 @@ class ApiService {
     String currencyCode = 'USD',
     required String description,
     required String referenceId,
+    String? paymentMethod,
   }) async {
     if (useMockMode) {
       return _request(() async {
@@ -710,10 +712,30 @@ class ApiService {
           'currency': currencyCode.toUpperCase(),
           'description': description,
           'reference_id': referenceId,
+          if (paymentMethod != null) 'payment_method': paymentMethod,
         },
       );
       return PaymentSession.fromJson(res.data as Map<String, dynamic>);
     });
+  }
+
+  /// Payment methods the server's payment gateway offers. Empty when no
+  /// gateway methods are configured (or the server can't be reached): the
+  /// app then opens the hosted card page directly.
+  Future<List<PaymentMethodOption>> getPaymentMethods() async {
+    if (useMockMode) return const [];
+    try {
+      final res = await _dio.get('/payments/methods');
+      return ((res.data as Map)['methods'] as List? ?? const [])
+          .map((m) =>
+              PaymentMethodOption.fromJson(Map<String, dynamic>.from(m as Map)))
+          .whereType<PaymentMethodOption>()
+          .where((m) => m.supportedOnThisDevice)
+          .toList();
+    } catch (error) {
+      debugPrint('Payment methods unavailable: $error');
+      return const [];
+    }
   }
 
   /// بيتأكد من نجاح الدفع فعليًا من عند السيرفر (مش بس من إعادة توجيه

@@ -6,6 +6,7 @@ import '../core/utils/money_format.dart';
 import '../l10n/app_localizations.dart';
 import '../models/payment_session.dart';
 import '../models/payment_attempt_receipt.dart';
+import 'payment_method_screen.dart';
 import 'ui/ui.dart';
 
 /// بتفتح صفحة دفع (Hosted Checkout) وترجع true/false حسب نجاح الدفع من
@@ -34,12 +35,35 @@ class PaymentCheckoutScreen extends StatefulWidget {
     String currencyCode = 'USD',
     required String description,
     required String referenceId,
+    Widget? methodHeader,
+    Widget? methodSummary,
   }) async {
+    // When the gateway offers real payment methods, the customer first picks
+    // one on "How would you like to pay?"; otherwise the hosted card page
+    // opens directly.
+    String? method;
+    final methods = await ApiService.instance.getPaymentMethods();
+    if (!context.mounted) return null;
+    if (methods.isNotEmpty) {
+      final chosen = await PaymentMethodScreen.choose(
+        context,
+        methods: methods,
+        amount: amountUsd,
+        currencyCode: currencyCode.toUpperCase(),
+        description: description,
+        header: methodHeader,
+        summary: methodSummary,
+      );
+      if (chosen == null || !context.mounted) return null;
+      method = chosen.id;
+    }
+
     final sessionResult = await ApiService.instance.createPaymentCheckout(
       amountUsd: amountUsd,
       currencyCode: currencyCode,
       description: description,
       referenceId: referenceId,
+      paymentMethod: method,
     );
     if (sessionResult.data == null || !context.mounted) return null;
 

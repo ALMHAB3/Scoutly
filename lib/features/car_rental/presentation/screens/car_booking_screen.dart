@@ -9,6 +9,7 @@ import '../../../../core/utils/price_format.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../global_widgets/booking_loading_overlay.dart';
 import '../../../../global_widgets/payment_checkout_screen.dart';
+import '../../../../global_widgets/payment_methods_card.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/booking_model.dart';
 import '../../../../models/car_model.dart';
@@ -379,80 +380,11 @@ class _CarBookingScreenState extends State<CarBookingScreen> {
             ),
           ),
           const SizedBox(height: 14),
-          AppCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Heading(labels.paymentMethod),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Icon(
-                        Icons.credit_card_rounded,
-                        color: AppColors.white,
-                        size: 18,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            labels.cardPayment,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: context.uiInk,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            labels.cardPaymentNote,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              color: context.uiMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.radio_button_checked_rounded,
-                      color: AppColors.primary,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.lock_outline_rounded,
-                      size: 14,
-                      color: context.uiMuted,
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        labels.secureNote,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: context.uiMuted,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          PaymentMethodsCard(
+            title: labels.paymentMethod,
+            cardTitle: labels.cardPayment,
+            cardNote: labels.cardPaymentNote,
+            secureNote: labels.secureNote,
           ),
         ],
       ),

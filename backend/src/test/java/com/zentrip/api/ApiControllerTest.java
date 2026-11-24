@@ -61,6 +61,36 @@ class ApiControllerTest {
     }
 
     @Test
+    void paymentMethodsAreEmptyUntilTheGatewayIsConfigured() {
+        controller.setPaymentMethods("");
+        assertEquals(List.of(),
+                controller.paymentMethods(authenticatedRequest()).get("methods"));
+    }
+
+    @Test
+    void paymentMethodsListOnlyKnownConfiguredMethodsWithTheirGroup() {
+        controller.setPaymentMethods(" Card, sadad ,bitcoin,card,paypal");
+        assertEquals(List.of(
+                        Map.of("id", "card", "group", "cards"),
+                        Map.of("id", "sadad", "group", "other"),
+                        Map.of("id", "paypal", "group", "wallets")),
+                controller.paymentMethods(authenticatedRequest()).get("methods"));
+    }
+
+    @Test
+    void checkoutRejectsAPaymentMethodTheGatewayDoesNotOffer() {
+        controller.setPaymentMethods("card");
+        ResponseStatusException error = assertThrows(ResponseStatusException.class,
+                () -> controller.checkout(
+                        Map.of("amount", 10, "currency", "LYD", "payment_method", "sadad"),
+                        authenticatedRequest()));
+        assertEquals(422, error.getStatusCode().value());
+        assertEquals("card", controller.checkout(
+                Map.of("amount", 10, "currency", "LYD", "payment_method", "card"),
+                authenticatedRequest()).get("payment_method"));
+    }
+
+    @Test
     void simulatedPaymentStillSucceedsWhenLedgerMigrationIsMissing() {
         when(jdbc.queryForObject(
                 eq("SELECT to_regclass('public.payment_attempts') IS NOT NULL"),

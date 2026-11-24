@@ -173,6 +173,11 @@ class AirportOption {
     return null;
   }
 
+  /// The city's coordinates (from the directory when the airport has none).
+  (double, double)? get coordinates => latitude != null && longitude != null
+      ? (latitude!, longitude!)
+      : _coordinates[code];
+
   static AirportOption? nearestTo(double latitude, double longitude) {
     if (!latitude.isFinite ||
         !longitude.isFinite ||

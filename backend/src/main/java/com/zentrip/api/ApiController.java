@@ -88,6 +88,49 @@ public class ApiController {
         this.openTripMapAttractionService = openTripMapAttractionService;
     }
 
+    /** Known payment methods and the group the app lists them under. */
+    static final Map<String, String> KNOWN_PAYMENT_METHODS = new java.util.LinkedHashMap<>();
+    static {
+        KNOWN_PAYMENT_METHODS.put("card", "cards");
+        KNOWN_PAYMENT_METHODS.put("tadawul", "cards");
+        KNOWN_PAYMENT_METHODS.put("apple_pay", "wallets");
+        KNOWN_PAYMENT_METHODS.put("google_pay", "wallets");
+        KNOWN_PAYMENT_METHODS.put("paypal", "wallets");
+        KNOWN_PAYMENT_METHODS.put("sadad", "other");
+        KNOWN_PAYMENT_METHODS.put("mobicash", "other");
+        KNOWN_PAYMENT_METHODS.put("edfaali", "other");
+    }
+
+    /**
+     * Payment methods the connected payment gateway really offers, from
+     * {@code PAYMENT_METHODS} (comma separated, e.g. "card,sadad,paypal").
+     * Empty until a gateway is configured: the app then skips the
+     * "How would you like to pay?" step.
+     */
+    private List<String> paymentMethods = List.of();
+
+    @Value("${zentrip.payments.methods:}")
+    public void setPaymentMethods(String configured) {
+        this.paymentMethods = parsePaymentMethods(configured);
+    }
+
+    static List<String> parsePaymentMethods(String configured) {
+        if (configured == null || configured.isBlank()) return List.of();
+        return java.util.Arrays.stream(configured.split(","))
+                .map(id -> id.trim().toLowerCase(Locale.ROOT))
+                .filter(KNOWN_PAYMENT_METHODS::containsKey)
+                .distinct()
+                .toList();
+    }
+
+    @GetMapping("/payments/methods")
+    public Map<String, Object> paymentMethods(HttpServletRequest request) {
+        requireUserId(request);
+        return Map.of("methods", paymentMethods.stream()
+                .map(id -> Map.of("id", id, "group", KNOWN_PAYMENT_METHODS.get(id)))
+                .toList());
+    }
+
     @Autowired
     public void setLandmarkCatalogService(LandmarkCatalogService catalogService) {
         this.landmarkCatalogService = catalogService;
@@ -2738,9 +2781,15 @@ public class ApiController {
             throw new ResponseStatusException(
                     HttpStatus.UNPROCESSABLE_ENTITY, "currency must be a 3-letter code");
         }
+        String method = value(body, "payment_method", "").toLowerCase(Locale.ROOT);
+        if (!method.isEmpty() && !paymentMethods.contains(method)) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY, "payment_method is not available");
+        }
         return Map.of(
                 "session_id", "mock_" + UUID.randomUUID(),
-                "checkout_url", "mock://checkout");
+                "checkout_url", "mock://checkout",
+                "payment_method", method.isEmpty() ? "card" : method);
     }
 
     @GetMapping("/payments/verify/{sessionId}")

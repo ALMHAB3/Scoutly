@@ -481,7 +481,7 @@
   "transferBookedSuccess": "🚕 تم حجز التاكسي بنجاح!",
   "transferUpToPassengers": "حتى {count} ركاب",
   "transferMinutes": "{count} دقيقة",
-  "transferPassengersCount": "{count} ركاب",
+  "transferPassengersCount": "{count, plural, =1{راكب واحد} =2{راكبان} few{{count} ركاب} other{{count} راكبًا}}",
   "transferRouteTitle": "من أين سيقلك التاكسي؟",
   "transferPickupLabel": "نقطة الانطلاق",
   "transferDropoffLabel": "الوجهة",
@@ -1319,5 +1319,59 @@
   "adminOfferCountryArabic": "الدولة بالعربية",
   "adminOfferDescriptionArabic": "وصف العرض بالعربية",
   "adminOfferHighlightsArabic": "أبرز معالم العرض بالعربية",
-  "adminOfferHighlightsArabicHint": "أدخل معالم مفصولة بفواصل"
+  "adminOfferHighlightsArabicHint": "أدخل معالم مفصولة بفواصل",
+  "payHowTitle": "كيف تريد أن تدفع؟",
+  "paySubtitle": "ستؤكد الدفع بأمان في الخطوة التالية.",
+  "payGroupCards": "البطاقات",
+  "payGroupWallets": "المحافظ الرقمية",
+  "payGroupOther": "طرق أخرى",
+  "payPayingWith": "الدفع بواسطة",
+  "payContinue": "متابعة",
+  "taxiStepRoute": "المسار",
+  "taxiStepCar": "السيارة",
+  "taxiStepPayment": "الدفع",
+  "taxiPickup": "الانطلاق",
+  "taxiPickupCurrent": "الانطلاق · موقعك الحالي",
+  "taxiDestination": "الوجهة",
+  "taxiWhereTo": "إلى أين؟",
+  "taxiPickupHint": "عنوان الانطلاق",
+  "taxiDistanceKm": "{km} كم",
+  "@taxiDistanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiDriveMinutes": "~{duration} بالسيارة",
+  "@taxiDriveMinutes": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiChooseCar": "اختر السيارة",
+  "taxiChooseRideTitle": "اختر رحلتك",
+  "taxiRidesCount": "{count} رحلات متاحة",
+  "@taxiRidesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "taxiBookFor": "احجز · {price}",
+  "@taxiBookFor": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "taxiChangeRoute": "تعديل المسار",
+  "taxiTapMapHint": "اضغط على الخريطة لتحديد وجهتك",
+  "taxiConfirmedSubtitle": "تم حجز التاكسي، وسيصلك السائق في الموعد.",
+  "taxiMyLocation": "موقعي",
+  "payChooseNextStep": "ستختار طريقة الدفع في الخطوة التالية."
 }

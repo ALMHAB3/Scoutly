@@ -1342,8 +1342,16 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String transferPassengersCount(Object count) {
-    return '$count ركاب';
+  String transferPassengersCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count راكبًا',
+      few: '$count ركاب',
+      two: 'راكبان',
+      one: 'راكب واحد',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -3527,4 +3535,91 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminOfferHighlightsArabicHint => 'أدخل معالم مفصولة بفواصل';
+
+  @override
+  String get payHowTitle => 'كيف تريد أن تدفع؟';
+
+  @override
+  String get paySubtitle => 'ستؤكد الدفع بأمان في الخطوة التالية.';
+
+  @override
+  String get payGroupCards => 'البطاقات';
+
+  @override
+  String get payGroupWallets => 'المحافظ الرقمية';
+
+  @override
+  String get payGroupOther => 'طرق أخرى';
+
+  @override
+  String get payPayingWith => 'الدفع بواسطة';
+
+  @override
+  String get payContinue => 'متابعة';
+
+  @override
+  String get taxiStepRoute => 'المسار';
+
+  @override
+  String get taxiStepCar => 'السيارة';
+
+  @override
+  String get taxiStepPayment => 'الدفع';
+
+  @override
+  String get taxiPickup => 'الانطلاق';
+
+  @override
+  String get taxiPickupCurrent => 'الانطلاق · موقعك الحالي';
+
+  @override
+  String get taxiDestination => 'الوجهة';
+
+  @override
+  String get taxiWhereTo => 'إلى أين؟';
+
+  @override
+  String get taxiPickupHint => 'عنوان الانطلاق';
+
+  @override
+  String taxiDistanceKm(String km) {
+    return '$km كم';
+  }
+
+  @override
+  String taxiDriveMinutes(String duration) {
+    return '~$duration بالسيارة';
+  }
+
+  @override
+  String get taxiChooseCar => 'اختر السيارة';
+
+  @override
+  String get taxiChooseRideTitle => 'اختر رحلتك';
+
+  @override
+  String taxiRidesCount(int count) {
+    return '$count رحلات متاحة';
+  }
+
+  @override
+  String taxiBookFor(String price) {
+    return 'احجز · $price';
+  }
+
+  @override
+  String get taxiChangeRoute => 'تعديل المسار';
+
+  @override
+  String get taxiTapMapHint => 'اضغط على الخريطة لتحديد وجهتك';
+
+  @override
+  String get taxiConfirmedSubtitle =>
+      'تم حجز التاكسي، وسيصلك السائق في الموعد.';
+
+  @override
+  String get taxiMyLocation => 'موقعي';
+
+  @override
+  String get payChooseNextStep => 'ستختار طريقة الدفع في الخطوة التالية.';
 }
