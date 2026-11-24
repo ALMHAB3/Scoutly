@@ -279,7 +279,7 @@ class _PartnerDashboardScreenState extends State<PartnerDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Zentrip',
+                    const Text('Scoutly',
                         style: TextStyle(
                             fontSize: 17, fontWeight: FontWeight.w800)),
                     Text(l10n.partnerWorkspaceLabel,

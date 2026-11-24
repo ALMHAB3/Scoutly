@@ -1323,7 +1323,7 @@ abstract class MockDataService {
           driverName: 'Ahmed Hassan',
           driverPhone: '+971501234567',
           driverRating: 4.9,
-          providerName: 'Zentrip Executive',
+          providerName: 'Scoutly Executive',
           includedServices: [
             'Meet & Greet',
             'Free Waiting (60 min)',
@@ -1345,7 +1345,7 @@ abstract class MockDataService {
           driverName: 'Khalid Al-Rashid',
           driverPhone: '+971507654321',
           driverRating: 4.7,
-          providerName: 'Zentrip Group',
+          providerName: 'Scoutly Group',
           includedServices: [
             'Meet & Greet',
             'Free Waiting (90 min)',
@@ -1367,7 +1367,7 @@ abstract class MockDataService {
           driverName: 'Omar Saeed',
           driverPhone: '+971509876543',
           driverRating: 5.0,
-          providerName: 'Zentrip Luxury',
+          providerName: 'Scoutly Luxury',
           includedServices: [
             'Meet & Greet',
             'Free Waiting (120 min)',
@@ -1390,7 +1390,7 @@ abstract class MockDataService {
           driverName: 'Yousef Ali',
           driverPhone: '+971501112233',
           driverRating: 4.6,
-          providerName: 'Zentrip Economy',
+          providerName: 'Scoutly Economy',
           includedServices: ['Air Conditioning', 'Private Ride'],
         ),
         TransferModel(
@@ -1408,7 +1408,7 @@ abstract class MockDataService {
           driverName: 'Mariam Salem',
           driverPhone: '+971502223344',
           driverRating: 4.8,
-          providerName: 'Zentrip Comfort',
+          providerName: 'Scoutly Comfort',
           includedServices: ['Air Conditioning', 'Bottled Water'],
         ),
         TransferModel(
@@ -1426,7 +1426,7 @@ abstract class MockDataService {
           driverName: 'Sami Ibrahim',
           driverPhone: '+971503334455',
           driverRating: 4.8,
-          providerName: 'Zentrip SUV',
+          providerName: 'Scoutly SUV',
           includedServices: ['Extra Luggage', 'Air Conditioning'],
         ),
         TransferModel(
@@ -1444,7 +1444,7 @@ abstract class MockDataService {
           driverName: 'Noura Hassan',
           driverPhone: '+971504445566',
           driverRating: 4.9,
-          providerName: 'Zentrip Electric',
+          providerName: 'Scoutly Electric',
           includedServices: ['Electric Vehicle', 'Bottled Water'],
         ),
         TransferModel(
@@ -1462,7 +1462,7 @@ abstract class MockDataService {
           driverName: 'Khaled Mansour',
           driverPhone: '+971505556677',
           driverRating: 4.9,
-          providerName: 'Zentrip Premium',
+          providerName: 'Scoutly Premium',
           includedServices: [
             'Meet & Greet',
             'Extra Luggage',
@@ -1484,7 +1484,7 @@ abstract class MockDataService {
           driverName: 'Omar Nasser',
           driverPhone: '+971506667788',
           driverRating: 4.9,
-          providerName: 'Zentrip XL',
+          providerName: 'Scoutly XL',
           includedServices: [
             'Extra Luggage',
             'Air Conditioning',

@@ -552,7 +552,7 @@ public class AdminController {
                     id, title, location, category_tag, category, rating,
                     review_count, description, working_hours, best_time_to_visit,
                     entry_fee, image_url, tags, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?)
                 """,
                 id,
                 monument.get("title"),
@@ -587,7 +587,7 @@ public class AdminController {
                 SET title = ?, location = ?, category_tag = ?, category = ?,
                     rating = ?, review_count = ?, description = ?,
                     working_hours = ?, best_time_to_visit = ?, entry_fee = ?,
-                    image_url = ?, tags = ?, is_active = ?
+                    image_url = ?, tags = CAST(? AS jsonb), is_active = ?
                 WHERE id = ?
                 """,
                 monument.get("title"),
@@ -649,6 +649,7 @@ public class AdminController {
                        COALESCE(to_jsonb(o)->'highlights_ar', '[]'::jsonb) AS highlights_ar,
                        o.is_featured, o.category, o.is_active,
                        %s AS flight_listing_id, COALESCE(m.badge, '') AS badge,
+                       COALESCE(to_jsonb(m)->'itinerary', '[]'::jsonb) AS itinerary,
                        fl.id AS linked_flight_id, fl.title AS flight_title,
                        fl.city AS flight_city, fl.country AS flight_country,
                        fl.price AS linked_flight_price, fl.active AS flight_active,
@@ -690,6 +691,9 @@ public class AdminController {
             HttpServletRequest request) {
         requireAdminId(request);
         Map<String, Object> offer = validateOffer(body);
+        ResponseEntity<Map<String, Object>> itineraryConflict =
+                itineraryMigrationConflict(offer);
+        if (itineraryConflict != null) return itineraryConflict;
         if (!hasOfferFlightLinkColumn()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("message", OFFER_FLIGHT_MIGRATION_REQUIRED));
@@ -710,7 +714,7 @@ public class AdminController {
                         hotel_price_per_night, duration_nights, rating, review_count,
                         highlights, highlights_ar, flight_listing_id, is_featured,
                         category, is_active
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb), ?, ?, ?, ?)
                     """,
                     id,
                     offer.get("title"),
@@ -742,7 +746,7 @@ public class AdminController {
                         image_url, price_per_person, flight_price_per_person,
                         hotel_price_per_night, duration_nights, rating, review_count,
                         highlights, flight_listing_id, is_featured, category, is_active
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CAST(? AS jsonb), ?, ?, ?, ?)
                     """,
                     id,
                     offer.get("title"),
@@ -763,10 +767,7 @@ public class AdminController {
                     offer.get("category"),
                     offer.get("is_active"));
         }
-        jdbc.update("""
-                INSERT INTO offer_catalog_metadata (offer_id, badge)
-                VALUES (?, ?)
-                """, id, offer.get("badge"));
+        saveOfferMetadata(id, offer, false);
         offer.put("id", id);
         return ResponseEntity.ok(Map.of("offer", offer));
     }
@@ -779,6 +780,9 @@ public class AdminController {
             HttpServletRequest request) {
         requireAdminId(request);
         Map<String, Object> offer = validateOffer(body);
+        ResponseEntity<Map<String, Object>> itineraryConflict =
+                itineraryMigrationConflict(offer);
+        if (itineraryConflict != null) return itineraryConflict;
         if (!hasOfferFlightLinkColumn()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("message", OFFER_FLIGHT_MIGRATION_REQUIRED));
@@ -802,7 +806,7 @@ public class AdminController {
                         description = ?, description_ar = ?, image_url = ?, price_per_person = ?,
                         flight_price_per_person = ?, hotel_price_per_night = ?,
                         duration_nights = ?, rating = ?, review_count = ?,
-                        highlights = ?, highlights_ar = ?, flight_listing_id = ?, is_featured = ?,
+                        highlights = CAST(? AS jsonb), highlights_ar = CAST(? AS jsonb), flight_listing_id = ?, is_featured = ?,
                         category = ?, is_active = ?
                     WHERE id = ?
                     """,
@@ -835,7 +839,7 @@ public class AdminController {
                     SET title = ?, location = ?, country = ?, destination_code = ?,
                         description = ?, image_url = ?, price_per_person = ?,
                         flight_price_per_person = ?, hotel_price_per_night = ?,
-                        duration_nights = ?, rating = ?, review_count = ?, highlights = ?,
+                        duration_nights = ?, rating = ?, review_count = ?, highlights = CAST(? AS jsonb),
                         flight_listing_id = ?, is_featured = ?, category = ?, is_active = ?
                     WHERE id = ?
                     """,
@@ -863,11 +867,7 @@ public class AdminController {
                         "SELECT COUNT(*) FROM offers WHERE id = ? AND is_active = TRUE", id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Offer not found");
         }
-        jdbc.update("""
-                INSERT INTO offer_catalog_metadata (offer_id, badge)
-                VALUES (?, ?)
-                ON CONFLICT (offer_id) DO UPDATE SET badge = EXCLUDED.badge
-                """, id, offer.get("badge"));
+        saveOfferMetadata(id, offer, true);
         offer.put("id", id);
         return ResponseEntity.ok(Map.of("offer", offer));
     }
@@ -938,7 +938,151 @@ public class AdminController {
                 body.getOrDefault("is_featured", body.get("badge")), false));
         offer.put("category", optionalText(body, "category", 40, "city"));
         offer.put("is_active", booleanValue(body.get("is_active"), true));
+        offer.put("itinerary", itineraryStops(body.get("itinerary"), nights));
         return offer;
+    }
+
+    private static final java.util.regex.Pattern STOP_TIME =
+            java.util.regex.Pattern.compile("^([01]\\d|2[0-3]):[0-5]\\d$");
+
+    /**
+     * The offer's day plan: stops with a day number (1 = first day), a start
+     * time (HH:mm), a name, optional category/description (English and
+     * Arabic), how long the stop takes, a photo and its map location.
+     * Returned sorted by day, then time.
+     */
+    static List<Map<String, Object>> itineraryStops(Object raw, int nights) {
+        if (raw == null) return List.of();
+        if (!(raw instanceof List<?> values)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "itinerary must be a list of stops");
+        }
+        if (values.size() > 60) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "itinerary can have at most 60 stops");
+        }
+        List<Map<String, Object>> stops = new ArrayList<>();
+        for (Object value : values) {
+            if (!(value instanceof Map<?, ?> rawStop)) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Each itinerary stop must be an object");
+            }
+            Map<String, Object> body = new LinkedHashMap<>();
+            rawStop.forEach((key, item) -> body.put(String.valueOf(key), item));
+            Map<String, Object> stop = new LinkedHashMap<>();
+            int day = body.get("day") == null ? 1 : nonNegativeInt(body.get("day"), "day");
+            if (day < 1 || day > nights + 1) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Stop day must be between 1 and " + (nights + 1));
+            }
+            stop.put("day", day);
+            String time = requiredText(body, "time", 5);
+            if (!STOP_TIME.matcher(time).matches()) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Stop time must be HH:mm");
+            }
+            stop.put("time", time);
+            stop.put("name", requiredText(body, "name", 120));
+            stop.put("name_ar", optionalText(body, "name_ar", 120));
+            stop.put("category", optionalText(body, "category", 60));
+            stop.put("category_ar", optionalText(body, "category_ar", 60));
+            stop.put("description", optionalText(body, "description", 500));
+            stop.put("description_ar", optionalText(body, "description_ar", 500));
+            int duration = body.get("duration_minutes") == null
+                    ? 60 : nonNegativeInt(body.get("duration_minutes"), "duration_minutes");
+            if (duration < 5 || duration > 1440) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Stop duration must be between 5 and 1440 minutes");
+            }
+            stop.put("duration_minutes", duration);
+            String image = optionalText(body, "image_url", 2048);
+            if (!image.isEmpty() && !image.matches("(?i)^https?://\\S+$")) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST, "Stop image_url must be an http(s) link");
+            }
+            stop.put("image_url", image);
+            Object lat = body.get("latitude");
+            Object lng = body.get("longitude");
+            if ((lat == null) != (lng == null)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Stop latitude and longitude go together");
+            }
+            if (lat != null) {
+                double latitude = coordinate(lat, "latitude", 90);
+                double longitude = coordinate(lng, "longitude", 180);
+                stop.put("latitude", latitude);
+                stop.put("longitude", longitude);
+            }
+            stops.add(stop);
+        }
+        stops.sort(java.util.Comparator
+                .comparing((Map<String, Object> stop) -> (Integer) stop.get("day"))
+                .thenComparing(stop -> (String) stop.get("time")));
+        return List.copyOf(stops);
+    }
+
+    private static double coordinate(Object raw, String field, double limit) {
+        double value;
+        try {
+            value = Double.parseDouble(String.valueOf(raw));
+        } catch (NumberFormatException exception) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Stop " + field + " must be a number");
+        }
+        if (!Double.isFinite(value) || Math.abs(value) > limit) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Stop " + field + " is out of range");
+        }
+        return value;
+    }
+
+    static final String OFFER_ITINERARY_MIGRATION_REQUIRED =
+            "Apply migration 20261124_offer_itinerary before saving an offer day plan.";
+
+    private boolean hasOfferItineraryColumn() {
+        Boolean exists = jdbc.queryForObject("""
+                SELECT COUNT(*) = 1
+                FROM pg_attribute
+                WHERE attrelid = to_regclass('public.offer_catalog_metadata')
+                  AND attname = 'itinerary'
+                  AND NOT attisdropped
+                """, Boolean.class);
+        return Boolean.TRUE.equals(exists);
+    }
+
+    /** Saves the badge and, when the column exists, the day plan. */
+    private void saveOfferMetadata(String id, Map<String, Object> offer, boolean update) {
+        if (hasOfferItineraryColumn()) {
+            jdbc.update("""
+                    INSERT INTO offer_catalog_metadata (offer_id, badge, itinerary)
+                    VALUES (?, ?, CAST(? AS jsonb))
+                    ON CONFLICT (offer_id) DO UPDATE
+                    SET badge = EXCLUDED.badge, itinerary = EXCLUDED.itinerary,
+                        updated_at = NOW()
+                    """, id, offer.get("badge"), jsonList(offer.get("itinerary")));
+            return;
+        }
+        if (update) {
+            jdbc.update("""
+                    INSERT INTO offer_catalog_metadata (offer_id, badge)
+                    VALUES (?, ?)
+                    ON CONFLICT (offer_id) DO UPDATE SET badge = EXCLUDED.badge
+                    """, id, offer.get("badge"));
+        } else {
+            jdbc.update("""
+                    INSERT INTO offer_catalog_metadata (offer_id, badge)
+                    VALUES (?, ?)
+                    """, id, offer.get("badge"));
+        }
+    }
+
+    private ResponseEntity<Map<String, Object>> itineraryMigrationConflict(
+            Map<String, Object> offer) {
+        if (((List<?>) offer.get("itinerary")).isEmpty() || hasOfferItineraryColumn()) {
+            return null;
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", OFFER_ITINERARY_MIGRATION_REQUIRED));
     }
 
     private void resolveOfferFlightPrice(Map<String, Object> offer) {
@@ -977,6 +1121,7 @@ public class AdminController {
         Map<String, Object> payload = new LinkedHashMap<>(row);
         payload.put("highlights", parseStringList(row.get("highlights")));
         payload.put("highlights_ar", parseStringList(row.get("highlights_ar")));
+        payload.put("itinerary", parseItinerary(row.get("itinerary")));
         Map<String, Object> flight = flightListingPayload(row);
         if (flight != null) {
             payload.put("flight", flight);
@@ -1149,6 +1294,17 @@ public class AdminController {
                     JSON.getTypeFactory().constructCollectionType(List.class, String.class));
         } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
             throw new IllegalStateException("Stored catalog tags are invalid JSON", exception);
+        }
+    }
+
+    static List<Object> parseItinerary(Object raw) {
+        if (raw instanceof List<?> values) return List.copyOf(values);
+        if (raw == null) return List.of();
+        try {
+            return JSON.readValue(raw.toString(),
+                    JSON.getTypeFactory().constructCollectionType(List.class, Object.class));
+        } catch (com.fasterxml.jackson.core.JsonProcessingException exception) {
+            return List.of();
         }
     }
 

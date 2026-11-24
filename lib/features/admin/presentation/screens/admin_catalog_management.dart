@@ -4,6 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../global_widgets/currency_amount_text.dart';
 import '../../../../global_widgets/app_network_image.dart';
+import '../../../../models/offer_stop.dart';
+import 'admin_offer_stops_editor.dart';
 import '../../../../global_widgets/app_snackbar.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../models/attraction_model.dart';
@@ -526,6 +528,7 @@ class _CatalogEditorState extends State<_CatalogEditor> {
   late final List<String> _tags;
   late final List<String> _tagsAr;
   late bool _featured;
+  late List<OfferStop> _stops;
   FlightModel? _selectedFlight;
 
   bool get _isOffer => widget.kind == AdminCatalogKind.offers;
@@ -591,6 +594,7 @@ class _CatalogEditorState extends State<_CatalogEditor> {
         _isOffer ? offer?.highlights ?? [] : monument?.tags ?? []);
     _tagsAr = List<String>.of(_isOffer ? offer?.highlightsAr ?? [] : const []);
     _featured = offer?.isFeatured ?? false;
+    _stops = List<OfferStop>.of(offer?.itinerary ?? const []);
   }
 
   @override
@@ -798,6 +802,11 @@ class _CatalogEditorState extends State<_CatalogEditor> {
           category: category,
           flightListingId: _selectedFlight?.partnerListingId,
           flight: _selectedFlight,
+          // Stops after the last day (nights shortened) move to the last day.
+          itinerary: OfferStop.sorted(_stops.map((stop) =>
+              stop.day > _int('duration_nights', 7) + 1
+                  ? stop.copyWith(day: _int('duration_nights', 7) + 1)
+                  : stop)),
         ),
       );
     } else {
@@ -1028,6 +1037,13 @@ class _CatalogEditorState extends State<_CatalogEditor> {
                               .toList(),
                         ),
                       ],
+                      const SizedBox(height: 18),
+                      AdminOfferStopsEditor(
+                        stops: _stops,
+                        maxDay: (_int('duration_nights', 7).clamp(1, 365)) + 1,
+                        city: _fields['location']!.text.trim(),
+                        onChanged: (stops) => setState(() => _stops = stops),
+                      ),
                     ],
                   ],
                 ),

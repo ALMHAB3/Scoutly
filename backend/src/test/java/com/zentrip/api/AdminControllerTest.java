@@ -267,6 +267,40 @@ class AdminControllerTest {
     }
 
     @Test
+    void offerDayPlanStopsAreValidatedAndSortedByDayThenTime() {
+        List<Map<String, Object>> stops = AdminController.itineraryStops(List.of(
+                Map.of("day", 2, "time", "09:00", "name", "Medina walk"),
+                Map.of("day", 1, "time", "12:45", "name", "Leptis Magna",
+                        "name_ar", "لبدة الكبرى", "duration_minutes", 120,
+                        "latitude", 32.637, "longitude", 14.29,
+                        "image_url", "https://example.com/l.jpg"),
+                Map.of("day", 1, "time", "08:30", "name", "Breakfast")), 3);
+
+        assertEquals(List.of("Breakfast", "Leptis Magna", "Medina walk"),
+                stops.stream().map(stop -> stop.get("name")).toList());
+        assertEquals(60, stops.get(0).get("duration_minutes"));
+        assertEquals(120, stops.get(1).get("duration_minutes"));
+        assertEquals(32.637, stops.get(1).get("latitude"));
+        assertEquals("لبدة الكبرى", stops.get(1).get("name_ar"));
+        assertEquals(List.of(), AdminController.itineraryStops(null, 3));
+    }
+
+    @Test
+    void offerDayPlanRejectsBadStops() {
+        for (Map<String, Object> stop : List.<Map<String, Object>>of(
+                Map.of("time", "25:00", "name", "Late"),
+                Map.of("time", "10:00"),
+                Map.of("day", 5, "time", "10:00", "name", "After the trip"),
+                Map.of("time", "10:00", "name", "Half pin", "latitude", 32.1),
+                Map.of("time", "10:00", "name", "Bad photo", "image_url", "file:///x"),
+                Map.of("time", "10:00", "name", "Too short", "duration_minutes", 1))) {
+            assertThrows(ResponseStatusException.class,
+                    () -> AdminController.itineraryStops(List.of(stop), 3),
+                    stop.toString());
+        }
+    }
+
+    @Test
     void offerCreateValidatesDurationAndComputesFieldsForTheCatalog() {
         when(jdbc.queryForObject("SELECT role FROM users WHERE id = ?", String.class, 7L))
                 .thenReturn("admin");
@@ -421,9 +455,10 @@ class AdminControllerTest {
         assertEquals("offer-1", offer.get("id"));
         assertEquals("Limited-time", offer.get("badge"));
         verify(jdbc).update(
-                contains("INSERT INTO offer_catalog_metadata"),
+                contains("INSERT INTO offer_catalog_metadata (offer_id, badge, itinerary)"),
                 eq("offer-1"),
-                eq("Limited-time"));
+                eq("Limited-time"),
+                eq("[]"));
     }
 
     @Test

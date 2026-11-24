@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Zentrip';
+  String get appName => 'Scoutly';
 
   @override
   String get welcomeTitle => 'Plan smarter. Travel lighter.';
@@ -192,7 +192,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signup => 'Create Account';
 
   @override
-  String get loginWelcome => 'Welcome to Zentrip';
+  String get loginWelcome => 'Welcome to Scoutly';
 
   @override
   String get loginSubtitle => 'Log in to continue your smart travel plans';
@@ -604,7 +604,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String tripShareText(
       Object date, Object destination, Object flightNumber, Object origin) {
-    return 'My flight: $origin → $destination on $date (flight $flightNumber). Booked via Zentrip!';
+    return 'My flight: $origin → $destination on $date (flight $flightNumber). Booked via Scoutly!';
   }
 
   @override
@@ -862,7 +862,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get locationPermissionMessage =>
-      'Zentrip needs your location to show nearby places';
+      'Scoutly needs your location to show nearby places';
 
   @override
   String get openSettings => 'Open Settings';
@@ -2034,7 +2034,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonEnterSixDigitCode => 'Enter the 6-digit code';
 
   @override
-  String get commonWelcomeToZentrip => 'Welcome to Zentrip! 🎉';
+  String get commonWelcomeToZentrip => 'Welcome to Scoutly! 🎉';
 
   @override
   String get commonReadyToExplore => 'Ready to explore the world?';
@@ -2215,7 +2215,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSectionAccountSecurity => 'Account & Security';
 
   @override
-  String get profileDefaultUserName => 'Zentrip User';
+  String get profileDefaultUserName => 'Scoutly User';
 
   @override
   String get profileStatTrips => 'Trips';
@@ -2348,7 +2348,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminDashboard => 'Admin dashboard';
 
   @override
-  String get adminWorkspaceLabel => 'Zentrip management';
+  String get adminWorkspaceLabel => 'Scoutly management';
 
   @override
   String get adminOverview => 'Overview';
@@ -2433,7 +2433,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminPartnerExistingAccountHint =>
-      'The partner must already have a Zentrip account. This will not create or reset a password.';
+      'The partner must already have a Scoutly account. This will not create or reset a password.';
 
   @override
   String get adminPartnerStatusActive => 'Active';
@@ -2738,7 +2738,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get partnerWelcome => 'Welcome';
 
   @override
-  String get partnerSubtitle => 'Manage your travel business on Zentrip.';
+  String get partnerSubtitle => 'Manage your travel business on Scoutly.';
 
   @override
   String get partnerListingCount => 'Your listings';
@@ -3688,5 +3688,126 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String taxiPickupAt(String date, String time) {
     return 'Pickup $date · $time';
+  }
+
+  @override
+  String get adminDayPlan => 'Day plan';
+
+  @override
+  String get adminDayPlanHint =>
+      'Stops customers see on the offer, by day and time.';
+
+  @override
+  String get adminAddStop => 'Add stop';
+
+  @override
+  String get adminEditStop => 'Edit stop';
+
+  @override
+  String get adminNoStops => 'No stops yet. Add the first stop of the plan.';
+
+  @override
+  String get adminStopTime => 'Start time';
+
+  @override
+  String get adminStopName => 'Place name';
+
+  @override
+  String get adminStopNameAr => 'Place name (Arabic)';
+
+  @override
+  String get adminStopCategory => 'Type (e.g. Coffee shop)';
+
+  @override
+  String get adminStopCategoryAr => 'Type (Arabic)';
+
+  @override
+  String get adminStopDescription => 'Short description';
+
+  @override
+  String get adminStopDescriptionAr => 'Short description (Arabic)';
+
+  @override
+  String get adminStopDuration => 'Duration (minutes)';
+
+  @override
+  String get adminStopPhotoUrl => 'Photo URL';
+
+  @override
+  String get adminStopChooseOnMap => 'Choose on map';
+
+  @override
+  String get adminStopNoLocation =>
+      'No location yet: the stop won\'t show on the route map.';
+
+  @override
+  String get adminStopMapTitle => 'Stop location';
+
+  @override
+  String get adminStopMapHint => 'Tap the map where the place is.';
+
+  @override
+  String offerDayN(int day) {
+    return 'Day $day';
+  }
+
+  @override
+  String get offerYourDayIn => 'Your day in';
+
+  @override
+  String get offerYourTripIn => 'Your trip in';
+
+  @override
+  String get offerTabPlan => 'Day plan';
+
+  @override
+  String get offerTabDetails => 'Offer details';
+
+  @override
+  String get offerTotalTime => 'Total time';
+
+  @override
+  String get offerStops => 'Stops';
+
+  @override
+  String get offerViewRoute => 'View route';
+
+  @override
+  String get offerRouteTitle => 'Route';
+
+  @override
+  String get offerMapView => 'Map view';
+
+  @override
+  String get offerListView => 'List view';
+
+  @override
+  String get offerRouteSummary => 'Route summary';
+
+  @override
+  String get offerDistance => 'Distance';
+
+  @override
+  String get offerRouteNote =>
+      'Stops follow the plan\'s times; travel times are estimates.';
+
+  @override
+  String get offerStartNavigation => 'Start navigation';
+
+  @override
+  String get offerNoMapStops =>
+      'The stops of this day have no map location yet.';
+
+  @override
+  String offerBookFor(String price) {
+    return 'Book this offer · $price';
+  }
+
+  @override
+  String get offerNavigationFailed => 'Couldn\'t open the maps app.';
+
+  @override
+  String durationHours(int hours) {
+    return '${hours}h';
   }
 }

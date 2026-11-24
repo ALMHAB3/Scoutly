@@ -18,7 +18,7 @@ class PushNotificationService {
   static const bool isConfigured = false;
 
   static const String _androidChannelId = 'zentrip_default';
-  static const String _androidChannelName = 'Zentrip Notifications';
+  static const String _androidChannelName = 'Scoutly Notifications';
 
   final FlutterLocalNotificationsPlugin _local =
       FlutterLocalNotificationsPlugin();

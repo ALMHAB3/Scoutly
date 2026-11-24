@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 import 'flight_model.dart';
+import 'offer_stop.dart';
 
 class TravelPackage {
   final String id;
@@ -32,6 +33,9 @@ class TravelPackage {
   final int? flightListingId;
   final FlightModel? flight;
 
+  /// Admin-made day plan (empty when the offer has none).
+  final List<OfferStop> itinerary;
+
   const TravelPackage({
     required this.id,
     required this.title,
@@ -60,6 +64,7 @@ class TravelPackage {
     this.partnerListingId,
     this.flightListingId,
     this.flight,
+    this.itinerary = const [],
   });
 
   String displayTitle(String languageCode) =>
@@ -151,6 +156,10 @@ class TravelPackage {
           ? null
           : _parseInt(json['flight_listing_id']),
       flight: flight,
+      itinerary: OfferStop.sorted((json['itinerary'] as List? ?? const [])
+          .whereType<Map>()
+          .map((stop) => OfferStop.fromJson(Map<String, dynamic>.from(stop)))
+          .where((stop) => stop.name.trim().isNotEmpty)),
     );
   }
 
@@ -196,5 +205,6 @@ class TravelPackage {
         'category': category,
         'partner_listing_id': partnerListingId,
         'flight_listing_id': flightListingId,
+        'itinerary': itinerary.map((stop) => stop.toJson()).toList(),
       };
 }

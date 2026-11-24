@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In ar, this message translates to:
-  /// **'زنتريب'**
+  /// **'سكاوتلي'**
   String get appName;
 
   /// No description provided for @welcomeTitle.
@@ -461,7 +461,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginWelcome.
   ///
   /// In ar, this message translates to:
-  /// **'أهلاً بك في زنتريب'**
+  /// **'أهلاً بك في سكاوتلي'**
   String get loginWelcome;
 
   /// No description provided for @loginSubtitle.
@@ -1241,7 +1241,7 @@ abstract class AppLocalizations {
   /// No description provided for @tripShareText.
   ///
   /// In ar, this message translates to:
-  /// **'رحلتي: {origin} → {destination} في {date} (رحلة {flightNumber}). محجوزة عن طريق Zentrip!'**
+  /// **'رحلتي: {origin} → {destination} في {date} (رحلة {flightNumber}). محجوزة عن طريق Scoutly!'**
   String tripShareText(
       Object date, Object destination, Object flightNumber, Object origin);
 
@@ -1728,7 +1728,7 @@ abstract class AppLocalizations {
   /// No description provided for @locationPermissionMessage.
   ///
   /// In ar, this message translates to:
-  /// **'يحتاج زنتريب إلى موقعك لعرض الأماكن القريبة'**
+  /// **'يحتاج سكاوتلي إلى موقعك لعرض الأماكن القريبة'**
   String get locationPermissionMessage;
 
   /// No description provided for @openSettings.
@@ -3775,7 +3775,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonWelcomeToZentrip.
   ///
   /// In ar, this message translates to:
-  /// **'أهلاً بك في زنتريب! 🎉'**
+  /// **'أهلاً بك في سكاوتلي! 🎉'**
   String get commonWelcomeToZentrip;
 
   /// No description provided for @commonReadyToExplore.
@@ -4099,7 +4099,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDefaultUserName.
   ///
   /// In ar, this message translates to:
-  /// **'مستخدم زنتريب'**
+  /// **'مستخدم سكاوتلي'**
   String get profileDefaultUserName;
 
   /// No description provided for @profileStatTrips.
@@ -4357,7 +4357,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminWorkspaceLabel.
   ///
   /// In ar, this message translates to:
-  /// **'إدارة زنتريب'**
+  /// **'إدارة سكاوتلي'**
   String get adminWorkspaceLabel;
 
   /// No description provided for @adminOverview.
@@ -4525,7 +4525,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminPartnerExistingAccountHint.
   ///
   /// In ar, this message translates to:
-  /// **'يجب أن يكون لدى الشريك حساب زنتريب مسبقاً. لن يتم إنشاء كلمة مرور أو تغييرها.'**
+  /// **'يجب أن يكون لدى الشريك حساب سكاوتلي مسبقاً. لن يتم إنشاء كلمة مرور أو تغييرها.'**
   String get adminPartnerExistingAccountHint;
 
   /// No description provided for @adminPartnerStatusActive.
@@ -5113,7 +5113,7 @@ abstract class AppLocalizations {
   /// No description provided for @partnerSubtitle.
   ///
   /// In ar, this message translates to:
-  /// **'أدر نشاطك السياحي على زنتريب.'**
+  /// **'أدر نشاطك السياحي على سكاوتلي.'**
   String get partnerSubtitle;
 
   /// No description provided for @partnerListingCount.
@@ -6849,6 +6849,228 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'الاستلام {date} · {time}'**
   String taxiPickupAt(String date, String time);
+
+  /// No description provided for @adminDayPlan.
+  ///
+  /// In ar, this message translates to:
+  /// **'خطة اليوم'**
+  String get adminDayPlan;
+
+  /// No description provided for @adminDayPlanHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحطات التي يراها العملاء في العرض حسب اليوم والوقت.'**
+  String get adminDayPlanHint;
+
+  /// No description provided for @adminAddStop.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة محطة'**
+  String get adminAddStop;
+
+  /// No description provided for @adminEditStop.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل المحطة'**
+  String get adminEditStop;
+
+  /// No description provided for @adminNoStops.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد محطات بعد. أضف أول محطة في الخطة.'**
+  String get adminNoStops;
+
+  /// No description provided for @adminStopTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'وقت البدء'**
+  String get adminStopTime;
+
+  /// No description provided for @adminStopName.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المكان'**
+  String get adminStopName;
+
+  /// No description provided for @adminStopNameAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم المكان (بالعربية)'**
+  String get adminStopNameAr;
+
+  /// No description provided for @adminStopCategory.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع بالإنجليزية (مثلاً Coffee shop)'**
+  String get adminStopCategory;
+
+  /// No description provided for @adminStopCategoryAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'النوع (بالعربية)'**
+  String get adminStopCategoryAr;
+
+  /// No description provided for @adminStopDescription.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصف قصير'**
+  String get adminStopDescription;
+
+  /// No description provided for @adminStopDescriptionAr.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصف قصير (بالعربية)'**
+  String get adminStopDescriptionAr;
+
+  /// No description provided for @adminStopDuration.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدة (بالدقائق)'**
+  String get adminStopDuration;
+
+  /// No description provided for @adminStopPhotoUrl.
+  ///
+  /// In ar, this message translates to:
+  /// **'رابط الصورة'**
+  String get adminStopPhotoUrl;
+
+  /// No description provided for @adminStopChooseOnMap.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختر على الخريطة'**
+  String get adminStopChooseOnMap;
+
+  /// No description provided for @adminStopNoLocation.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُحدد الموقع: لن تظهر المحطة على خريطة المسار.'**
+  String get adminStopNoLocation;
+
+  /// No description provided for @adminStopMapTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'موقع المحطة'**
+  String get adminStopMapTitle;
+
+  /// No description provided for @adminStopMapHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اضغط على الخريطة في مكان المحطة.'**
+  String get adminStopMapHint;
+
+  /// No description provided for @offerDayN.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم {day}'**
+  String offerDayN(int day);
+
+  /// No description provided for @offerYourDayIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'يومك في'**
+  String get offerYourDayIn;
+
+  /// No description provided for @offerYourTripIn.
+  ///
+  /// In ar, this message translates to:
+  /// **'رحلتك في'**
+  String get offerYourTripIn;
+
+  /// No description provided for @offerTabPlan.
+  ///
+  /// In ar, this message translates to:
+  /// **'خطة اليوم'**
+  String get offerTabPlan;
+
+  /// No description provided for @offerTabDetails.
+  ///
+  /// In ar, this message translates to:
+  /// **'تفاصيل العرض'**
+  String get offerTabDetails;
+
+  /// No description provided for @offerTotalTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'الوقت الكلي'**
+  String get offerTotalTime;
+
+  /// No description provided for @offerStops.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحطات'**
+  String get offerStops;
+
+  /// No description provided for @offerViewRoute.
+  ///
+  /// In ar, this message translates to:
+  /// **'عرض المسار'**
+  String get offerViewRoute;
+
+  /// No description provided for @offerRouteTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسار'**
+  String get offerRouteTitle;
+
+  /// No description provided for @offerMapView.
+  ///
+  /// In ar, this message translates to:
+  /// **'الخريطة'**
+  String get offerMapView;
+
+  /// No description provided for @offerListView.
+  ///
+  /// In ar, this message translates to:
+  /// **'القائمة'**
+  String get offerListView;
+
+  /// No description provided for @offerRouteSummary.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملخص المسار'**
+  String get offerRouteSummary;
+
+  /// No description provided for @offerDistance.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسافة'**
+  String get offerDistance;
+
+  /// No description provided for @offerRouteNote.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحطات بترتيب أوقات الخطة، وأوقات التنقل تقديرية.'**
+  String get offerRouteNote;
+
+  /// No description provided for @offerStartNavigation.
+  ///
+  /// In ar, this message translates to:
+  /// **'ابدأ الملاحة'**
+  String get offerStartNavigation;
+
+  /// No description provided for @offerNoMapStops.
+  ///
+  /// In ar, this message translates to:
+  /// **'محطات هذا اليوم لم يُحدد موقعها على الخريطة بعد.'**
+  String get offerNoMapStops;
+
+  /// No description provided for @offerBookFor.
+  ///
+  /// In ar, this message translates to:
+  /// **'احجز العرض · {price}'**
+  String offerBookFor(String price);
+
+  /// No description provided for @offerNavigationFailed.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر فتح تطبيق الخرائط.'**
+  String get offerNavigationFailed;
+
+  /// No description provided for @durationHours.
+  ///
+  /// In ar, this message translates to:
+  /// **'{hours} س'**
+  String durationHours(int hours);
 }
 
 class _AppLocalizationsDelegate

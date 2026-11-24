@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appName": "Zentrip",
+  "appName": "Scoutly",
   "welcomeTitle": "Plan smarter. Travel lighter.",
   "welcomeSubtitle": "Your AI-powered travel companion for the perfect trip",
   "navHome": "Explore",
@@ -60,7 +60,7 @@
   "confirmPasswordLabel": "Confirm Password",
   "login": "Log In",
   "signup": "Create Account",
-  "loginWelcome": "Welcome to Zentrip",
+  "loginWelcome": "Welcome to Scoutly",
   "loginSubtitle": "Log in to continue your smart travel plans",
   "forgotPassword": "Forgot password?",
   "noAccountYet": "Don't have an account?",
@@ -218,7 +218,7 @@
   "addToCalendar": "Add to Calendar",
   "addedToCalendarSuccess": "Added to your calendar",
   "addedToCalendarFailed": "Couldn't add to calendar",
-  "tripShareText": "My flight: {origin} → {destination} on {date} (flight {flightNumber}). Booked via Zentrip!",
+  "tripShareText": "My flight: {origin} → {destination} on {date} (flight {flightNumber}). Booked via Scoutly!",
   "@tripShareText": {
     "placeholders": {
       "origin": {
@@ -322,7 +322,7 @@
   "noNearbyPlaces": "No places found",
   "noNearbyPlacesSubtitle": "Try expanding your search radius or change the filter",
   "locationPermissionTitle": "Location Access",
-  "locationPermissionMessage": "Zentrip needs your location to show nearby places",
+  "locationPermissionMessage": "Scoutly needs your location to show nearby places",
   "openSettings": "Open Settings",
   "distanceKm": "{distance} km away",
   "@distanceKm": {
@@ -768,7 +768,7 @@
   "partnerNeighborhood": "Neighborhood",
   "partnerLandmark": "Nearby landmark",
   "commonEnterSixDigitCode": "Enter the 6-digit code",
-  "commonWelcomeToZentrip": "Welcome to Zentrip! 🎉",
+  "commonWelcomeToZentrip": "Welcome to Scoutly! 🎉",
   "commonReadyToExplore": "Ready to explore the world?",
   "commonTakePhoto": "Take a photo",
   "commonChooseFromGallery": "Choose from gallery",
@@ -857,7 +857,7 @@
   "profileSectionTripsChats": "Trips & Chats",
   "profileSectionPreferences": "Preferences",
   "profileSectionAccountSecurity": "Account & Security",
-  "profileDefaultUserName": "Zentrip User",
+  "profileDefaultUserName": "Scoutly User",
   "profileStatTrips": "Trips",
   "profileStatChats": "Chats",
   "profileStatSaved": "Saved",
@@ -900,7 +900,7 @@
   "emptyActiveSubtitle": "Trips and bookings that are underway right now will show up here",
   "tripsNoFilterResults": "No bookings in this category",
   "adminDashboard": "Admin dashboard",
-  "adminWorkspaceLabel": "Zentrip management",
+  "adminWorkspaceLabel": "Scoutly management",
   "adminOverview": "Overview",
   "adminPartners": "Partners",
   "adminOffers": "Offers",
@@ -928,7 +928,7 @@
   "adminPartnerName": "Partner or company name",
   "adminPartnerEmail": "Registered user email",
   "adminPartnerService": "Partner service",
-  "adminPartnerExistingAccountHint": "The partner must already have a Zentrip account. This will not create or reset a password.",
+  "adminPartnerExistingAccountHint": "The partner must already have a Scoutly account. This will not create or reset a password.",
   "adminPartnerStatusActive": "Active",
   "adminPartnerStatusInactive": "Inactive",
   "adminDisablePartner": "Disable partner",
@@ -1031,7 +1031,7 @@
   "partnerReservations": "Reservations",
   "partnerCustomers": "Customers",
   "partnerWelcome": "Welcome",
-  "partnerSubtitle": "Manage your travel business on Zentrip.",
+  "partnerSubtitle": "Manage your travel business on Scoutly.",
   "partnerListingCount": "Your listings",
   "partnerActiveListings": "Available now",
   "partnerReservationCount": "Reservations",
@@ -1492,6 +1492,64 @@
       },
       "time": {
         "type": "String"
+      }
+    }
+  },
+  "adminDayPlan": "Day plan",
+  "adminDayPlanHint": "Stops customers see on the offer, by day and time.",
+  "adminAddStop": "Add stop",
+  "adminEditStop": "Edit stop",
+  "adminNoStops": "No stops yet. Add the first stop of the plan.",
+  "adminStopTime": "Start time",
+  "adminStopName": "Place name",
+  "adminStopNameAr": "Place name (Arabic)",
+  "adminStopCategory": "Type (e.g. Coffee shop)",
+  "adminStopCategoryAr": "Type (Arabic)",
+  "adminStopDescription": "Short description",
+  "adminStopDescriptionAr": "Short description (Arabic)",
+  "adminStopDuration": "Duration (minutes)",
+  "adminStopPhotoUrl": "Photo URL",
+  "adminStopChooseOnMap": "Choose on map",
+  "adminStopNoLocation": "No location yet: the stop won't show on the route map.",
+  "adminStopMapTitle": "Stop location",
+  "adminStopMapHint": "Tap the map where the place is.",
+  "offerDayN": "Day {day}",
+  "@offerDayN": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
+  "offerYourDayIn": "Your day in",
+  "offerYourTripIn": "Your trip in",
+  "offerTabPlan": "Day plan",
+  "offerTabDetails": "Offer details",
+  "offerTotalTime": "Total time",
+  "offerStops": "Stops",
+  "offerViewRoute": "View route",
+  "offerRouteTitle": "Route",
+  "offerMapView": "Map view",
+  "offerListView": "List view",
+  "offerRouteSummary": "Route summary",
+  "offerDistance": "Distance",
+  "offerRouteNote": "Stops follow the plan's times; travel times are estimates.",
+  "offerStartNavigation": "Start navigation",
+  "offerNoMapStops": "The stops of this day have no map location yet.",
+  "offerBookFor": "Book this offer · {price}",
+  "@offerBookFor": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "offerNavigationFailed": "Couldn't open the maps app.",
+  "durationHours": "{hours}h",
+  "@durationHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
       }
     }
   }

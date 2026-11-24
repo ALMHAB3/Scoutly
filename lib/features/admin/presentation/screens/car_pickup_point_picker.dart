@@ -15,11 +15,17 @@ class CarPickupPointPicker extends StatefulWidget {
   final bool hasInitialPin;
   final CurrentLocationService locationService;
 
+  /// Screen title and hint; default to the car pickup texts.
+  final String? title;
+  final String? hint;
+
   const CarPickupPointPicker({
     super.key,
     required this.initial,
     this.hasInitialPin = false,
     this.locationService = const CurrentLocationService(),
+    this.title,
+    this.hint,
   });
 
   /// Opens the picker; returns the chosen point or null when cancelled.
@@ -27,6 +33,8 @@ class CarPickupPointPicker extends StatefulWidget {
     BuildContext context, {
     required LatLng initial,
     bool hasInitialPin = false,
+    String? title,
+    String? hint,
   }) =>
       Navigator.push<LatLng>(
         context,
@@ -35,6 +43,8 @@ class CarPickupPointPicker extends StatefulWidget {
           builder: (_) => CarPickupPointPicker(
             initial: initial,
             hasInitialPin: hasInitialPin,
+            title: title,
+            hint: hint,
           ),
         ),
       );
@@ -78,7 +88,8 @@ class _CarPickupPointPickerState extends State<CarPickupPointPicker> {
     final pin = _pin;
     return Scaffold(
       appBar: AppBar(
-        title: Text(ar ? 'موقع استلام السيارة' : 'Car pickup point'),
+        title: Text(
+            widget.title ?? (ar ? 'موقع استلام السيارة' : 'Car pickup point')),
       ),
       body: Stack(
         children: [
@@ -122,9 +133,10 @@ class _CarPickupPointPickerState extends State<CarPickupPointPicker> {
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
-                  ar
-                      ? 'اضغط على الخريطة في المكان الموجودة فيه السيارة، أو استخدم موقعك الحالي إذا كنت عند السيارة.'
-                      : 'Tap the map where the car is, or use your current location if you are at the car.',
+                  widget.hint ??
+                      (ar
+                          ? 'اضغط على الخريطة في المكان الموجودة فيه السيارة، أو استخدم موقعك الحالي إذا كنت عند السيارة.'
+                          : 'Tap the map where the car is, or use your current location if you are at the car.'),
                   style: const TextStyle(fontSize: 13),
                 ),
               ),

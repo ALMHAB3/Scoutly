@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appName => 'زنتريب';
+  String get appName => 'سكاوتلي';
 
   @override
   String get welcomeTitle => 'خطط بذكاء. سافر بخفة.';
@@ -191,7 +191,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get signup => 'إنشاء حساب';
 
   @override
-  String get loginWelcome => 'أهلاً بك في زنتريب';
+  String get loginWelcome => 'أهلاً بك في سكاوتلي';
 
   @override
   String get loginSubtitle => 'سجّل دخولك لمتابعة رحلاتك الذكية';
@@ -598,7 +598,7 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String tripShareText(
       Object date, Object destination, Object flightNumber, Object origin) {
-    return 'رحلتي: $origin → $destination في $date (رحلة $flightNumber). محجوزة عن طريق Zentrip!';
+    return 'رحلتي: $origin → $destination في $date (رحلة $flightNumber). محجوزة عن طريق Scoutly!';
   }
 
   @override
@@ -853,7 +853,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get locationPermissionMessage =>
-      'يحتاج زنتريب إلى موقعك لعرض الأماكن القريبة';
+      'يحتاج سكاوتلي إلى موقعك لعرض الأماكن القريبة';
 
   @override
   String get openSettings => 'فتح الإعدادات';
@@ -2029,7 +2029,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonEnterSixDigitCode => 'أدخل الرمز المكوّن من 6 أرقام';
 
   @override
-  String get commonWelcomeToZentrip => 'أهلاً بك في زنتريب! 🎉';
+  String get commonWelcomeToZentrip => 'أهلاً بك في سكاوتلي! 🎉';
 
   @override
   String get commonReadyToExplore => 'جاهز لاستكشاف العالم؟';
@@ -2210,7 +2210,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get profileSectionAccountSecurity => 'الحساب والأمان';
 
   @override
-  String get profileDefaultUserName => 'مستخدم زنتريب';
+  String get profileDefaultUserName => 'مستخدم سكاوتلي';
 
   @override
   String get profileStatTrips => 'رحلة';
@@ -2341,7 +2341,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adminDashboard => 'لوحة تحكم الإدارة';
 
   @override
-  String get adminWorkspaceLabel => 'إدارة زنتريب';
+  String get adminWorkspaceLabel => 'إدارة سكاوتلي';
 
   @override
   String get adminOverview => 'نظرة عامة';
@@ -2426,7 +2426,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adminPartnerExistingAccountHint =>
-      'يجب أن يكون لدى الشريك حساب زنتريب مسبقاً. لن يتم إنشاء كلمة مرور أو تغييرها.';
+      'يجب أن يكون لدى الشريك حساب سكاوتلي مسبقاً. لن يتم إنشاء كلمة مرور أو تغييرها.';
 
   @override
   String get adminPartnerStatusActive => 'نشط';
@@ -2731,7 +2731,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get partnerWelcome => 'أهلاً بك';
 
   @override
-  String get partnerSubtitle => 'أدر نشاطك السياحي على زنتريب.';
+  String get partnerSubtitle => 'أدر نشاطك السياحي على سكاوتلي.';
 
   @override
   String get partnerListingCount => 'قوائمك';
@@ -3667,5 +3667,126 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String taxiPickupAt(String date, String time) {
     return 'الاستلام $date · $time';
+  }
+
+  @override
+  String get adminDayPlan => 'خطة اليوم';
+
+  @override
+  String get adminDayPlanHint =>
+      'المحطات التي يراها العملاء في العرض حسب اليوم والوقت.';
+
+  @override
+  String get adminAddStop => 'إضافة محطة';
+
+  @override
+  String get adminEditStop => 'تعديل المحطة';
+
+  @override
+  String get adminNoStops => 'لا توجد محطات بعد. أضف أول محطة في الخطة.';
+
+  @override
+  String get adminStopTime => 'وقت البدء';
+
+  @override
+  String get adminStopName => 'اسم المكان';
+
+  @override
+  String get adminStopNameAr => 'اسم المكان (بالعربية)';
+
+  @override
+  String get adminStopCategory => 'النوع بالإنجليزية (مثلاً Coffee shop)';
+
+  @override
+  String get adminStopCategoryAr => 'النوع (بالعربية)';
+
+  @override
+  String get adminStopDescription => 'وصف قصير';
+
+  @override
+  String get adminStopDescriptionAr => 'وصف قصير (بالعربية)';
+
+  @override
+  String get adminStopDuration => 'المدة (بالدقائق)';
+
+  @override
+  String get adminStopPhotoUrl => 'رابط الصورة';
+
+  @override
+  String get adminStopChooseOnMap => 'اختر على الخريطة';
+
+  @override
+  String get adminStopNoLocation =>
+      'لم يُحدد الموقع: لن تظهر المحطة على خريطة المسار.';
+
+  @override
+  String get adminStopMapTitle => 'موقع المحطة';
+
+  @override
+  String get adminStopMapHint => 'اضغط على الخريطة في مكان المحطة.';
+
+  @override
+  String offerDayN(int day) {
+    return 'اليوم $day';
+  }
+
+  @override
+  String get offerYourDayIn => 'يومك في';
+
+  @override
+  String get offerYourTripIn => 'رحلتك في';
+
+  @override
+  String get offerTabPlan => 'خطة اليوم';
+
+  @override
+  String get offerTabDetails => 'تفاصيل العرض';
+
+  @override
+  String get offerTotalTime => 'الوقت الكلي';
+
+  @override
+  String get offerStops => 'المحطات';
+
+  @override
+  String get offerViewRoute => 'عرض المسار';
+
+  @override
+  String get offerRouteTitle => 'المسار';
+
+  @override
+  String get offerMapView => 'الخريطة';
+
+  @override
+  String get offerListView => 'القائمة';
+
+  @override
+  String get offerRouteSummary => 'ملخص المسار';
+
+  @override
+  String get offerDistance => 'المسافة';
+
+  @override
+  String get offerRouteNote =>
+      'المحطات بترتيب أوقات الخطة، وأوقات التنقل تقديرية.';
+
+  @override
+  String get offerStartNavigation => 'ابدأ الملاحة';
+
+  @override
+  String get offerNoMapStops =>
+      'محطات هذا اليوم لم يُحدد موقعها على الخريطة بعد.';
+
+  @override
+  String offerBookFor(String price) {
+    return 'احجز العرض · $price';
+  }
+
+  @override
+  String get offerNavigationFailed => 'تعذّر فتح تطبيق الخرائط.';
+
+  @override
+  String durationHours(int hours) {
+    return '$hours س';
   }
 }

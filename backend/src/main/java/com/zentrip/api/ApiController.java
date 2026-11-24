@@ -495,6 +495,7 @@ public class ApiController {
                        COALESCE(to_jsonb(o)->'highlights_ar', '[]'::jsonb) AS highlights_ar,
                        o.is_featured, o.category,
                        %s AS flight_listing_id, COALESCE(m.badge, '') AS badge,
+                       COALESCE(to_jsonb(m)->'itinerary', '[]'::jsonb) AS itinerary,
                        fl.id AS linked_flight_id, fl.title AS flight_title,
                        fl.city AS flight_city, fl.country AS flight_country,
                        fl.price AS linked_flight_price, fl.active AS flight_active,
@@ -509,6 +510,7 @@ public class ApiController {
                     Map<String, Object> offer = new LinkedHashMap<>(row);
                     offer.put("highlights", parseHighlights(row.get("highlights")));
                     offer.put("highlights_ar", parseHighlights(row.get("highlights_ar")));
+                    offer.put("itinerary", AdminController.parseItinerary(row.get("itinerary")));
                     Map<String, Object> flight = offerFlightPayload(row);
                     offer.put("flight", flight.isEmpty() ? null : flight);
                     String badge = row.get("badge") == null ? "" : row.get("badge").toString();

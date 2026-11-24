@@ -154,7 +154,7 @@ Future<Uint8List> buildTicketsPdf({
         );
   final doc = pw.Document(
     title: '${labels.title} $reference',
-    author: 'Zentrip',
+    author: 'Scoutly',
     theme: theme,
   );
   final dateText = DateFormat.yMMMEd(locale).format(flight.departureTime);

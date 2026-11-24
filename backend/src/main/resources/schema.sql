@@ -375,6 +375,7 @@ CREATE INDEX IF NOT EXISTS offers_flight_listing_index ON offers (flight_listing
 CREATE TABLE IF NOT EXISTS offer_catalog_metadata (
     offer_id VARCHAR(64) NOT NULL PRIMARY KEY,
     badge VARCHAR(100) NOT NULL DEFAULT '',
+    itinerary JSONB NOT NULL DEFAULT '[]'::jsonb,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT offer_catalog_metadata_offer_foreign
         FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE CASCADE

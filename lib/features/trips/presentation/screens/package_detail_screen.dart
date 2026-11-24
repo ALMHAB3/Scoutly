@@ -13,6 +13,7 @@ import '../../../../l10n/app_localizations.dart';
 import '../../../../models/destination_info_model.dart';
 import '../../../../models/travel_package_model.dart';
 import '../../../../global_widgets/ui/ui.dart';
+import 'offer_day_plan_view.dart';
 
 class PackageDetailScreen extends StatefulWidget {
   final TravelPackage package;
@@ -61,11 +62,248 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     }
   }
 
+  /// Offer content (price, destination info, description, highlights);
+  /// the "Offer details" tab of the day-plan view, or the whole page.
+  List<Widget> _details(
+    BuildContext context,
+    AppLocalizations l10n,
+    TravelPackage package,
+    String languageCode, {
+    required bool withBookButton,
+  }) =>
+      [
+        // ── Meta ─────────────────────────────────────────────
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                  color: AppColors.primarySurface,
+                  borderRadius: BorderRadius.circular(8)),
+              child: Text(package.displayLocation(languageCode),
+                  style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13)),
+            ),
+            const Spacer(),
+            RatingBarIndicator(
+                rating: package.rating,
+                itemSize: 16,
+                itemBuilder: (_, __) =>
+                    const Icon(Icons.star_rounded, color: AppColors.amber)),
+            const SizedBox(width: 6),
+            Text('${package.rating} (${package.reviewCount})',
+                textDirection: TextDirection.ltr,
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.textSecondary)),
+          ],
+        ).animate().fade(duration: 300.ms),
+        const SizedBox(height: 20),
+        // ── خط الرحلة الجاهز: ليالي + سعر تذكرة + سعر فندق ────
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          shadow: false,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.nights_stay_rounded,
+                      color: AppColors.accentTeal, size: 18),
+                  const SizedBox(width: 8),
+                  Text(l10n.hotelNightsSummary(package.durationNights),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800, fontSize: 15)),
+                  const Spacer(),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                        color: AppColors.accentGreen.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8)),
+                    child: Text(l10n.bookThisOffer,
+                        style: const TextStyle(
+                            color: AppColors.accentGreen,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 11)),
+                  ),
+                ],
+              ),
+              const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1)),
+              if (package.flight case final flight?)
+                Row(
+                  children: [
+                    const Icon(Icons.flight_takeoff_rounded,
+                        color: AppColors.primary, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${l10n.packageAirline}: ${flight.airline}'
+                        '${flight.flightNumber.isEmpty ? '' : ' · ${flight.flightNumber}'}'
+                        ' · ${flight.originCode} → ${flight.destinationCode}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(
+                    l10n.flightProviderUnavailable,
+                    style: const TextStyle(
+                      color: AppColors.accentOrange,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 12),
+              _PriceLine(
+                  icon: Icons.flight_rounded,
+                  label: l10n.packageTicketPrice,
+                  value: package.flight?.economyPrice ??
+                      package.flightPricePerPerson),
+              const SizedBox(height: 10),
+              _PriceLine(
+                  icon: Icons.hotel_rounded,
+                  label: l10n.packageHotelPricePerNight,
+                  value: package.hotelPricePerNight),
+              const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(l10n.packageTotalPrice,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700, fontSize: 14)),
+                  CurrencyAmountText(
+                      amount: package.totalPricePerPerson,
+                      decimalDigits: 0,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 22,
+                          color: AppColors.primary)),
+                ],
+              ),
+            ],
+          ),
+        ).animate().fade(delay: 100.ms).slideY(begin: 0.05, end: 0),
+        const SizedBox(height: 16),
+        _DestinationInfoRow(
+                city: package.displayLocation(languageCode),
+                country: package.displayCountry(languageCode))
+            .animate()
+            .fade(delay: 130.ms),
+        const SizedBox(height: 20),
+        // ── Description ───────────────────────────────────────
+        Text(l10n.tripsAboutDestination,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        Text(package.displayDescription(languageCode),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(height: 1.7))
+            .animate()
+            .fade(delay: 150.ms),
+        const SizedBox(height: 20),
+        // ── Highlights ────────────────────────────────────────
+        Text(l10n.tripsHighlights,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: package
+              .displayHighlights(languageCode)
+              .asMap()
+              .entries
+              .map((e) => Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color:
+                          package.gradient.colors.first.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: package.gradient.colors.first
+                              .withValues(alpha: 0.2)),
+                    ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.check_circle_rounded,
+                          color: package.gradient.colors.first, size: 14),
+                      const SizedBox(width: 6),
+                      Text(e.value,
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: package.gradient.colors.first)),
+                    ]),
+                  )
+                      .animate(delay: Duration(milliseconds: 80 * e.key))
+                      .fade()
+                      .scale())
+              .toList(),
+        ),
+        const SizedBox(height: 32),
+        if (withBookButton)
+          // ── زرار حجز واحد للعرض بالكامل ─────────────────────
+          SizedBox(
+            width: double.infinity,
+            child: AppButton.icon(
+              onPressed: _isBooking ||
+                      package.flight == null ||
+                      !package.flight!.isActive
+                  ? null
+                  : _bookOffer,
+              icon: _isBooking
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.white))
+                  : const Icon(Icons.card_travel_rounded, size: 18),
+              label: Text(_isBooking
+                  ? l10n.flightBookingInProgress
+                  : l10n.bookThisOffer),
+            ),
+          ).animate().fade(delay: 300.ms),
+        const SizedBox(height: 16),
+      ];
+
+  bool get _canBook =>
+      !_isBooking &&
+      widget.package.flight != null &&
+      widget.package.flight!.isActive;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final package = widget.package;
     final languageCode = Localizations.localeOf(context).languageCode;
+    if (package.itinerary.isNotEmpty) {
+      return OfferDayPlanView(
+        package: package,
+        details: _details(context, l10n, package, languageCode,
+            withBookButton: false),
+        booking: _isBooking,
+        onBook: _canBook ? _bookOffer : null,
+      );
+    }
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -113,221 +351,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── Meta ─────────────────────────────────────────────
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                          color: AppColors.primarySurface,
-                          borderRadius: BorderRadius.circular(8)),
-                      child: Text(package.displayLocation(languageCode),
-                          style: const TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13)),
-                    ),
-                    const Spacer(),
-                    RatingBarIndicator(
-                        rating: package.rating,
-                        itemSize: 16,
-                        itemBuilder: (_, __) => const Icon(Icons.star_rounded,
-                            color: AppColors.amber)),
-                    const SizedBox(width: 6),
-                    Text('${package.rating} (${package.reviewCount})',
-                        textDirection: TextDirection.ltr,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary)),
-                  ],
-                ).animate().fade(duration: 300.ms),
-                const SizedBox(height: 20),
-                // ── خط الرحلة الجاهز: ليالي + سعر تذكرة + سعر فندق ────
-                AppCard(
-                  padding: const EdgeInsets.all(16),
-                  shadow: false,
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.nights_stay_rounded,
-                              color: AppColors.accentTeal, size: 18),
-                          const SizedBox(width: 8),
-                          Text(l10n.hotelNightsSummary(package.durationNights),
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w800, fontSize: 15)),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                                color: AppColors.accentGreen
-                                    .withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8)),
-                            child: Text(l10n.bookThisOffer,
-                                style: const TextStyle(
-                                    color: AppColors.accentGreen,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 11)),
-                          ),
-                        ],
-                      ),
-                      const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          child: Divider(height: 1)),
-                      if (package.flight case final flight?)
-                        Row(
-                          children: [
-                            const Icon(Icons.flight_takeoff_rounded,
-                                color: AppColors.primary, size: 18),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                '${l10n.packageAirline}: ${flight.airline}'
-                                '${flight.flightNumber.isEmpty ? '' : ' · ${flight.flightNumber}'}'
-                                ' · ${flight.originCode} → ${flight.destinationCode}',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      else
-                        Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: Text(
-                            l10n.flightProviderUnavailable,
-                            style: const TextStyle(
-                              color: AppColors.accentOrange,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 12),
-                      _PriceLine(
-                          icon: Icons.flight_rounded,
-                          label: l10n.packageTicketPrice,
-                          value: package.flight?.economyPrice ??
-                              package.flightPricePerPerson),
-                      const SizedBox(height: 10),
-                      _PriceLine(
-                          icon: Icons.hotel_rounded,
-                          label: l10n.packageHotelPricePerNight,
-                          value: package.hotelPricePerNight),
-                      const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          child: Divider(height: 1)),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(l10n.packageTotalPrice,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w700, fontSize: 14)),
-                          CurrencyAmountText(
-                              amount: package.totalPricePerPerson,
-                              decimalDigits: 0,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 22,
-                                  color: AppColors.primary)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ).animate().fade(delay: 100.ms).slideY(begin: 0.05, end: 0),
-                const SizedBox(height: 16),
-                _DestinationInfoRow(
-                        city: package.displayLocation(languageCode),
-                        country: package.displayCountry(languageCode))
-                    .animate()
-                    .fade(delay: 130.ms),
-                const SizedBox(height: 20),
-                // ── Description ───────────────────────────────────────
-                Text(l10n.tripsAboutDestination,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                Text(package.displayDescription(languageCode),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(height: 1.7))
-                    .animate()
-                    .fade(delay: 150.ms),
-                const SizedBox(height: 20),
-                // ── Highlights ────────────────────────────────────────
-                Text(l10n.tripsHighlights,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: package
-                      .displayHighlights(languageCode)
-                      .asMap()
-                      .entries
-                      .map((e) => Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: package.gradient.colors.first
-                                  .withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                  color: package.gradient.colors.first
-                                      .withValues(alpha: 0.2)),
-                            ),
-                            child:
-                                Row(mainAxisSize: MainAxisSize.min, children: [
-                              Icon(Icons.check_circle_rounded,
-                                  color: package.gradient.colors.first,
-                                  size: 14),
-                              const SizedBox(width: 6),
-                              Text(e.value,
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: package.gradient.colors.first)),
-                            ]),
-                          )
-                              .animate(
-                                  delay: Duration(milliseconds: 80 * e.key))
-                              .fade()
-                              .scale())
-                      .toList(),
-                ),
-                const SizedBox(height: 32),
-                // ── زرار حجز واحد للعرض بالكامل ─────────────────────
-                SizedBox(
-                  width: double.infinity,
-                  child: AppButton.icon(
-                    onPressed: _isBooking ||
-                            package.flight == null ||
-                            !package.flight!.isActive
-                        ? null
-                        : _bookOffer,
-                    icon: _isBooking
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: AppColors.white))
-                        : const Icon(Icons.card_travel_rounded, size: 18),
-                    label: Text(_isBooking
-                        ? l10n.flightBookingInProgress
-                        : l10n.bookThisOffer),
-                  ),
-                ).animate().fade(delay: 300.ms),
-                const SizedBox(height: 16),
+                ..._details(context, l10n, package, languageCode,
+                    withBookButton: true),
               ]),
             ),
           ),

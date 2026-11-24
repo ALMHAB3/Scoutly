@@ -134,7 +134,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const _OrbitalGlobe(),
               const SizedBox(height: 42),
               Text(
-                'Zentrip',
+                'Scoutly',
                 style: GoogleFonts.plusJakartaSans(
                   color: AppColors.textPrimary,
                   fontSize: 34,
