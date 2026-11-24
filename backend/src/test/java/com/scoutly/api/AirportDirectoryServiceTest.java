@@ -28,11 +28,12 @@ class AirportDirectoryServiceTest {
     @Test
     void exactCodeReturnsFullAirportMetadata() {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(
-                List.of(Map.of("code", "LHR", "icao_code", "EGLL", "is_major", true)));
-        Map<String, Object> result = directory.search("LHR");
+                List.of(Map.of("code", "MJI", "icao_code", "HLLM", "is_major", true,
+                        "iso_country", "LY")));
+        Map<String, Object> result = directory.search("MJI");
         assertEquals("airport_code", result.get("query_type"));
         Map<?, ?> airport = (Map<?, ?>) ((List<?>) result.get("airports")).getFirst();
-        assertEquals("EGLL", airport.get("icao_code"));
+        assertEquals("HLLM", airport.get("icao_code"));
         assertEquals("major", airport.get("priority"));
         verifyNoInteractions(geocoder);
     }
@@ -44,6 +45,6 @@ class AirportDirectoryServiceTest {
         when(jdbc.queryForList(anyString(), any(Object[].class))).thenReturn(List.of());
         Map<String, Object> result = directory.search("Eiffel Tower");
         assertEquals("no_match", result.get("query_type"));
-        verify(geocoder).resolveLocation("Eiffel Tower");
+        verify(geocoder).resolveLocation("Eiffel Tower", "LY");
     }
 }

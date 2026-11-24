@@ -61,16 +61,83 @@ public class AirportDirectoryService {
         ParsedCategory parsedCategory = parseCategory(query);
         if (parsedCategory.isCategoryOnly()) {
             return response(query, "category", List.of(), List.of(),
-                    "Add a city or place, for example “Nature in Bali, Indonesia”.", 0);
+                    "Add a city or place, for example “Nature in Ghadames, Libya”.", 0);
         }
 
         String searchText = parsedCategory.locationQuery();
+        Map<String, Object> result;
         try {
-            return searchDirectory(query, searchText, parsedCategory.category());
+            result = searchDirectory(query, searchText, parsedCategory.category());
         } catch (BadSqlGrammarException exception) {
             if (!isMissingDirectorySchema(exception)) throw exception;
-            return legacyFallback(query);
+            result = legacyFallback(query);
         }
+        return libyaOnly(result);
+    }
+
+    /** True when the IATA code belongs to a Libyan airport. */
+    public boolean isLibyanAirport(String code) {
+        String normalized = code == null ? "" : code.trim().toUpperCase(Locale.ROOT);
+        if (LibyaScope.KNOWN_AIRPORT_CODES.contains(normalized)) return true;
+        if (!normalized.matches("[A-Z0-9]{3}")) return false;
+        try {
+            Integer count = jdbc.queryForObject("""
+                    SELECT COUNT(*) FROM airports
+                    WHERE UPPER(TRIM(code)) = ?
+                      AND (UPPER(TRIM(iso_country)) = 'LY' OR LOWER(TRIM(country)) = 'libya')
+                    """, Integer.class, normalized);
+            return count != null && count > 0;
+        } catch (DataAccessException exception) {
+            return false;
+        }
+    }
+
+    /** Drops any airport or landmark outside Libya from a directory response. */
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> libyaOnly(Map<String, Object> result) {
+        Map<String, Object> filtered = new LinkedHashMap<>(result);
+        if (result.get("airports") instanceof List<?> airports) {
+            List<Map<String, Object>> kept = airports.stream()
+                    .filter(Map.class::isInstance)
+                    .map(airport -> (Map<String, Object>) airport)
+                    .filter(AirportDirectoryService::isLibyanAirportRow)
+                    .toList();
+            if (kept.size() != airports.size()) {
+                filtered.put("total", kept.size());
+                filtered.put("has_more", false);
+            }
+            filtered.put("airports", kept);
+        }
+        if (result.get("landmarks") instanceof List<?> landmarks) {
+            filtered.put("landmarks", landmarks.stream()
+                    .filter(Map.class::isInstance)
+                    .map(landmark -> (Map<String, Object>) landmark)
+                    .filter(landmark -> !LibyaScope.isKnownOutside(landmark))
+                    .toList());
+        }
+        if (result.get("resolved_location") instanceof Map<?, ?> location
+                && LibyaScope.isKnownOutside(location)) {
+            filtered.remove("resolved_location");
+        }
+        boolean empty = filtered.get("airports") instanceof List<?> a && a.isEmpty()
+                && filtered.get("landmarks") instanceof List<?> l && l.isEmpty();
+        if (empty && !filtered.containsKey("message")) {
+            filtered.put("message", LibyaScope.OUTSIDE_LIBYA_MESSAGE);
+        }
+        return filtered;
+    }
+
+    private static boolean isLibyanAirportRow(Map<String, Object> airport) {
+        Object iso = airport.get("iso_country");
+        if (iso != null && !String.valueOf(iso).isBlank()) {
+            return LibyaScope.isLibya(String.valueOf(iso));
+        }
+        Object country = airport.get("country");
+        if (country != null && !String.valueOf(country).isBlank()) {
+            return LibyaScope.isLibya(String.valueOf(country));
+        }
+        // No country data (only possible with a legacy directory): rely on the SQL filter.
+        return true;
     }
 
     private Map<String, Object> searchDirectory(
@@ -85,6 +152,7 @@ public class AirportDirectoryService {
                     SELECT %s
                     FROM airports
                     WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                     %s
                     LIMIT ?
                     """.formatted(AIRPORT_COLUMNS, AIRPORT_ORDER), DEFAULT_LIMIT);
@@ -143,6 +211,7 @@ public class AirportDirectoryService {
                 SELECT %s
                 FROM airports
                 WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                   AND (UPPER(TRIM(code)) = UPPER(?) OR UPPER(TRIM(icao_code)) = UPPER(?))
                 ORDER BY CASE WHEN UPPER(TRIM(code)) = UPPER(?) THEN 0 ELSE 1 END
                 LIMIT 1
@@ -155,6 +224,7 @@ public class AirportDirectoryService {
                 SELECT %s
                 FROM airports
                 WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                   AND (LOWER(country) = LOWER(?) OR UPPER(TRIM(iso_country)) = UPPER(?))
                 %s
                 LIMIT ?
@@ -169,6 +239,7 @@ public class AirportDirectoryService {
                     SELECT %s
                     FROM airports
                     WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                       AND (LOWER(city) = LOWER(?)
                            OR LOWER(airport_name) LIKE LOWER(?) || ' %%')
                     %s
@@ -179,6 +250,7 @@ public class AirportDirectoryService {
                 SELECT %s
                 FROM airports
                 WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                   AND (LOWER(city) = LOWER(?)
                        OR LOWER(airport_name) LIKE LOWER(?) || ' %%')
                   AND (LOWER(country) = LOWER(?) OR UPPER(TRIM(iso_country)) = UPPER(?)
@@ -200,6 +272,7 @@ public class AirportDirectoryService {
                 SELECT %s
                 FROM airports
                 WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                   AND (
                     POSITION(LOWER(?) IN LOWER(TRIM(code))) > 0
                     OR POSITION(LOWER(?) IN LOWER(TRIM(icao_code))) > 0
@@ -238,6 +311,7 @@ public class AirportDirectoryService {
                 SELECT COUNT(*)
                 FROM airports
                 WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                   AND (LOWER(country) = LOWER(?) OR UPPER(TRIM(iso_country)) = UPPER(?))
                 """, Integer.class, query, countryCode);
         return count != null && count > 0;
@@ -249,6 +323,7 @@ public class AirportDirectoryService {
                 SELECT COUNT(*)
                 FROM airports
                 WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                   AND (LOWER(country) = LOWER(?) OR UPPER(TRIM(iso_country)) = UPPER(?))
                 """, Integer.class, query, countryCode);
         return count == null ? 0 : count;
@@ -260,11 +335,13 @@ public class AirportDirectoryService {
         Integer count = country.isBlank()
                 ? jdbc.queryForObject("""
                         SELECT COUNT(*) FROM airports
-                        WHERE scheduled_service = TRUE AND LOWER(city) = LOWER(?)
+                        WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY' AND LOWER(city) = LOWER(?)
                         """, Integer.class, city)
                 : jdbc.queryForObject("""
                         SELECT COUNT(*) FROM airports
                         WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                           AND LOWER(city) = LOWER(?)
                           AND (LOWER(country) = LOWER(?)
                                OR UPPER(TRIM(iso_country)) = UPPER(?)
@@ -422,6 +499,7 @@ public class AirportDirectoryService {
                     ))) AS distance_km
                 FROM airports
                 WHERE scheduled_service = TRUE
+                  AND UPPER(TRIM(iso_country)) = 'LY'
                   AND latitude IS NOT NULL AND longitude IS NOT NULL
                 ORDER BY distance_km ASC, is_major DESC, code ASC
                 LIMIT ?
@@ -523,21 +601,15 @@ public class AirportDirectoryService {
     }
 
     private GeoapifyAirportService.GeocodedPlace resolvePlace(String requestedText) {
-        String text = switch (normalize(requestedText)) {
-            case "pyramids", "the pyramids", "pyramids of giza" ->
-                    "Giza Pyramids, Egypt";
-            default -> requestedText;
-        };
-        String[] parts = splitCityCountry(text);
-        if (parts[1].isBlank()) return geoapifyAirportService.resolveLocation(text);
-        List<Map<String, Object>> countries = jdbc.queryForList("""
-                SELECT TRIM(iso_country) AS iso_country FROM airports
-                WHERE LOWER(country) = LOWER(?) OR UPPER(iso_country) = ?
-                LIMIT 1
-                """, parts[1], countryCodeAlias(parts[1]));
-        if (countries.isEmpty()) return null;
-        String iso = String.valueOf(countries.getFirst().get("iso_country"));
-        return geoapifyAirportService.resolveLocation(parts[0], iso);
+        String[] parts = splitCityCountry(requestedText);
+        if (!parts[1].isBlank() && !LibyaScope.isLibya(parts[1])) return null;
+        GeoapifyAirportService.GeocodedPlace place =
+                geoapifyAirportService.resolveLocation(parts[0], LibyaScope.COUNTRY_CODE);
+        if (place == null
+                || !LibyaScope.contains(place.latitude(), place.longitude())) {
+            return null;
+        }
+        return place;
     }
 
     private static Double number(Object value) {
@@ -572,9 +644,10 @@ public class AirportDirectoryService {
             airports = jdbc.queryForList("""
                     SELECT code, city, airport_name, country, region
                     FROM airports
-                    WHERE ? = '' OR LOWER(code) LIKE ? OR LOWER(city) LIKE ?
+                    WHERE LOWER(TRIM(country)) = 'libya'
+                      AND (? = '' OR LOWER(code) LIKE ? OR LOWER(city) LIKE ?
                           OR LOWER(airport_name) LIKE ? OR LOWER(country) LIKE ?
-                          OR LOWER(region) LIKE ?
+                          OR LOWER(region) LIKE ?)
                     ORDER BY city, code
                     LIMIT 50
                     """, query.toLowerCase(Locale.ROOT), pattern, pattern, pattern,

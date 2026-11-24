@@ -1,8 +1,8 @@
 #!/bin/sh
 # This is a generated file; do not edit or check into version control.
-export "FLUTTER_ROOT=/home/runner/workspace/.local/toolchains/flutter"
-export "FLUTTER_APPLICATION_PATH=/home/runner/workspace"
-export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/home/runner/workspace/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
+export "FLUTTER_ROOT=/tmp/claude-0/work/flutter"
+export "FLUTTER_APPLICATION_PATH=/home/user/scoutly"
+export "FLUTTER_FRAMEWORK_SWIFT_PACKAGE_PATH=/home/user/scoutly/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
 export "COCOAPODS_PARALLEL_CODE_SIGN=true"
 export "FLUTTER_TARGET=lib/main.dart"
 export "FLUTTER_BUILD_DIR=build"

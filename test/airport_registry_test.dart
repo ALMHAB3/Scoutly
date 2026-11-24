@@ -11,6 +11,16 @@ void main() {
     expect(AirportOption.byCode('MIP'), isNull);
   });
 
+  test('built-in airport list is Libya-only', () {
+    expect(AirportOption.supported, isNotEmpty);
+    expect(
+      AirportOption.supported.every((airport) => airport.country == 'Libya'),
+      isTrue,
+    );
+    expect(AirportOption.byCode('CAI'), isNull);
+    expect(AirportOption.byCode('DXB'), isNull);
+  });
+
   test('airport search matches partial city, airport, and code values', () {
     expect(AirportOption.supported.where((airport) => airport.matches('mis')),
         contains(AirportOption.byCode('MRA')));
@@ -24,7 +34,8 @@ void main() {
 
   test('nearest supported airport maps current coordinates to its city', () {
     expect(AirportOption.nearestTo(32.3250, 15.0610)?.code, 'MRA');
-    expect(AirportOption.nearestTo(30.1219, 31.4056)?.code, 'CAI');
+    expect(AirportOption.nearestTo(32.1167, 20.0667)?.code, 'BEN');
+    expect(AirportOption.nearestTo(24.1833, 23.3000)?.code, 'AKF');
     expect(AirportOption.nearestTo(91, 0), isNull);
     expect(AirportOption.nearestTo(0, 0), isNull);
   });

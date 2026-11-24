@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/libya_scope.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/current_location_service.dart';
 import '../../../../features/favorites/logic/favorites_controller.dart';
@@ -93,7 +94,10 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
     }
     try {
       final position = await _locationService.getPosition();
-      _myLocation = LatLng(position.latitude, position.longitude);
+      final location = LatLng(position.latitude, position.longitude);
+      // Places are Libya-only; start in Tripoli when the user is abroad.
+      _myLocation =
+          LibyaScope.contains(location) ? location : LibyaScope.defaultCenter;
       _locationError = null;
     } on CurrentLocationException catch (error) {
       _locationError = error.reason;
@@ -478,6 +482,10 @@ class _PlacesMapScreenState extends State<PlacesMapScreen> {
                       options: MapOptions(
                         initialCenter: center,
                         initialZoom: selectedCenter == null ? 12 : 16,
+                        minZoom: 5,
+                        cameraConstraint: CameraConstraint.containCenter(
+                          bounds: LibyaScope.bounds,
+                        ),
                         onPositionChanged: _onPositionChanged,
                       ),
                       children: [

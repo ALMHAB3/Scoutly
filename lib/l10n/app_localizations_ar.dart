@@ -676,7 +676,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingDesc2 =>
-      'استكشف المطاعم والمعالم والجواهر الخفية حولك — أينما كنت في العالم.';
+      'استكشف المطاعم والمعالم والجواهر الخفية حولك — أينما كنت في ليبيا.';
 
   @override
   String get onboardingTitle3 => 'احجز كل شيء في مكان واحد';
@@ -2032,7 +2032,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get commonWelcomeToScoutly => 'أهلاً بك في سكاوتلي! 🎉';
 
   @override
-  String get commonReadyToExplore => 'جاهز لاستكشاف العالم؟';
+  String get commonReadyToExplore => 'جاهز لاستكشاف ليبيا؟';
 
   @override
   String get commonTakePhoto => 'التقاط صورة';
@@ -3174,7 +3174,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get loginTitleLine1 => 'سجّل دخولك';
 
   @override
-  String get loginTitleLine2 => 'وسافر حول العالم';
+  String get loginTitleLine2 => 'واستكشف ليبيا';
 
   @override
   String get rememberMe => 'تذكرني';

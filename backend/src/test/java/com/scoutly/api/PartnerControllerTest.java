@@ -756,7 +756,7 @@ class PartnerControllerTest {
                         "stay_total", new BigDecimal("250.00"),
                         "currency", "USD")));
         when(liteApiHotelService.searchHotels(
-                "London",
+                "Tripoli",
                 LocalDate.parse("2026-12-01"),
                 LocalDate.parse("2026-12-03"),
                 1,
@@ -764,12 +764,12 @@ class PartnerControllerTest {
                 "USD",
                 null,
                 null,
-                ""))
+                "LY"))
                 .thenReturn(UnifiedInventoryService.SourceOutcome.of(
                         List.of(liteApiHotel)));
 
         Map<String, Object> response = controller.searchHotels(
-                "London",
+                "Tripoli",
                 "2026-12-01",
                 "2026-12-03",
                 1,
@@ -789,7 +789,7 @@ class PartnerControllerTest {
                 response.get("sources"));
         assertEquals(List.of(), response.get("warnings"));
         verify(liteApiHotelService).searchHotels(
-                "London",
+                "Tripoli",
                 LocalDate.parse("2026-12-01"),
                 LocalDate.parse("2026-12-03"),
                 1,
@@ -797,22 +797,22 @@ class PartnerControllerTest {
                 "USD",
                 null,
                 null,
-                "");
+                "LY");
     }
 
     @Test
     void liteApiAccessFailureKeepsPartnerHotelsVisible() {
         Map<String, Object> partnerHotel = new LinkedHashMap<>(Map.ofEntries(
                 Map.entry("id", 17L),
-                Map.entry("title", "Partner London Hotel"),
-                Map.entry("city", "London"),
-                Map.entry("country", "United Kingdom"),
+                Map.entry("title", "Partner Tripoli Hotel"),
+                Map.entry("city", "Tripoli"),
+                Map.entry("country", "Libya"),
                 Map.entry("partner_name", "Local Partner"),
                 Map.entry("description", "Partner inventory"),
                 Map.entry("image_url", "https://example.test/hotel.jpg"),
                 Map.entry("price", new BigDecimal("88.00")),
                 Map.entry("attributes", "{}"),
-                Map.entry("location_name", "Central London"),
+                Map.entry("location_name", "Central Tripoli"),
                 Map.entry("google_maps_url", ""),
                 Map.entry("place_id", ""),
                 Map.entry("google_rating", BigDecimal.ZERO),
@@ -827,7 +827,7 @@ class PartnerControllerTest {
                 any(Object[].class)))
                 .thenReturn(List.of(partnerHotel));
         when(liteApiHotelService.searchHotels(
-                eq("London"),
+                eq("Tripoli"),
                 eq(LocalDate.parse("2026-12-01")),
                 eq(LocalDate.parse("2026-12-03")),
                 eq(1),
@@ -835,13 +835,13 @@ class PartnerControllerTest {
                 eq("USD"),
                 isNull(),
                 isNull(),
-                eq("")))
+                eq("LY")))
                 .thenReturn(new UnifiedInventoryService.SourceOutcome(
                         List.of(),
                         List.of("LiteAPI access was denied.")));
 
         Map<String, Object> response = controller.searchHotels(
-                "London",
+                "Tripoli",
                 "2026-12-01",
                 "2026-12-03",
                 1,
@@ -866,7 +866,7 @@ class PartnerControllerTest {
         ResponseStatusException error = assertThrows(
                 ResponseStatusException.class,
                 () -> controller.searchHotels(
-                        "London",
+                        "Tripoli",
                         null,
                         null,
                         1,
@@ -1154,5 +1154,42 @@ class PartnerControllerTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute("authUserId", 7L);
         return request;
+    }
+
+    @Test
+    void flightSearchRejectsRoutesOutsideLibya() {
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.searchFlights(
+                        "MJI", "IST", "2026-12-10", null, 1, "economy"));
+        assertEquals(400, error.getStatusCode().value());
+        assertTrue(error.getReason().contains("Libya"));
+        verify(duffelFlightService, never()).searchFlights(
+                any(), any(), any(), any(), org.mockito.ArgumentMatchers.anyInt(), any());
+    }
+
+    @Test
+    void hotelSearchRejectsDestinationsOutsideLibya() {
+        ResponseStatusException byCountry = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.searchHotelsEndpoint(
+                        "Paris", "2026-12-01", "2026-12-03", 1, 2, "USD",
+                        null, null, null, null, null, null,
+                        null, null, null, "FR", null));
+        assertEquals(400, byCountry.getStatusCode().value());
+
+        ResponseStatusException byCoordinates = assertThrows(
+                ResponseStatusException.class,
+                () -> controller.searchHotelsEndpoint(
+                        "Paris", "2026-12-01", "2026-12-03", 1, 2, "USD",
+                        null, null, null, null, null, null,
+                        null, 48.8566, 2.3522, null, null));
+        assertEquals(400, byCoordinates.getStatusCode().value());
+    }
+
+    @Test
+    void nearbyHotelsOutsideLibyaReturnNothing() {
+        Map<String, Object> response = controller.nearbyHotels(48.8566, 2.3522, null, 5000);
+        assertEquals(List.of(), response.get("hotels"));
     }
 }

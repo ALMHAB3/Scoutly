@@ -683,7 +683,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingDesc2 =>
-      'Explore restaurants, attractions, and hidden gems around you — wherever you are in the world.';
+      'Explore restaurants, attractions, and hidden gems around you — wherever you are in Libya.';
 
   @override
   String get onboardingTitle3 => 'Book Everything in One Place';
@@ -2037,7 +2037,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonWelcomeToScoutly => 'Welcome to Scoutly! 🎉';
 
   @override
-  String get commonReadyToExplore => 'Ready to explore the world?';
+  String get commonReadyToExplore => 'Ready to explore Libya?';
 
   @override
   String get commonTakePhoto => 'Take a photo';
@@ -3186,7 +3186,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginTitleLine1 => 'Login to';
 
   @override
-  String get loginTitleLine2 => 'Travel Around the Globe';
+  String get loginTitleLine2 => 'Explore Libya';
 
   @override
   String get rememberMe => 'Remember me';

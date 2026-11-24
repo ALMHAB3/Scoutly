@@ -44,7 +44,7 @@ public class HotelDestinationCatalogService {
 
         try {
             GeoapifyAirportService.GeocodedPlace place =
-                    geoapify.resolveCity(query, "");
+                    geoapify.resolveCity(query, LibyaScope.COUNTRY_CODE);
             Map<String, Object> suggestion = citySuggestion(place, query);
             if (suggestion != null) return List.of(suggestion);
         } catch (RuntimeException exception) {
@@ -65,6 +65,7 @@ public class HotelDestinationCatalogService {
                            country_name_en, country_name_ar, latitude, longitude
                     FROM public.hotel_destinations
                     WHERE search_text LIKE ?
+                      AND UPPER(country_code) = 'LY'
                     ORDER BY CASE destination_type
                                  WHEN 'city' THEN 0
                                  WHEN 'zone' THEN 1
@@ -151,7 +152,7 @@ public class HotelDestinationCatalogService {
         }
         String name = firstNonBlank(place.city(), place.name(), query);
         String countryCode = text(place.countryCode()).toUpperCase(Locale.ROOT);
-        if (name.isBlank() || !countryCode.matches("[A-Z]{2}")) return null;
+        if (name.isBlank() || !LibyaScope.COUNTRY_CODE.equals(countryCode)) return null;
 
         Map<String, Object> suggestion = new LinkedHashMap<>();
         suggestion.put("name", name);

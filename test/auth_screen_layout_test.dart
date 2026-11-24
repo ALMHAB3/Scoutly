@@ -101,7 +101,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('Login to'), findsOneWidget);
-    expect(find.text('Travel Around the Globe'), findsOneWidget);
+    expect(find.text('Explore Libya'), findsOneWidget);
     final createAccountText = find.byWidgetPredicate(
       (widget) => widget is Text && widget.textSpan != null,
     );

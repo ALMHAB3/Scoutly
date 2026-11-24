@@ -69,25 +69,26 @@ void main() {
 
   test('popular fallback matches Latin and Arabic destination prefixes', () {
     expect(
-      HotelDestinationSuggestion.popularMatches('lo')
-          .any((place) => place.name == 'London'),
+      HotelDestinationSuggestion.popularMatches('ben')
+          .any((place) => place.name == 'Benghazi'),
       isTrue,
     );
     expect(
-      HotelDestinationSuggestion.popularMatches('par')
-          .any((place) => place.name == 'Paris'),
+      HotelDestinationSuggestion.popularMatches('gha')
+          .any((place) => place.name == 'Ghadames'),
       isTrue,
     );
     expect(
-      HotelDestinationSuggestion.popularMatches('دب')
-          .any((place) => place.name == 'Dubai'),
+      HotelDestinationSuggestion.popularMatches('مصر')
+          .any((place) => place.name == 'Misrata'),
       isTrue,
     );
     expect(
-      HotelDestinationSuggestion.popularMatches('القا')
-          .any((place) => place.name == 'Cairo'),
+      HotelDestinationSuggestion.popularMatches('طرا')
+          .any((place) => place.name == 'Tripoli'),
       isTrue,
     );
+    expect(HotelDestinationSuggestion.popularMatches('lon'), isEmpty);
   });
 
   testWidgets('selects an English destination suggestion', (tester) async {

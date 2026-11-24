@@ -755,6 +755,7 @@ public class PartnerController {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Invalid flight search parameters");
         }
+        requireDomesticRoute(originCode, destinationCode);
         if (!Set.of("one_way", "round_trip").contains(tripType)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid trip_type");
         }
@@ -845,6 +846,7 @@ public class PartnerController {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Invalid flight search parameters");
         }
+        requireDomesticRoute(originCode, destinationCode);
         LocalDate requestedDeparture = parseFlightDate(departureDate, "departure_date");
         LocalDate requestedReturn = returnDate == null || returnDate.isBlank()
                 ? null
@@ -886,6 +888,20 @@ public class PartnerController {
                 "flights", flights,
                 "warnings", merged.warnings(),
                 "sources", flightSourceCounts(flights));
+    }
+
+    private boolean isLibyanAirport(String code) {
+        return LibyaScope.KNOWN_AIRPORT_CODES.contains(code)
+                || airportDirectoryService.isLibyanAirport(code);
+    }
+
+    /** Scoutly sells domestic flights only: both airports must be in Libya. */
+    private void requireDomesticRoute(String originCode, String destinationCode) {
+        if (!isLibyanAirport(originCode) || !isLibyanAirport(destinationCode)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Scoutly offers domestic flights within Libya only.");
+        }
     }
 
     private static Map<String, Long> flightSourceCounts(
@@ -1062,13 +1078,25 @@ public class PartnerController {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Invalid destination code");
         }
-        String normalizedCountryCode = countryCode == null
+        String requestedCountryCode = countryCode == null
                 ? "" : countryCode.trim().toUpperCase(Locale.ROOT);
+        String normalizedCountryCode = requestedCountryCode;
         if (!normalizedCountryCode.isEmpty()
                 && !normalizedCountryCode.matches("[A-Z]{2}")) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Invalid destination country code");
         }
+        if (!normalizedCountryCode.isEmpty()
+                && !LibyaScope.COUNTRY_CODE.equals(normalizedCountryCode)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, LibyaScope.OUTSIDE_LIBYA_MESSAGE);
+        }
+        if (latitude != null && !LibyaScope.contains(latitude, longitude)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, LibyaScope.OUTSIDE_LIBYA_MESSAGE);
+        }
+        // Hotel inventory is always searched inside Libya.
+        normalizedCountryCode = LibyaScope.COUNTRY_CODE;
         String normalizedPlaceId = placeId == null ? "" : placeId.trim();
         if (normalizedPlaceId.length() > 256) {
             throw new ResponseStatusException(
@@ -1105,6 +1133,7 @@ public class PartnerController {
                         HttpStatus.BAD_REQUEST, "Invalid hotel stay dates");
             }
         }
+        final String hotelCountryCode = normalizedCountryCode;
         List<UnifiedInventoryService.ProviderSearch> hotelProviders = List.of(
                 new UnifiedInventoryService.ProviderSearch(
                         "liteapi",
@@ -1118,7 +1147,7 @@ public class PartnerController {
                                 normalizedCurrency,
                                 latitude,
                                 longitude,
-                                normalizedCountryCode)));
+                                hotelCountryCode)));
         UnifiedInventoryService.SearchOutcome merged = unifiedInventoryService.merge(
                 "hotel",
                 () -> hotelSearchRows(normalizedCity).stream()
@@ -1126,9 +1155,12 @@ public class PartnerController {
                         .toList(),
                 hotelProviders,
                 "Partner hotel inventory is temporarily unavailable.");
+        List<Map<String, Object>> libyanHotels = merged.items().stream()
+                .filter(PartnerController::isLibyanHotel)
+                .toList();
         UnifiedInventoryService.FilterOutcome filtered =
                 unifiedInventoryService.filterHotels(
-                        merged.items(), hotelFilters);
+                        libyanHotels, hotelFilters);
         List<String> warnings = new ArrayList<>(merged.warnings());
         warnings.addAll(filtered.warnings());
         long partnerCount = filtered.hotels().stream()
@@ -1176,6 +1208,16 @@ public class PartnerController {
         return response;
     }
 
+    /** Provider hotels must be in Libya; partner hotels are Libyan listings. */
+    private static boolean isLibyanHotel(Map<String, Object> hotel) {
+        if ("partner".equals(hotel.get("source"))) return true;
+        Object country = hotel.get("country");
+        if (country != null && !String.valueOf(country).isBlank()) {
+            return LibyaScope.isLibya(String.valueOf(country));
+        }
+        return !LibyaScope.isKnownOutside(hotel);
+    }
+
     @GetMapping("/hotels/nearby")
     public Map<String, Object> nearbyHotels(
             @RequestParam(value = "lat", required = false) Double lat,
@@ -1191,6 +1233,9 @@ public class PartnerController {
                 || !Double.isFinite(radius) || radius <= 0 || radius > 100_000) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Invalid coordinates or search radius");
+        }
+        if (!LibyaScope.contains(lat, normalizedLng)) {
+            return Map.of("hotels", List.of(), "message", LibyaScope.OUTSIDE_LIBYA_MESSAGE);
         }
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT l.*, p.name AS partner_name, p.slug AS partner_slug,

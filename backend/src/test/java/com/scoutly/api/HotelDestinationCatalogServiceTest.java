@@ -28,23 +28,23 @@ class HotelDestinationCatalogServiceTest {
         when(jdbc.queryForList(anyString(), any(Object[].class)))
                 .thenReturn(List.of(Map.of(
                         "destination_type", "city",
-                        "destination_code", "LON",
-                        "name_en", "London",
-                        "name_ar", "لندن",
-                        "country_code", "GB",
-                        "country_name_en", "United Kingdom",
-                        "country_name_ar", "المملكة المتحدة",
-                        "latitude", 51.5072,
-                        "longitude", -0.1276)));
+                        "destination_code", "TIP",
+                        "name_en", "Tripoli",
+                        "name_ar", "طرابلس",
+                        "country_code", "LY",
+                        "country_name_en", "Libya",
+                        "country_name_ar", "ليبيا",
+                        "latitude", 32.8872,
+                        "longitude", 13.1913)));
 
-        List<Map<String, Object>> suggestions = service.suggest("lo", "ar");
+        List<Map<String, Object>> suggestions = service.suggest("tr", "ar");
 
         assertEquals(1, suggestions.size());
-        assertEquals("London", suggestions.getFirst().get("name"));
-        assertEquals("لندن", suggestions.getFirst().get("localized_name"));
-        assertEquals("LON", suggestions.getFirst().get("destination_code"));
-        assertEquals("GB", suggestions.getFirst().get("country_code"));
-        assertEquals("المملكة المتحدة",
+        assertEquals("Tripoli", suggestions.getFirst().get("name"));
+        assertEquals("طرابلس", suggestions.getFirst().get("localized_name"));
+        assertEquals("TIP", suggestions.getFirst().get("destination_code"));
+        assertEquals("LY", suggestions.getFirst().get("country_code"));
+        assertEquals("ليبيا",
                 suggestions.getFirst().get("country_name_localized"));
     }
 
@@ -54,28 +54,28 @@ class HotelDestinationCatalogServiceTest {
                 eq("SELECT to_regclass('public.hotel_destinations') IS NOT NULL"),
                 eq(Boolean.class)))
                 .thenReturn(false);
-        when(geoapify.resolveCity("New York", ""))
+        when(geoapify.resolveCity("Ghadames", "LY"))
                 .thenReturn(new GeoapifyAirportService.GeocodedPlace(
-                        "New York",
-                        "New York",
-                        "United States",
-                        "us",
-                        "New York",
-                        "New York, NY, USA",
+                        "Ghadames",
+                        "Ghadames",
+                        "Libya",
+                        "ly",
+                        "Nalut",
+                        "Ghadames, Libya",
                         "city",
-                        "geoapify-new-york",
+                        "geoapify-ghadames",
                         null,
-                        40.7127281,
-                        -74.0060152));
+                        30.1337,
+                        9.5007));
 
-        List<Map<String, Object>> suggestions = service.suggest("New York", "en");
+        List<Map<String, Object>> suggestions = service.suggest("Ghadames", "en");
 
         assertEquals(1, suggestions.size());
-        assertEquals("New York", suggestions.getFirst().get("name"));
-        assertEquals("US", suggestions.getFirst().get("country_code"));
-        assertEquals("geoapify-new-york", suggestions.getFirst().get("place_id"));
-        assertEquals(40.7127281, suggestions.getFirst().get("latitude"));
-        assertEquals(-74.0060152, suggestions.getFirst().get("longitude"));
+        assertEquals("Ghadames", suggestions.getFirst().get("name"));
+        assertEquals("LY", suggestions.getFirst().get("country_code"));
+        assertEquals("geoapify-ghadames", suggestions.getFirst().get("place_id"));
+        assertEquals(30.1337, suggestions.getFirst().get("latitude"));
+        assertEquals(9.5007, suggestions.getFirst().get("longitude"));
     }
 
     @Test
@@ -90,12 +90,12 @@ class HotelDestinationCatalogServiceTest {
     }
 
     @Test
-    void returnsCoordinatesAndCountryForGeoapifyCitySuggestions() {
+    void rejectsCitiesOutsideLibya() {
         when(jdbc.queryForObject(
                 eq("SELECT to_regclass('public.hotel_destinations') IS NOT NULL"),
                 eq(Boolean.class)))
                 .thenReturn(false);
-        when(geoapify.resolveCity("Zürich", ""))
+        when(geoapify.resolveCity("Zürich", "LY"))
                 .thenReturn(new GeoapifyAirportService.GeocodedPlace(
                         "Zurich", "Zurich", "Switzerland", "CH", "Zurich",
                         "Zurich, Switzerland", "city", "geoapify-zurich",
@@ -103,9 +103,6 @@ class HotelDestinationCatalogServiceTest {
 
         List<Map<String, Object>> suggestions = service.suggest("Zürich", "en");
 
-        assertEquals(1, suggestions.size());
-        assertEquals("CH", suggestions.getFirst().get("country_code"));
-        assertEquals(47.3769, suggestions.getFirst().get("latitude"));
-        assertEquals(8.5417, suggestions.getFirst().get("longitude"));
+        assertEquals(List.of(), suggestions);
     }
 }

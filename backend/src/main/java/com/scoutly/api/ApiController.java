@@ -580,6 +580,12 @@ public class ApiController {
             @RequestParam(defaultValue = "40") int limit,
             @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "false") boolean diagnostics) {
+        if (!isBlankString(country) && !LibyaScope.isLibya(country)) {
+            return libyaOnly(emptyAttractionPage(), "attractions");
+        }
+        if (lat != null && lon != null && !LibyaScope.contains(lat, lon)) {
+            return libyaOnly(emptyAttractionPage(), "attractions");
+        }
         String categoryFilter = category == null ? "" : category.trim();
         if (query != null && !query.isBlank() && landmarkCatalogService != null) {
             List<Map<String, Object>> matches =
@@ -601,14 +607,51 @@ public class ApiController {
                 response.put("warnings", List.of());
                 response.put("candidate_count", matches.size());
                 response.put("city_found", true);
-                return response;
+                return libyaOnly(response, "attractions");
             }
             if (city == null || city.isBlank()) city = query.trim();
         }
-        return discoveredAttractions(
+        return libyaOnly(discoveredAttractions(
                 city, country, lang, categoryFilter, lat, lon,
                 bboxSouth, bboxWest, bboxNorth, bboxEast, placeId,
-                limit, offset, diagnostics);
+                limit, offset, diagnostics), "attractions");
+    }
+
+    private static Map<String, Object> emptyAttractionPage() {
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("attractions", List.of());
+        response.put("source", "opentripmap");
+        response.put("providers", List.of("opentripmap"));
+        response.put("total_count", 0);
+        response.put("has_more", false);
+        response.put("warnings", List.of());
+        response.put("city_found", false);
+        return response;
+    }
+
+    /**
+     * Scoutly covers Libya only: removes places outside the country from a
+     * response list and adds an explanatory message when nothing is left.
+     */
+    static Map<String, Object> libyaOnly(Map<String, Object> response, String key) {
+        Map<String, Object> filtered = new LinkedHashMap<>(response);
+        if (response.get(key) instanceof List<?> items) {
+            List<Object> kept = items.stream()
+                    .filter(item -> item instanceof Map<?, ?> place
+                            && !LibyaScope.isKnownOutside(place))
+                    .map(item -> (Object) item)
+                    .toList();
+            int removed = items.size() - kept.size();
+            filtered.put(key, kept);
+            if (removed > 0 && response.get("total_count") instanceof Number total) {
+                filtered.put("total_count", Math.max(kept.size(), total.intValue() - removed));
+            }
+            if (kept.isEmpty()) {
+                filtered.putIfAbsent("message", LibyaScope.OUTSIDE_LIBYA_MESSAGE);
+                if (filtered.containsKey("has_more")) filtered.put("has_more", false);
+            }
+        }
+        return filtered;
     }
 
     @GetMapping("/places")
@@ -624,8 +667,12 @@ public class ApiController {
             throw new ResponseStatusException(
                     HttpStatus.SERVICE_UNAVAILABLE, "The unified place catalog is unavailable.");
         }
-        return landmarkCatalogService.listCanonicalPlaces(
-                query, city, country, category, language, limit, offset);
+        if (!isBlankString(country) && !LibyaScope.isLibya(country)) {
+            return Map.of("places", List.of(), "total_count", 0,
+                    "message", LibyaScope.OUTSIDE_LIBYA_MESSAGE);
+        }
+        return libyaOnly(landmarkCatalogService.listCanonicalPlaces(
+                query, city, country, category, language, limit, offset), "places");
     }
 
     @PostMapping("/places/ingest")
@@ -673,7 +720,9 @@ public class ApiController {
         if (landmarkCatalogService != null) {
             cacheKey = landmarkCatalogService.cacheKey(cacheRequest);
             Map<String, Object> cached = landmarkCatalogService.cachedArea(cacheKey, false);
-            if (cached != null && cached.get("suggestions") instanceof List<?>) return cached;
+            if (cached != null && cached.get("suggestions") instanceof List<?>) {
+                return libyaOnly(cached, "suggestions");
+            }
         }
 
         List<Map<String, Object>> databaseSuggestions = landmarkCatalogService == null
@@ -703,7 +752,7 @@ public class ApiController {
         if (landmarkCatalogService != null && cacheKey != null) {
             landmarkCatalogService.cacheArea(cacheKey, cacheRequest, response);
         }
-        return response;
+        return libyaOnly(response, "suggestions");
     }
 
     private static String suggestionIdentity(Map<String, Object> suggestion) {
@@ -736,11 +785,23 @@ public class ApiController {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Invalid map bounds or filter values.");
         }
-        Map<String, Object> response = discoveredAttractions(
+        // Only the part of the viewport that overlaps Libya is searched.
+        south = Math.max(south, LibyaScope.SOUTH);
+        north = Math.min(north, LibyaScope.NORTH);
+        west = Math.max(west, LibyaScope.WEST);
+        east = Math.min(east, LibyaScope.EAST);
+        if (south >= north || west >= east) {
+            Map<String, Object> outside = emptyAttractionPage();
+            outside.put("message", LibyaScope.OUTSIDE_LIBYA_MESSAGE);
+            outside.put("map_zoom", zoom);
+            outside.put("clusters", List.of());
+            return outside;
+        }
+        Map<String, Object> response = libyaOnly(discoveredAttractions(
                 "", "", lang, category, null, null,
                 south, west, north, east, null,
                 Math.min(100, Math.max(1, limit)), Math.max(0, offset), false,
-                "viewport", zoom, minRate);
+                "viewport", zoom, minRate), "attractions");
         response.put("map_zoom", zoom);
         response.put("clusters", zoom < 7
                 ? clusterAttractions(response.get("attractions"), zoom)
@@ -1111,6 +1172,9 @@ public class ApiController {
             @RequestParam(defaultValue = "5000") double radius,
             @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "en") String lang) {
+        if (!LibyaScope.contains(lat, lng)) {
+            return libyaOnly(emptyAttractionPage(), "attractions");
+        }
         List<Map<String, Object>> attractions =
                 openTripMapAttractionService.searchNearby(
                         lat, lng, radius, category, lang);
@@ -1118,7 +1182,7 @@ public class ApiController {
         response.put("attractions", attractions);
         response.put("source", "opentripmap");
         response.put("providers", List.of("opentripmap"));
-        return response;
+        return libyaOnly(response, "attractions");
     }
 
     private List<Map<String, Object>> curatedAttractions(String city, String country) {
@@ -2908,6 +2972,9 @@ public class ApiController {
                                           @RequestParam(defaultValue = "10") int limit,
                                           HttpServletRequest request) {
         requireUserId(request);
+        if (!LibyaScope.contains(lat, lng)) {
+            return Map.of("results", List.of(), "message", LibyaScope.OUTSIDE_LIBYA_MESSAGE);
+        }
         if (serpApiKey.isBlank()) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "SERPAPI_KEY is not configured");
         String url = UriComponentsBuilder.fromUriString("https://serpapi.com/search.json")
                 .queryParam("engine", "google_maps").queryParam("q", query)
@@ -2936,7 +3003,7 @@ public class ApiController {
             result.put("thumbnail", place.get("thumbnail"));
             results.add(result);
         }
-        return Map.of("results", results);
+        return libyaOnly(Map.of("results", results), "results");
     }
 
     private Map<String, Object> authPayload(long userId, HttpServletRequest request) {

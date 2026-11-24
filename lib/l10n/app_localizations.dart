@@ -1386,7 +1386,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingDesc2.
   ///
   /// In ar, this message translates to:
-  /// **'استكشف المطاعم والمعالم والجواهر الخفية حولك — أينما كنت في العالم.'**
+  /// **'استكشف المطاعم والمعالم والجواهر الخفية حولك — أينما كنت في ليبيا.'**
   String get onboardingDesc2;
 
   /// No description provided for @onboardingTitle3.
@@ -3781,7 +3781,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonReadyToExplore.
   ///
   /// In ar, this message translates to:
-  /// **'جاهز لاستكشاف العالم؟'**
+  /// **'جاهز لاستكشاف ليبيا؟'**
   String get commonReadyToExplore;
 
   /// No description provided for @commonTakePhoto.
@@ -5953,7 +5953,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginTitleLine2.
   ///
   /// In ar, this message translates to:
-  /// **'وسافر حول العالم'**
+  /// **'واستكشف ليبيا'**
   String get loginTitleLine2;
 
   /// No description provided for @rememberMe.
